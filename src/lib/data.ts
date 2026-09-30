@@ -8,15 +8,16 @@ let ver = 0;
 const emit = () => { ver++; subs.forEach(f => f()); };
 const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
 
-export async function load(id: string, url: string, window: number, src: string, minGap = 30_000) {
+export async function load(id: string, url: string, window: number, src: string, minGap = 30_000, alt?: string) {
   const r = recs.get(id);
   if (loading.has(id) || (r?.at && Date.now() - r.at < minGap)) return;
   loading.add(id); emit();
-  const c = new AbortController(), t = setTimeout(() => c.abort(), 20_000);
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 45_000);
   try {
-    const res = await fetch(url, { signal: c.signal });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    recs.set(id, { data: await res.json(), at: Date.now(), err: null, url, window, src });
+    const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
+    let used = url, data: unknown;
+    try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
+    recs.set(id, { data, at: Date.now(), err: null, url: used, window, src });
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
     recs.set(id, { data: r?.data ?? null, at: r?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
@@ -46,11 +47,11 @@ export function useNow(ms = 1000) {
 
 export const DROPS = "https://drops.warframestat.us/data/";
 export const DAY = 86_400_000;
-export interface Item { id: string; file: string; url?: string; src?: string }
+export interface Item { id: string; file: string; url?: string; src?: string; alt?: string }
 /** Loads official drop-table datasets once (24h window). */
 export function useMany(items: Item[]) {
   useSyncExternalStore(subscribe, () => ver);
   const key = items.map(i => i.id).join();
-  useEffect(() => { items.forEach(i => void load(i.id, i.url ?? DROPS + i.file, DAY, i.src ?? "Digital Extremes drop tables via WFCD/warframe-drop-data", DAY)); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { items.forEach(i => void load(i.id, i.url ?? DROPS + i.file, DAY, i.src ?? "Digital Extremes drop tables via WFCD/warframe-drop-data", DAY, i.alt)); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   return items.map(i => { const rec = recs.get(i.id); return { rec, status: statusOf(rec, loading.has(i.id)) }; });
 }

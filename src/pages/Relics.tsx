@@ -1,14 +1,13 @@
 import { useSearchParams } from "react-router-dom";
 import { useMany, useWorld } from "../lib/data";
-import { CAT_SRC } from "../lib/catalog";
 import { parseRelics } from "../lib/drops";
-import { VAULT_URL, parseVault } from "../lib/vault";
+import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
 import { ts } from "../lib/format";
 import { Prov, Unavailable } from "./parts";
 const STATES = ["Intact", "Exceptional", "Flawless", "Radiant"];
 const isArr = (d: unknown): d is { tier: string; expiry: string }[] => Array.isArray(d);
 function VaultBadge({ name }: { name: string }) {
-  const [{ rec, status }] = useMany([{ id: "relicsVault", file: "", url: VAULT_URL, src: CAT_SRC }]);
+  const [{ rec, status }] = useMany([{ id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]);
   const v = parseVault(rec?.data)?.get(name);
   const label = v === undefined ? (status === "LOADING" ? "Vault status loading" : "Vault status unknown") : v ? "Vaulted" : "Available";
   return <span className={"tag " + (v === undefined ? "UNAVAILABLE" : v ? "STALE" : "FRESH")} title="Community dataset, may lag behind the game">{label}</span>;

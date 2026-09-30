@@ -1,4 +1,4 @@
-# FarmFrame v0.15 (relic vault status from a separate community dataset; unknown when missing)
+# FarmFrame v0.15.1 (vault data now read from the warframe-items file, api /relics returned 404) (relic vault status from a separate community dataset; unknown when missing)
 <!-- v0.14.1 --> (version label on Home and Sources to tell which build is live)
 <!-- v0.14 --> (Vite + React + TypeScript)
 Static build, hash routes (`/#/roadmap`), no backend yet. Works on any static host; a custom domain can be used later.
