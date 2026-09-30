@@ -19,3 +19,16 @@ export const Logo = () => (
   <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M16 2 28 9v14l-12 7L4 23V9z" fill="none" stroke="#B89A5B" strokeWidth="1.6" />
     <path d="M12 22V10h9M12 15.5h6" fill="none" stroke="#E4E2DC" strokeWidth="2.2" strokeLinecap="square" /></svg>
 );
+const TIER: Record<string, [string, number]> = { Lith: ["#A08868", 1], Meso: ["#9EA3A6", 2], Neo: ["#B89A5B", 3], Axi: ["#5FA8A3", 4], Requiem: ["#C0524A", 0], Omnia: ["#E4E2DC", 0] };
+/** Relic tier emblem: one diamond, tier shown by tick marks (Lith 1 ... Axi 4), a cross for Requiem/Omnia. Original artwork. */
+export const TierIcon = ({ tier, size = 22 }: { tier: string; size?: number }) => {
+  const [c, n] = TIER[tier] ?? ["#8E9392", 0];
+  const ys = n === 1 ? [12] : n === 2 ? [10, 14] : n === 3 ? [9, 12, 15] : n === 4 ? [8, 11, 14, 17] : [];
+  return (
+    <svg className="tier-ic" viewBox="0 0 24 24" width={size} height={size} role="img" aria-label={`${tier} relic`}>
+      <path d="M12 2 21 12 12 22 3 12z" fill={c} fillOpacity=".14" stroke={c} strokeWidth="1.5" />
+      {ys.map(y => <path key={y} d={`M9 ${y}h6`} stroke={c} strokeWidth="1.6" />)}
+      {!n && <path d="M12 7v10M8 11.5h8" stroke={c} strokeWidth="1.6" />}
+    </svg>
+  );
+};

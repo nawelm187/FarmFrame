@@ -1,4 +1,5 @@
-# FarmFrame v0.19 (item page composition: art right with fade, large stats, depth levels)
+# FarmFrame v0.20 (original relic tier emblems, tier filter bar in Fissures, faction markers in Invasions)
+<!-- v0.19 --> (item page composition: art right with fade, large stats, depth levels)
 <!-- v0.18 --> (logo + favicon, SVG nav icons, angular panels, lighter world-state strip)
 <!-- v0.17 --> (skeleton loading states, Retry on failed data, honest loading vs error in Finder)
 <!-- v0.16 --> (arcane slots in builds, counted in requirements and Tracking)
