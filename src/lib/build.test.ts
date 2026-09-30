@@ -28,3 +28,8 @@ it("forma from polarity overrides changes drain", () => {
   expect(requirements(b, f, m).forma).toBe(1);
   expect(evaluate(b, f, m).rows[0].d).toBe(7);
 });
+it("arcanes: missing and duplicate", () => {
+  const b = newBuild(); b.arcanes = [{ mod: "energize" }, { mod: "energize", owned: true }];
+  const r = requirements(b, undefined, new Map(), new Map([["energize", mod("Energize", 0, null)]]));
+  expect(r.missingArcanes.map(a => a.name)).toEqual(["Energize"]); expect(r.arcDup).toBe(true);
+});
