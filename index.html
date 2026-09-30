@@ -1,4 +1,18 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="FarmFrame: Warframe planning and farming companion.">
-<title>FarmFrame</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+<title>FarmFrame</title>
+<style>body{margin:0;background:#0B0D0F;color:#E4E2DC;font:16px/1.5 system-ui,sans-serif}#boot{padding:1.5rem;max-width:44rem}#boot pre{white-space:pre-wrap;color:#C0524A}</style></head>
+<body><div id="root"><div id="boot"><p>Loading FarmFrame…</p><noscript><p>FarmFrame needs JavaScript enabled.</p></noscript></div></div>
+<script>
+(function () {
+  function show(t) { var b = document.getElementById("boot"); if (!b) { b = document.createElement("div"); b.id = "boot"; document.body.appendChild(b); } var p = document.createElement("pre"); p.textContent = t; b.appendChild(p); }
+  window.addEventListener("error", function (e) { show("Error: " + (e.message || e)); });
+  window.addEventListener("unhandledrejection", function (e) { show("Promise error: " + (e.reason && e.reason.message || e.reason)); });
+  setTimeout(function () {
+    if (document.getElementById("root").getAttribute("data-ready") !== "1")
+      show("The app script did not load. If this page is on GitHub Pages, it is serving the unbuilt source: set Settings > Pages > Source to \"GitHub Actions\" and check that the latest run in the Actions tab is green.");
+  }, 4000);
+})();
+</script>
+<script type="module" src="/src/main.tsx"></script></body></html>

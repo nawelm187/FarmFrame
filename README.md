@@ -1,6 +1,6 @@
-# FarmFrame v0.5 (Vite + React + TypeScript)
-Static site for GitHub Pages. Hash routes (`/#/fissures`) so deep links survive refresh without server config.
+# FarmFrame v0.8.1 (Vite + React + TypeScript)
+Static build, hash routes (`/#/roadmap`), no backend yet. Works on any static host; a custom domain can be used later.
 
-Deploy: push to `main`, then Settings > Pages > Source: **GitHub Actions**. The workflow runs tests, type-check and build.
-Local: `npm install && npm run dev`. Previous single-file version kept in `legacy/`.
-Ported: World State, Fissures, Invasions, Relics, Resource Finder, Tracking, Search, Sources, catalog with deep links. New: Goals + Roadmap (`/#/roadmap`) with manual progress and a first "Farm now" based on active fissures.
+Local: `npm install && npm run dev` (tests: `npm test`, types: `npm run typecheck`, build: `npm run build` -> `dist/`).
+Test host: the included GitHub Actions workflow builds and publishes `dist/` (Settings > Pages > Source: GitHub Actions). Type-check and tests report but do not block publishing while iterating.
+Errors: a crash shows the error text on the page instead of a blank screen. Previous single-file version is in `legacy/`.
