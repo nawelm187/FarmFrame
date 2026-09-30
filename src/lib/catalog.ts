@@ -9,7 +9,7 @@ export interface Component { name: string; count: number; drops: { location: str
 export interface Entity {
   slug: string; name: string; type: string; description: string; image: string | null; isPrime: boolean; vaulted: boolean | null;
   stats: [string, number][]; facts: [string, string][]; components: Component[];
-  polarity: string | null; baseDrain: number | null; maxRank: number | null; compat: string; slots: string[] | null;
+  polarity: string | null; baseDrain: number | null; maxRank: number | null; compat: string; rarity: string; slots: string[] | null;
 }
 type O = Record<string, unknown>;
 const isO = (x: unknown): x is O => !!x && typeof x === "object" && !Array.isArray(x);
@@ -45,7 +45,7 @@ export function parseCatalog(d: unknown, cat: Cat): Entity[] | null {
     const components = comps(x.components);
     out.push({ slug, name: s(x.name), type: s(x.type), description: s(x.description), image: s(x.imageName) || null, isPrime: x.isPrime === true || /\bprime$/i.test(s(x.name)),
       vaulted: typeof x.vaulted === "boolean" ? x.vaulted : null, stats, facts, components,
-      polarity: s(x.polarity).toLowerCase() || null, baseDrain: n(x.baseDrain), maxRank: n(x.fusionLimit), compat: s(x.compatName),
+      polarity: s(x.polarity).toLowerCase() || null, baseDrain: n(x.baseDrain), maxRank: n(x.fusionLimit), compat: s(x.compatName), rarity: s(x.rarity),
       slots: Array.isArray(x.polarities) ? x.polarities.filter((p): p is string => typeof p === "string").map(p => p.toLowerCase()) : null });
   }
   const r = out.length ? out.sort((a, b) => a.name.localeCompare(b.name)) : null;

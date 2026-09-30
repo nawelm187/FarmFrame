@@ -1,7 +1,7 @@
 import type { Entity } from "./catalog";
 export const NSLOTS = 8;
-export interface Slot { mod: string | null; rank: number }
-export interface Build { id: string; name: string; frame: string; slots: Slot[]; reactor: boolean }
+export interface Slot { mod: string | null; rank: number; owned?: boolean }
+export interface Build { id: string; name: string; frame: string; slots: Slot[]; reactor: boolean; haveFrame?: boolean }
 export interface Issue { level: "error" | "warn"; text: string }
 const K = "ff.builds";
 export const readBuilds = (): Build[] => { try { const v: unknown = JSON.parse(localStorage.getItem(K) || "[]"); return Array.isArray(v) ? (v as Build[]) : []; } catch { return []; } };
@@ -31,4 +31,12 @@ export function evaluate(b: Build, frame: Entity | undefined, mods: Map<string, 
   });
   if (total > capacity) issues.push({ level: "error", text: `Capacity exceeded: ${total} / ${capacity}.` });
   return { rows, total, capacity, issues };
+}
+/** Standard endo rule: base (10/20/30/40 by rarity) x (2^rank - 1). A calculated estimate, not read from the source. */
+const BASE: Record<string, number> = { common: 10, uncommon: 20, rare: 30, legendary: 40 };
+export const endoFor = (rarity: string, rank: number): number | null => { const b = BASE[rarity.toLowerCase()]; return b && rank >= 0 ? b * (2 ** rank - 1) : null; };
+export function requirements(b: Build, frame: Entity | undefined, mods: Map<string, Entity>) {
+  const list = b.slots.filter(s => s.mod).map(s => { const m = mods.get(s.mod!); return { slug: s.mod!, name: m?.name ?? s.mod!, rank: s.rank, owned: !!s.owned, endo: m ? endoFor(m.rarity, s.rank) : null }; });
+  return { frame: b.frame ? { name: frame?.name ?? b.frame, slug: b.frame, have: !!b.haveFrame } : null, mods: list, missingMods: list.filter(x => !x.owned),
+    endoTotal: list.reduce((a, x) => a + (x.endo ?? 0), 0), endoKnown: list.every(x => x.endo != null) };
 }

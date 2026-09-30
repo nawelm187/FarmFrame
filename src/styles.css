@@ -53,3 +53,5 @@ progress{width:100%;display:block;height:.5rem;margin:.3rem 0;accent-color:var(-
 .chk{display:block;margin:.4rem 0}.chk b{color:var(--t1)}
 .sub{margin:.2rem 0 .2rem .4rem;padding-left:.9rem;border-left:1px solid var(--b4);list-style:none;color:var(--t2);font-size:.9rem}
 .list .sub li{display:block;border:0;padding:.1rem 0}
+.opps{list-style:none;counter-reset:o;margin:0;padding:0}.opps>li{counter-increment:o;background:var(--b2);border-left:2px solid var(--gold);padding:.7rem .9rem .7rem 2.4rem;margin-bottom:.6rem;position:relative}
+.opps>li::before{content:counter(o);position:absolute;left:.8rem;top:.6rem;color:var(--gold);font-size:1.1rem;font-variant-numeric:tabular-nums}.opps ul{margin:.4rem 0;padding-left:1.2rem}
