@@ -1,22 +1,6 @@
-# FarmFrame (v0.4)
-Static site: no build step, no backend. It fetches live data from the browser.
+# FarmFrame v0.5 (Vite + React + TypeScript)
+Static site for GitHub Pages. Hash routes (`/#/fissures`) so deep links survive refresh without server config.
 
-## Publish on GitHub Pages
-1. Create a repo and upload `index.html` (and optionally `test/`).
-2. Settings > Pages > Deploy from branch > `main` / root.
-3. Open the Pages URL.
-
-## Data sources
-- World state: https://api.warframestat.us/pc/{resource} (community API, unofficial).
-- Relics and mission drops: https://drops.warframestat.us/data/ (official drop tables, parsed by WFCD).
-
-## What is verified
-World state shapes (fissures, cycles, sortie, nightwave, invasions, void trader, steel path, arbitration) were checked against live responses.
-Drop-table parsers (relics, missions, enemy blueprints and items, mods, Cetus/Fortuna/Zariman bounties, sorties, objectives, syndicates) follow the structures documented in the WFCD/warframe-drop-data README and were tested with mocked data only. `resourceByAvatar.json` is not documented there, so its parser is tolerant and ignored if the shape is not recognised. If a table fails validation the page shows an explicit gap instead of guessing.
-Archon Hunt has not been checked against a live response.
-
-## Tests
-`node test/logic.test.js` (Node 22; uses mocked fetch, needs no network).
-
-## Not included yet
-Item catalog, builds, market, dependency trees, AI analysis, and drops from systems outside the official tables (vendors, crafting, trading).
+Deploy: push to `main`, then Settings > Pages > Source: **GitHub Actions**. The workflow runs tests, type-check and build.
+Local: `npm install && npm run dev`. Previous single-file version kept in `legacy/`.
+Ported: World State, Fissures, Invasions, Relics, Resource Finder, Tracking, Search, Sources, catalog with deep links. New: Goals + Roadmap (`/#/roadmap`) with manual progress and a first "Farm now" based on active fissures.
