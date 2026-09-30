@@ -56,3 +56,8 @@ progress{width:100%;display:block;height:.5rem;margin:.3rem 0;accent-color:var(-
 .opps{list-style:none;counter-reset:o;margin:0;padding:0}.opps>li{counter-increment:o;background:var(--b2);border-left:2px solid var(--gold);padding:.7rem .9rem .7rem 2.4rem;margin-bottom:.6rem;position:relative}
 .opps>li::before{content:counter(o);position:absolute;left:.8rem;top:.6rem;color:var(--gold);font-size:1.1rem;font-variant-numeric:tabular-nums}.opps ul{margin:.4rem 0;padding-left:1.2rem}
 .sk{height:.9rem;background:linear-gradient(90deg,var(--b3),var(--b4),var(--b3));background-size:200% 100%;animation:sk 1.4s linear infinite;margin:.45rem 0}@keyframes sk{to{background-position:-200% 0}}
+nav a{display:flex;align-items:center;gap:.6rem}.ic{flex:none}.logo{display:flex;align-items:center;gap:.5rem}
+h1{padding-bottom:.4rem;border-bottom:1px solid var(--b4);margin-bottom:.8rem}
+.panel,.opps>li,.pal,.sbtn{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.grid .panel{background:none;border-left:0;border-top:1px solid var(--b4);padding:.6rem .2rem 0 0;clip-path:none}
+@media(max-width:700px){nav a{flex-direction:column;gap:.15rem;font-size:.68rem;padding:.55rem .7rem}}

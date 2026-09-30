@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
+import { Icon, Logo } from "./Icons";
 import Palette from "./Palette";
 import Home from "./pages/Home";
 import Fissures from "./pages/Fissures";
@@ -23,8 +24,8 @@ export default function App() {
   return (
     <div className="app">
       <nav aria-label="Main">
-        <div className="logo">FARM<span>FRAME</span></div>
-        {NAV.map(([to, l]) => <NavLink key={to} to={to} end={to === "/"}>{l}</NavLink>)}
+        <div className="logo"><Logo />FARM<span>FRAME</span></div>
+        {NAV.map(([to, l]) => <NavLink key={to} to={to} end={to === "/"}><Icon n={to} />{l}</NavLink>)}
       </nav>
       <main>
         <button className="sbtn" onClick={() => setOpen(true)}>Search relics, items, pages… or ask "where do I farm X" <kbd>Ctrl K</kbd></button>
