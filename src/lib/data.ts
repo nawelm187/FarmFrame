@@ -1,0 +1,56 @@
+import { useEffect, useSyncExternalStore } from "react";
+export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
+export interface Rec { data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
+export const API = "https://api.warframestat.us/pc/";
+export const WS_WINDOW = 150_000;
+const recs = new Map<string, Rec>(), loading = new Set<string>(), subs = new Set<() => void>();
+let ver = 0;
+const emit = () => { ver++; subs.forEach(f => f()); };
+const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
+
+export async function load(id: string, url: string, window: number, src: string, minGap = 30_000) {
+  const r = recs.get(id);
+  if (loading.has(id) || (r?.at && Date.now() - r.at < minGap)) return;
+  loading.add(id); emit();
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 20_000);
+  try {
+    const res = await fetch(url, { signal: c.signal });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    recs.set(id, { data: await res.json(), at: Date.now(), err: null, url, window, src });
+  } catch (e) {
+    const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
+    recs.set(id, { data: r?.data ?? null, at: r?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
+  } finally { clearTimeout(t); loading.delete(id); emit(); }
+}
+export function statusOf(r: Rec | undefined, isLoading: boolean, now = Date.now()): Status {
+  if (!r) return isLoading ? "LOADING" : "UNAVAILABLE";
+  if (r.data == null) return r.err ? "ERROR" : "UNAVAILABLE";
+  if (r.err) return "STALE";
+  return r.at !== null && now - r.at > r.window ? "STALE" : "FRESH";
+}
+/** Loads a live dataset, refreshes every 60s, exposes status + provenance. Never fabricates data. */
+export function useWorld<T>(key: string, guard: (d: unknown) => d is T) {
+  useSyncExternalStore(subscribe, () => ver);
+  useEffect(() => {
+    const go = () => void load(key, API + key, WS_WINDOW, "WarframeStat API (community, unofficial)");
+    go(); const i = setInterval(go, 60_000); return () => clearInterval(i);
+  }, [key]);
+  const r = recs.get(key);
+  return { data: r && guard(r.data) ? r.data : null, status: statusOf(r, loading.has(key)), rec: r };
+}
+export const allRecs = () => [...recs.entries()];
+export function useNow(ms = 1000) {
+  const s = useSyncExternalStore((f) => { const i = setInterval(f, ms); return () => clearInterval(i); }, () => Math.floor(Date.now() / ms));
+  return s * ms;
+}
+
+export const DROPS = "https://drops.warframestat.us/data/";
+export const DAY = 86_400_000;
+export interface Item { id: string; file: string; url?: string; src?: string }
+/** Loads official drop-table datasets once (24h window). */
+export function useMany(items: Item[]) {
+  useSyncExternalStore(subscribe, () => ver);
+  const key = items.map(i => i.id).join();
+  useEffect(() => { items.forEach(i => void load(i.id, i.url ?? DROPS + i.file, DAY, i.src ?? "Digital Extremes drop tables via WFCD/warframe-drop-data", DAY)); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return items.map(i => { const rec = recs.get(i.id); return { rec, status: statusOf(rec, loading.has(i.id)) }; });
+}
