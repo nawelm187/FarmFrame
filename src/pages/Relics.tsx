@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { TierIcon } from "../Icons";
+import RelicArt from "../RelicArt";
 import { useMany, useWorld } from "../lib/data";
 import { parseRelics } from "../lib/drops";
 import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
@@ -28,7 +28,7 @@ export default function Relics() {
     {hit.map(r => { const base = r.st.Intact ?? Object.values(r.st)[0] ?? [];
       const n = fis ? fis.filter(x => x.tier === r.tier && ts(x.expiry) > Date.now()).length : null;
       return (<section className="panel" key={r.name} style={{ marginBottom: ".6rem" }}>
-        <div className="row"><h3><TierIcon tier={r.tier} size={28} /> {r.name} <VaultBadge name={r.name} /></h3><span className="muted">{n == null ? "Fissure data unavailable" : `${n} active ${r.tier} fissures`}</span></div>
+        <div className="row"><h3><RelicArt tier={r.tier} name={r.name} size={40} /> {r.name} <VaultBadge name={r.name} /></h3><span className="muted">{n == null ? "Fissure data unavailable" : `${n} active ${r.tier} fissures`}</span></div>
         <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th>{STATES.map(s => <th key={s}>{s}</th>)}</tr></thead><tbody>
           {base.map(x => <tr key={x.itemName + x.rarity}><td>{x.itemName}</td><td>{x.rarity}</td>{STATES.map(s => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity); return <td key={s}>{y ? y.chance + "%" : "—"}</td>; })}</tr>)}</tbody></table></div></section>); })}
     <Prov rec={rec} /></>);

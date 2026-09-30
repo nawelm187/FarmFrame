@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { TierIcon } from "../Icons";
+import RelicArt from "../RelicArt";
 import { readBuilds } from "../lib/build";
 import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
@@ -28,7 +28,7 @@ function FarmRightNow() {
     {!goals ? <p className="muted">No goals yet. Add one from a Warframe or weapon page and this list will show what advances it right now. <Link to="/warframes">Browse Warframes</Link></p>
       : !fis.data && !inv.data ? <p className="muted">Live fissure and invasion data is unavailable ({fis.status.toLowerCase()}), so current opportunities cannot be computed.</p>
       : !opps.length ? <p className="muted">Nothing active right now advances your goals. Check back as fissures and invasions rotate.</p>
-      : <ol className="opps">{opps.map(o => (<li key={o.key}><div className="row"><b className="oppt">{o.tier && <TierIcon tier={o.tier} size={24} />}{o.title}</b><Link className="btn" to={o.kind === "fissure" ? "/fissures" : "/invasions"}>View</Link></div>
+      : <ol className="opps">{opps.map(o => (<li key={o.key}><div className="row"><b className="oppt">{o.tier && <RelicArt tier={o.tier} size={32} />}{o.title}</b><Link className="btn" to={o.kind === "fissure" ? "/fissures" : "/invasions"}>View</Link></div>
           <div className="muted">Advances: {o.advances.slice(0, 4).join(", ")}{o.advances.length > 4 ? ` and ${o.advances.length - 4} more` : ""}</div>
           <details><summary>Why this?</summary><ul>{o.why.map(w => <li key={w}>{w}</li>)}<li>Live data: fissures <Badge s={fis.status} />, invasions <Badge s={inv.status} /></li></ul></details></li>))}</ol>}
     {goals > 0 && <p className="muted">Based on your goals and live data. It cannot see everything, so treat it as a suggestion.</p>}

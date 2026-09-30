@@ -83,3 +83,4 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .tierbtn[aria-pressed=true]{border-color:var(--gold);color:var(--t1);background:var(--b2)}.tierbtn b{color:var(--t1);font-variant-numeric:tabular-nums}
 .row h3{display:flex;align-items:center;gap:.5rem}.oppt{display:flex;align-items:center;gap:.5rem}
 .fac{display:inline-block;width:.55rem;height:.55rem;transform:rotate(45deg);margin-right:.45rem}
+.relic-img{object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
