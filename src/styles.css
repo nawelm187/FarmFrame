@@ -50,3 +50,6 @@ nav a{white-space:nowrap}
 progress{width:100%;display:block;height:.5rem;margin:.3rem 0;accent-color:var(--gold)}
 .goal{margin-bottom:.8rem}.opp li{display:block}.opp ul{margin:.4rem 0;padding-left:1.2rem}summary{cursor:pointer;color:var(--acc);margin-top:.3rem}
 .goal .comp li{grid-template-columns:1fr auto;align-items:center}
+.chk{display:block;margin:.4rem 0}.chk b{color:var(--t1)}
+.sub{margin:.2rem 0 .2rem .4rem;padding-left:.9rem;border-left:1px solid var(--b4);list-style:none;color:var(--t2);font-size:.9rem}
+.list .sub li{display:block;border:0;padding:.1rem 0}

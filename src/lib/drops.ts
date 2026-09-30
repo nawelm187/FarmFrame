@@ -47,7 +47,7 @@ export const FIND: Finder[] = [
     return fin(r); } },
   { id: "syndicates", file: "syndicates.json", label: "Syndicate offerings", ex: d => {
     const o = unwrap(d, "syndicates"); if (!isO(o)) return null; const r: R[] = [];
-    for (const [n, a] of Object.entries(o)) if (Array.isArray(a)) for (const x of a) if (isO(x) && x.item) r.push(row({ item: str(x.item), where: `${n}: ${str(x.place)}`, mode: "Syndicate", ch: num(x.chance), rar: str(x.rarity), note: x.standing != null ? x.standing + " standing" : "" }));
+    for (const [n, a] of Object.entries(o)) if (Array.isArray(a)) for (const x of a) if (isO(x) && x.item) r.push(row({ item: str(x.item), where: `${n}: ${str(x.place)}`, mode: "Syndicate", ch: num(x.chance), rar: str(x.rarity), note: x.standing != null ? String(x.standing) + " standing" : "" }));
     return fin(r); } },
   { id: "resourceByAvatar", file: "resourceByAvatar.json", label: "Resource drops (enemies)", ex: d => {
     const a = list(d, "resourceByAvatar"); if (!a) return null; const r: R[] = [];

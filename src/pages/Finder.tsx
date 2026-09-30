@@ -13,6 +13,7 @@ export default function Finder() {
     <p className="lead">Where an item drops, from the official drop tables: missions, enemies, mods, bounties, sorties, objectives and syndicates. Items that only come from other systems (vendors, crafting, trading) are not covered.</p>
     <div className="bar"><input aria-label="Item name" placeholder="Item or resource name, e.g. Plastids" value={q} onChange={e => setSp({ q: e.target.value }, { replace: true })} /></div>
     <p className="muted">{ok}/{FIND.length} drop datasets loaded{gaps.length ? " · not shown: " + gaps.join("; ") : ""}</p>
+    {l && ok > 0 && <p><Link to={`/farm/${encodeURIComponent(q.trim())}`}>Ranked farming view for "{q.trim()}"</Link></p>}
     {!ok && <Unavailable title="Drop tables" status="LOADING" why="Nothing loaded yet or all requests failed. See Data Sources." />}
     {!l && ok > 0 && <p className="muted">Search for a resource, mod, part or item.</p>}
     {l && ok > 0 && !m.length && <p className="muted">No drop for "{q}" in the loaded tables.</p>}

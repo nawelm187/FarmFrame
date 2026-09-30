@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMany } from "./lib/data";
 import { parseRelics } from "./lib/drops";
@@ -8,7 +8,7 @@ export default function Palette({ onClose }: { onClose: () => void }) {
   const [q, setQ] = useState(""), [sel, setSel] = useState(0), nav = useNavigate();
   const hits = search(q, parseRelics(rec?.data));
   const go = (h?: Hit) => { if (h) { nav(h.to); onClose(); } };
-  const key = (e: React.KeyboardEvent) => {
+  const key = (e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
     else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); setSel((sel + (e.key === "ArrowDown" ? 1 : -1) + hits.length) % Math.max(hits.length, 1)); }
     else if (e.key === "Enter") go(hits[sel]);

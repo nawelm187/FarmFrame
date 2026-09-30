@@ -8,6 +8,8 @@ export const readGoals = (): Goal[] => { const v = rd(G); return Array.isArray(v
 export const writeGoals = (a: Goal[]) => wr(G, a);
 export const readOwned = (): Owned => { const v = rd(P); return v && typeof v === "object" && !Array.isArray(v) ? (v as Owned) : {}; };
 export const writeOwned = (o: Owned) => wr(P, o);
+export const readRes = (): Record<string, number> => { const v = rd("ff.res"); return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, number>) : {}; };
+export const writeRes = (o: Record<string, number>) => wr("ff.res", o);
 export const goalId = (cat: Cat, slug: string) => `${cat}:${slug}`;
 export function progress(cs: Component[], own: Record<string, number> = {}) {
   const total = cs.reduce((a, c) => a + c.count, 0), have = cs.reduce((a, c) => a + Math.min(c.count, own[c.name] ?? 0), 0);

@@ -10,8 +10,10 @@ import Tracking from "./pages/Tracking";
 import Sources from "./pages/Sources";
 import Explore from "./pages/Explore";
 import Roadmap from "./pages/Roadmap";
+import Farm from "./pages/Farm";
+import { BuildEditor, BuildList } from "./pages/Builds";
 import Entity from "./pages/Entity";
-const NAV = [["/", "Home"], ["/roadmap", "Roadmap"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/relics", "Relics"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/finder", "Finder"], ["/tracking", "Tracking"], ["/sources", "Sources"]] as const;
+const NAV = [["/", "Home"], ["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/relics", "Relics"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/finder", "Finder"], ["/tracking", "Tracking"], ["/sources", "Sources"]] as const;
 export default function App() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function App() {
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
           <Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod"] as const).map(c => [
             <Route key={c + "l"} path={`/${c}s`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
-          <Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
+          <Route path="/farm/:item" element={<Farm />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
         </Routes>
       </main>
       {open && <Palette onClose={() => setOpen(false)} />}
