@@ -5,7 +5,7 @@ import { useMany, useWorld } from "../lib/data";
 import { ts } from "../lib/format";
 import { missing, progress, readGoals, readOwned, readRes, tiersOf, writeGoals, writeOwned, writeRes, type Goal } from "../lib/goals";
 import { GROUPS, groupOf, needs, type Group, type Need } from "../lib/tree";
-import { Badge } from "./parts";
+import { Badge, Skeleton } from "./parts";
 interface Fis { id: string; node: string; missionType: string; tier: string; isStorm: boolean; isHard: boolean; expiry: string }
 const isFis = (d: unknown): d is Fis[] => Array.isArray(d);
 export default function Roadmap() {
@@ -48,7 +48,7 @@ export default function Roadmap() {
     {goals.map(g => { const e = ent(g), o = own[g.id] ?? {}, p = e ? progress(e.components, o) : null, miss = e ? missing(e.components, o) : [];
       return (<section className="panel goal" key={g.id}>
         <div className="row"><h3><Link to={`/${g.cat}/${g.slug}`}>{g.name}</Link></h3><button className="btn" onClick={() => drop(g)}>Remove</button></div>
-        {!e || !p ? <p className="muted">Loading requirements…</p> : <>
+        {!e || !p ? <Skeleton /> : <>
           <label className="muted">{p.have} / {p.total} parts · {p.pct}% <progress max={p.total} value={p.have} /></label>
           {miss.length ? <p><b>Next:</b> {miss[0].name} <span className="muted">{miss[0].drops.slice(0, 3).map(d => d.location).join("; ") || "no acquisition data in this source"} · <Link to={`/farm/${encodeURIComponent(g.name + " " + miss[0].name)}`}>find</Link></span></p> : <p className="gold">All parts collected.</p>}
           <ul className="list comp">{e.components.map(c => (<li key={c.name}><span>{c.name}{c.count > 1 ? ` ×${c.count}` : ""}</span>

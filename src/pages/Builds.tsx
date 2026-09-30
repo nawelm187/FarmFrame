@@ -15,7 +15,7 @@ export function BuildList() {
   const add = () => { const b = newBuild(); commit([...bs, b]); nav(`/build/${b.id}`); };
   return (<><h1>Builds</h1><p className="lead">Plan mod loadouts with capacity checks. Stored only in this browser.</p>
     <div className="bar"><button className="btn" onClick={add}>New build</button></div>
-    {!bs.length ? <p className="muted">No builds yet.</p> : <ul className="list comp">{bs.map(b => (<li key={b.id}><Link to={`/build/${b.id}`}>{b.name}</Link><button className="btn" onClick={() => commit(bs.filter(x => x.id !== b.id))}>Delete</button></li>))}</ul>}</>);
+    {!bs.length ? <p className="muted">No builds yet. Create one to check mod capacity and see what you still need to farm.</p> : <ul className="list comp">{bs.map(b => (<li key={b.id}><Link to={`/build/${b.id}`}>{b.name}</Link><button className="btn" onClick={() => commit(bs.filter(x => x.id !== b.id))}>Delete</button></li>))}</ul>}</>);
 }
 export function BuildEditor() {
   const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [sent, setSent] = useState(false), [aq, setAq] = useState(["", ""]);

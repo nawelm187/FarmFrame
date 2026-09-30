@@ -1,9 +1,9 @@
 import { useEffect, useSyncExternalStore } from "react";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
-export interface Rec { data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
+export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
 export const API = "https://api.warframestat.us/pc/";
 export const WS_WINDOW = 150_000;
-const recs = new Map<string, Rec>(), loading = new Set<string>(), subs = new Set<() => void>();
+const reqs = new Map<string, { url: string; window: number; src: string; alt?: string }>(), recs = new Map<string, Rec>(), loading = new Set<string>(), subs = new Set<() => void>();
 let ver = 0;
 const emit = () => { ver++; subs.forEach(f => f()); };
 const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
@@ -11,18 +11,20 @@ const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f
 export async function load(id: string, url: string, window: number, src: string, minGap = 30_000, alt?: string) {
   const r = recs.get(id);
   if (loading.has(id) || (r?.at && Date.now() - r.at < minGap)) return;
-  loading.add(id); emit();
+  reqs.set(id, { url, window, src, alt }); loading.add(id); emit();
   const c = new AbortController(), t = setTimeout(() => c.abort(), 45_000);
   try {
     const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
-    recs.set(id, { data, at: Date.now(), err: null, url: used, window, src });
+    recs.set(id, { id, data, at: Date.now(), err: null, url: used, window, src });
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
-    recs.set(id, { data: r?.data ?? null, at: r?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
+    recs.set(id, { id, data: r?.data ?? null, at: r?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
   } finally { clearTimeout(t); loading.delete(id); emit(); }
 }
+/** Re-requests a dataset now, ignoring the freshness gap. */
+export const retry = (id: string) => { const q = reqs.get(id); if (q) void load(id, q.url, q.window, q.src, 0, q.alt); };
 export function statusOf(r: Rec | undefined, isLoading: boolean, now = Date.now()): Status {
   if (!r) return isLoading ? "LOADING" : "UNAVAILABLE";
   if (r.data == null) return r.err ? "ERROR" : "UNAVAILABLE";

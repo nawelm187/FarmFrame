@@ -14,7 +14,7 @@ export default function Finder() {
     <div className="bar"><input aria-label="Item name" placeholder="Item or resource name, e.g. Plastids" value={q} onChange={e => setSp({ q: e.target.value }, { replace: true })} /></div>
     <p className="muted">{ok}/{FIND.length} drop datasets loaded{gaps.length ? " · not shown: " + gaps.join("; ") : ""}</p>
     {l && ok > 0 && <p><Link to={`/farm/${encodeURIComponent(q.trim())}`}>Ranked farming view for "{q.trim()}"</Link></p>}
-    {!ok && <Unavailable title="Drop tables" status="LOADING" why="Nothing loaded yet or all requests failed. See Data Sources." />}
+    {!ok && <Unavailable title="Drop tables" status={res.some(x => x.status === "LOADING") ? "LOADING" : "ERROR"} rec={res.find(x => x.rec?.err)?.rec} why="No drop tables could be loaded. See Data Sources for the reason." />}
     {!l && ok > 0 && <p className="muted">Search for a resource, mod, part or item.</p>}
     {l && ok > 0 && !m.length && <p className="muted">No drop for "{q}" in the loaded tables.</p>}
     {m.length > 0 && <div className="wrap"><table><thead><tr><th>Item</th><th>Source</th><th>Location</th><th>Rot.</th><th>Chance</th><th>Rarity</th><th>Detail</th></tr></thead><tbody>
