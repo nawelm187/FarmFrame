@@ -1,4 +1,5 @@
-# FarmFrame v0.18 (logo + favicon, SVG nav icons, angular panels, lighter world-state strip)
+# FarmFrame v0.19 (item page composition: art right with fade, large stats, depth levels)
+<!-- v0.18 --> (logo + favicon, SVG nav icons, angular panels, lighter world-state strip)
 <!-- v0.17 --> (skeleton loading states, Retry on failed data, honest loading vs error in Finder)
 <!-- v0.16 --> (arcane slots in builds, counted in requirements and Tracking)
 <!-- v0.15.1 --> (vault data now read from the warframe-items file, api /relics returned 404) (relic vault status from a separate community dataset; unknown when missing)

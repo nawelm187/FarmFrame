@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMany } from "../lib/data";
 import { CATS, CAT_SRC, imgUrl, parseCatalog, type Cat, type Component } from "../lib/catalog";
+import { Logo } from "../Icons";
 import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
 import { Badge, Prov, Unavailable } from "./parts";
@@ -17,7 +18,7 @@ export default function Entity({ cat }: { cat: Cat }) {
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };
   return (<article className="entity">
     <div className="hero">
-      <div className="art">{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</div>
+      <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</div>
       <div><p className="muted">{e.type || c.label}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">PRIME</span>} <Badge s={status} /></p>
         <h1>{e.name}</h1>{e.description && <p className="lead">{e.description}</p>}
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
