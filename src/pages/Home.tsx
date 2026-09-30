@@ -3,6 +3,7 @@ import { readBuilds } from "../lib/build";
 import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
 import { useFarmNow } from "../lib/useFarmNow";
+import { VERSION } from "../version";
 import { Badge, Countdown, Panel, Unavailable } from "./parts";
 interface Cyc { state: string; expiry: string }
 const isCyc = (d: unknown): d is Cyc => !!d && typeof d === "object" && typeof (d as Cyc).state === "string" && typeof (d as Cyc).expiry === "string";
@@ -47,5 +48,6 @@ export default function Home() {
     <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>
     <h2>Tools</h2>
     <p><Link to="/finder">Resource Finder</Link> · <Link to="/relics">Relics</Link> · <Link to="/invasions">Invasions</Link> · <Link to="/sources">Data sources</Link></p>
+    <p className="muted">FarmFrame v{VERSION}</p>
   </>);
 }

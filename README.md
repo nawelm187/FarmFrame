@@ -1,4 +1,5 @@
-# FarmFrame v0.14 (Vite + React + TypeScript)
+# FarmFrame v0.14.1 (version label on Home and Sources to tell which build is live)
+<!-- v0.14 --> (Vite + React + TypeScript)
 Static build, hash routes (`/#/roadmap`), no backend yet. Works on any static host; a custom domain can be used later.
 
 Local: `npm install && npm run dev` (tests: `npm test`, types: `npm run typecheck`, build: `npm run build` -> `dist/`).
