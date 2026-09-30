@@ -1,6 +1,6 @@
 import type { Entity } from "./catalog";
 export const NSLOTS = 8;
-export interface Slot { mod: string | null; rank: number; owned?: boolean }
+export interface Slot { mod: string | null; rank: number; owned?: boolean; pol?: string }
 export interface Build { id: string; name: string; frame: string; slots: Slot[]; reactor: boolean; haveFrame?: boolean }
 export interface Issue { level: "error" | "warn"; text: string }
 const K = "ff.builds";
@@ -20,7 +20,7 @@ export function evaluate(b: Build, frame: Entity | undefined, mods: Map<string, 
   if (b.frame && !frame) issues.push({ level: "warn", text: "Selected Warframe is not in the loaded data." });
   if (frame && !frame.slots) issues.push({ level: "warn", text: "This source has no slot polarities for the Warframe, so no polarity bonuses are applied." });
   const rows = b.slots.map((s, i) => {
-    const pol = frame?.slots?.[i] ?? null, m = s.mod ? mods.get(s.mod) : undefined;
+    const pol = s.pol || frame?.slots?.[i] || null, m = s.mod ? mods.get(s.mod) : undefined;
     if (!s.mod) return { i, pol, m: undefined, d: null as number | null };
     if (!m) { issues.push({ level: "warn", text: `Slot ${i + 1}: mod not found in loaded data.` }); return { i, pol, m, d: null }; }
     if (seen.has(m.name)) issues.push({ level: "error", text: `${m.name} is used more than once.` }); seen.add(m.name);
@@ -37,6 +37,7 @@ const BASE: Record<string, number> = { common: 10, uncommon: 20, rare: 30, legen
 export const endoFor = (rarity: string, rank: number): number | null => { const b = BASE[rarity.toLowerCase()]; return b && rank >= 0 ? b * (2 ** rank - 1) : null; };
 export function requirements(b: Build, frame: Entity | undefined, mods: Map<string, Entity>) {
   const list = b.slots.filter(s => s.mod).map(s => { const m = mods.get(s.mod!); return { slug: s.mod!, name: m?.name ?? s.mod!, rank: s.rank, owned: !!s.owned, endo: m ? endoFor(m.rarity, s.rank) : null }; });
-  return { frame: b.frame ? { name: frame?.name ?? b.frame, slug: b.frame, have: !!b.haveFrame } : null, mods: list, missingMods: list.filter(x => !x.owned),
+  const forma = frame?.slots ? b.slots.filter((s, i) => s.pol && s.pol !== frame.slots![i]).length : 0;
+  return { forma, frame: b.frame ? { name: frame?.name ?? b.frame, slug: b.frame, have: !!b.haveFrame } : null, mods: list, missingMods: list.filter(x => !x.owned),
     endoTotal: list.reduce((a, x) => a + (x.endo ?? 0), 0), endoKnown: list.every(x => x.endo != null) };
 }

@@ -21,3 +21,10 @@ it("endo estimate and requirements", () => {
   const r = requirements(b, undefined, new Map([["vitality", mod("Vitality", 4, null)], ["steel", mod("Steel", 4, null)]]));
   expect(r.missingMods.map(m => m.name)).toEqual(["Steel"]); expect(r.endoTotal).toBe(30 + 10); expect(r.frame?.have).toBe(true);
 });
+it("forma from polarity overrides changes drain", () => {
+  const f = { ...mod("Frame", 0, null), slots: ["madurai", "naramon", "", "", "", "", "", ""] };
+  const b = newBuild(); b.slots[0] = { mod: "vitality", rank: 10, pol: "naramon" }; b.slots[1] = { mod: "steel", rank: 0, pol: "naramon" };
+  const m = new Map([["vitality", mod("Vitality", 4, "naramon")], ["steel", mod("Steel", 4, "naramon")]]);
+  expect(requirements(b, f, m).forma).toBe(1);
+  expect(evaluate(b, f, m).rows[0].d).toBe(7);
+});
