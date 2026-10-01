@@ -1,4 +1,5 @@
-# FarmFrame v0.26 (ducats per component, on-demand market price check labeled as dynamic market value)
+# FarmFrame v0.27 (build types: weapons, companions, archwing; strict mod compatibility; omni forma counted apart; market button off)
+<!-- v0.26 --> (ducats per component, on-demand market price check labeled as dynamic market value)
 <!-- v0.25 --> (build statistics from mod percentages with Explain; conditional effects reported, not guessed)
 <!-- v0.24 --> (IndexedDB cache for large datasets with stale fallback, route code splitting)
 <!-- v0.23 --> (accounts and cloud sync via Supabase; run supabase/schema.sql once; RLS protects per-user data)

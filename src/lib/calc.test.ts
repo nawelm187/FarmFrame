@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import { calc, parseEffect } from "./calc";
 import { newBuild } from "./build";
 import type { Entity } from "./catalog";
-const mod = (name: string, levelStats: string[][]): Entity => ({ slug: name.toLowerCase(), name, type: "", description: "", image: null, isPrime: false, vaulted: null, stats: [], facts: [], components: [], polarity: null, baseDrain: 4, maxRank: levelStats.length - 1, compat: "", rarity: "", slots: null, levelStats });
+const mod = (name: string, levelStats: string[][]): Entity => ({ slug: name.toLowerCase(), name, type: "", description: "", image: null, isPrime: false, vaulted: null, stats: [], facts: [], components: [], polarity: null, baseDrain: 4, maxRank: levelStats.length - 1, compat: "", rarity: "", slots: null, levelStats, category: "" });
 it("parses only plain percent lines", () => {
   expect(parseEffect("+110% Health")).toEqual({ key: "health", pct: 110 });
   expect(parseEffect("-15% Ability Duration")).toEqual({ key: "duration", pct: -15 });

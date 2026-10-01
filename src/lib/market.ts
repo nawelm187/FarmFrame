@@ -9,3 +9,5 @@ export function parseStats(d: unknown): Stat | null {
   const median = n(x?.median ?? x?.avg_price), min = n(x?.min_price), max = n(x?.max_price), volume = n(x?.volume);
   return median != null && min != null && max != null && volume != null ? { median, min, max, volume } : null;
 }
+// warframe.market could not be reached from the browser (no values returned), so the button stays off until a server-side proxy exists.
+export const MARKET_ENABLED = false;

@@ -1,10 +1,10 @@
 import type { Entity } from "./catalog";
 import type { Build } from "./build";
-export type StatKey = "health" | "shield" | "armor" | "energy" | "strength" | "duration" | "efficiency" | "range";
-export const ORDER: StatKey[] = ["health", "shield", "armor", "energy", "strength", "duration", "efficiency", "range"];
-export const LABEL: Record<StatKey, string> = { health: "Health", shield: "Shield", armor: "Armor", energy: "Energy", strength: "Ability strength", duration: "Ability duration", efficiency: "Ability efficiency", range: "Ability range" };
+export type StatKey = "health" | "shield" | "armor" | "energy" | "strength" | "duration" | "efficiency" | "range" | "damage" | "critChance" | "critDamage" | "multishot" | "status" | "fireRate" | "magazine" | "reload";
+export const ORDER: StatKey[] = ["health", "shield", "armor", "energy", "strength", "duration", "efficiency", "range", "damage", "critChance", "critDamage", "multishot", "status", "fireRate", "magazine", "reload"];
+export const LABEL: Record<StatKey, string> = { health: "Health", shield: "Shield", armor: "Armor", energy: "Energy", strength: "Ability strength", duration: "Ability duration", efficiency: "Ability efficiency", range: "Ability range", damage: "Damage", critChance: "Critical chance", critDamage: "Critical damage", multishot: "Multishot", status: "Status chance", fireRate: "Fire rate", magazine: "Magazine capacity", reload: "Reload speed" };
 const NAMES: Record<string, StatKey> = { health: "health", "shield capacity": "shield", shield: "shield", shields: "shield", armor: "armor", "energy max": "energy", "max energy": "energy", "energy capacity": "energy",
-  "ability strength": "strength", "ability duration": "duration", "ability efficiency": "efficiency", "ability range": "range" };
+  "ability strength": "strength", "ability duration": "duration", "ability efficiency": "efficiency", "ability range": "range", damage: "damage", "critical chance": "critChance", "critical damage": "critDamage", multishot: "multishot", "status chance": "status", "fire rate": "fireRate", "magazine capacity": "magazine", "reload speed": "reload" };
 /** Only plain "+N% Stat" lines are understood. Anything conditional or unfamiliar is reported as not calculated, never guessed. */
 export function parseEffect(line: string): { key: StatKey; pct: number } | null {
   const m = /^([+-]?\d+(?:\.\d+)?)%\s+(.+)$/.exec(line.trim()); if (!m) return null;
