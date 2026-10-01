@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { SUPABASE_KEY } from "./lib/supabase";
-import { MARKET_URL, parseStats, slugOf, type Stat } from "./lib/market";
+import { fetchStat, type Stat } from "./lib/market";
 type S = { st: Stat; at: number } | "loading" | "error" | "none" | null;
 /** On-demand market lookup (dynamic data from warframe.market, community-run). Nothing is shown unless the response is complete. */
 export default function MarketCheck({ name }: { name: string }) {
   const [s, setS] = useState<S>(null);
   const run = async () => {
     setS("loading"); const c = new AbortController(), t = setTimeout(() => c.abort(), 15_000);
-    try { const r = await fetch(MARKET_URL(slugOf(name)), { signal: c.signal, headers: { apikey: SUPABASE_KEY } }); if (!r.ok) throw new Error(String(r.status)); const st = parseStats(await r.json()); setS(st ? { st, at: Date.now() } : "none"); }
+    try { const st = await fetchStat(name, c.signal); setS(st ? { st, at: Date.now() } : "none"); }
     catch { setS("error"); } finally { clearTimeout(t); }
   };
   return (<div className="muted" style={{ marginTop: ".3rem" }}>

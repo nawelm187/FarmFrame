@@ -6,3 +6,12 @@ it("slug and strict stats", () => {
   expect(parseStats(d)).toEqual({ median: 6, min: 4, max: 10, volume: 20 });
   expect(parseStats({ payload: { statistics_closed: { "48hours": [{ median: 5 }] } } })).toBeNull(); expect(parseStats(null)).toBeNull();
 });
+import { candidates } from "./market";
+it("tries the name with and without Blueprint", () => {
+  expect(candidates("Ash Prime Chassis Blueprint")).toEqual(["ash_prime_chassis_blueprint", "ash_prime_chassis"]);
+  expect(candidates("Orokin Cell")).toEqual(["orokin_cell"]);
+});
+import { sumParts } from "./market";
+it("sums parts with quantities and lists unpriced ones", () => {
+  expect(sumParts([{ name: "A", count: 1 }, { name: "B", count: 2 }, { name: "C", count: 1 }], { A: 10, B: 4.5, C: null })).toEqual({ total: 19, missing: ["C"] });
+});

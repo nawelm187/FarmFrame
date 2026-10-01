@@ -5,6 +5,8 @@ import { readTracked, writeTracked } from "../lib/track";
 import { calc, LABEL } from "../lib/calc";
 import { CATS, CAT_SRC, parseCatalog, type Cat } from "../lib/catalog";
 import { useMany } from "../lib/data";
+import { MARKET_ENABLED } from "../lib/market";
+import SetPrice from "../SetPrice";
 import { Unavailable } from "./parts";
 const ARC_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arcanes.json";
 const ARC_ALT = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/Arcanes.json";
@@ -49,6 +51,7 @@ export function BuildEditor() {
   return (<><h1><input aria-label="Build name" value={b.name} onChange={e => save({ ...b, name: e.target.value })} style={{ fontSize: "1.2rem" }} /></h1>
     <div className="bar"><select aria-label="Build type" value={kind} onChange={e => save({ ...b, kind: e.target.value as Kind, frame: "", haveFrame: false, slots: newBuild().slots, arcanes: undefined })}>{(Object.keys(KIND_LABEL) as Kind[]).map(k => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select><select aria-label="Item" value={b.frame} onChange={e => save({ ...b, frame: e.target.value })}><option value="">Choose {KIND_LABEL[kind].toLowerCase()}</option>{frames.map(f => <option key={f.slug} value={f.slug}>{f.name}</option>)}</select>
       <label className="muted"><input type="checkbox" checked={b.reactor} onChange={e => save({ ...b, reactor: e.target.checked })} /> {kind === "primary" || kind === "secondary" || kind === "melee" ? "Orokin Catalyst" : "Orokin Reactor"} (capacity 60)</label></div>
+    {MARKET_ENABLED && frameEnt?.isPrime && <SetPrice key={frameEnt.slug} e={frameEnt} />}
     <label className="chk muted">Mod capacity <b>{ev.total} / {ev.capacity}</b><progress max={ev.capacity} value={Math.min(ev.total, ev.capacity)} /></label>
     <div className="bar"><input aria-label="Add mod" list="modnames" placeholder="Add a mod by name" value={q} onChange={e => onAdd(e.target.value)} /><datalist id="modnames">{fit.map(m => <option key={m.slug} value={m.name} />)}</datalist></div>
     <ul className="list comp">{ev.rows.map(r => (<li key={r.i}><span>Slot {r.i + 1} <span className="muted">{r.pol ?? "no polarity"}</span> · {r.m ? <b>{r.m.name}</b> : <span className="muted">Empty</span>}{r.d != null && <span className="muted"> · drain {r.d}</span>}</span>
