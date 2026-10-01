@@ -18,3 +18,9 @@ describe("drops", () => {
     expect(r?.[0].st.Radiant[0].chance).toBe(10);
   });
 });
+import { relicsByItem } from "./drops";
+it("groups relics by item, common first", () => {
+  const rl = (name: string, rarity: string) => ({ name, tier: name.split(" ")[0], st: { Intact: [{ itemName: "Ash Prime Chassis", rarity, chance: 10 }] } });
+  const g = relicsByItem([rl("Axi B1", "Rare"), rl("Lith A1", "Common")], "ash prime");
+  expect(g[0][0]).toBe("Ash Prime Chassis"); expect(g[0][1].map(x => x.relic.name)).toEqual(["Lith A1", "Axi B1"]);
+});

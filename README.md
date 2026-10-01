@@ -1,4 +1,5 @@
-# FarmFrame v0.30 (full Prime set price on item pages and builds, with comparison against buying the parts)
+# FarmFrame v0.31 (relics by item, mod market prices, companions/archwings/railjack catalogs)
+<!-- v0.30 --> (full Prime set price on item pages and builds, with comparison against buying the parts)
 <!-- v0.29 --> (relic expected platinum value from live market medians; market check only for tradable parts)
 <!-- v0.28 --> (market price through a Supabase Edge Function; deploy supabase/functions/market)
 <!-- v0.27 --> (build types: weapons, companions, archwing; strict mod compatibility; omni forma counted apart; market button off)

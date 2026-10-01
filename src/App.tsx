@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { Icon, Logo } from "./Icons";
+import { CATS } from "./lib/catalog";
 import { Skeleton } from "./pages/parts";
 const Home = lazy(() => import("./pages/Home"));
 const Fissures = lazy(() => import("./pages/Fissures"));
@@ -18,7 +19,7 @@ const Entity = lazy(() => import("./pages/Entity"));
 const BuildList = lazy(() => import("./pages/Builds").then(m => ({ default: m.BuildList })));
 const BuildEditor = lazy(() => import("./pages/Builds").then(m => ({ default: m.BuildEditor })));
 const Palette = lazy(() => import("./Palette"));
-const NAV = [["/", "Home"], ["/roadmap", "Roadmap"], ["/planner", "Planner"], ["/builds", "Builds"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/relics", "Relics"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/finder", "Finder"], ["/tracking", "Tracking"], ["/sources", "Sources"], ["/profile", "Account"]] as const;
+const NAV = [["/", "Home"], ["/roadmap", "Roadmap"], ["/planner", "Planner"], ["/builds", "Builds"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/finder", "Finder"], ["/tracking", "Tracking"], ["/sources", "Sources"], ["/profile", "Account"]] as const;
 export default function App() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -36,8 +37,8 @@ export default function App() {
         <Suspense fallback={<Skeleton />}><Routes>
           <Route path="/" element={<Home />} /><Route path="/fissures" element={<Fissures />} /><Route path="/invasions" element={<Invasions />} />
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
-          <Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod"] as const).map(c => [
-            <Route key={c + "l"} path={`/${c}s`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
+          <Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
+            <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
           <Route path="/farm/:item" element={<Farm />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/planner" element={<Planner />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
         </Routes></Suspense>
       </main>

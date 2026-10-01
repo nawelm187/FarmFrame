@@ -15,3 +15,7 @@ import { sumParts } from "./market";
 it("sums parts with quantities and lists unpriced ones", () => {
   expect(sumParts([{ name: "A", count: 1 }, { name: "B", count: 2 }, { name: "C", count: 1 }], { A: 10, B: 4.5, C: null })).toEqual({ total: 19, missing: ["C"] });
 });
+it("rank filter picks the matching bucket for rankable mods", () => {
+  const d = { payload: { statistics_closed: { "48hours": [{ mod_rank: 0, median: 5, min_price: 4, max_price: 6, volume: 9 }, { mod_rank: 10, median: 40, min_price: 30, max_price: 50, volume: 3 }] } } };
+  expect(parseStats(d, 0)?.median).toBe(5); expect(parseStats(d, 10)?.median).toBe(40); expect(parseStats(d, 7)).toBeNull();
+});

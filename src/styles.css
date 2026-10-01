@@ -84,3 +84,4 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .row h3{display:flex;align-items:center;gap:.5rem}.oppt{display:flex;align-items:center;gap:.5rem}
 .fac{display:inline-block;width:.55rem;height:.55rem;transform:rotate(45deg);margin-right:.45rem}
 .relic-img{object-fit:contain;flex:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}.relicchip{display:flex;align-items:center;gap:.4rem;background:var(--b1);border:1px solid var(--b4);color:var(--t1);padding:.3rem .6rem;font:inherit;cursor:pointer;min-height:2.5rem}.relicchip:hover{border-color:var(--gold)}

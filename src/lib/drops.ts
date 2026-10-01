@@ -76,3 +76,10 @@ export function parseRelics(d: unknown): Relic[] | null {
 }
 export const query = (rows: Row[], q: string) => { const l = q.trim().toLowerCase();
   return rows.filter(r => r.item.toLowerCase().includes(l)).sort((a, b) => Number(b.item.toLowerCase() === l) - Number(a.item.toLowerCase() === l) || (b.ch ?? -1) - (a.ch ?? -1)).slice(0, 40); };
+/** Items whose name contains the query, each with the relics that drop it (Common first). Capped at 12 items. */
+export function relicsByItem(relics: Relic[], l: string) {
+  const m = new Map<string, { relic: Relic; rarity: string; chance: number }[]>();
+  for (const r of relics) for (const x of r.st.Intact ?? []) if (x.itemName.toLowerCase().includes(l)) { const a = m.get(x.itemName) ?? []; a.push({ relic: r, rarity: x.rarity, chance: x.chance }); m.set(x.itemName, a); }
+  const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
+  return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(0, 12).map(([item, list]) => [item, [...list].sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3) || a.relic.name.localeCompare(b.relic.name))] as const);
+}

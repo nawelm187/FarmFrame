@@ -1,9 +1,12 @@
-export type Cat = "warframe" | "weapon" | "mod";
+export type Cat = "warframe" | "weapon" | "mod" | "companion" | "archwing" | "railjack";
 export const CAT_SRC = "WFCD warframe-items via WarframeStat API (community, unofficial)";
 export const CATS: Record<Cat, { path: string; label: string; url: string }> = {
   warframe: { path: "warframes", label: "Warframes", url: "https://api.warframestat.us/warframes?language=en" },
   weapon: { path: "weapons", label: "Weapons", url: "https://api.warframestat.us/weapons?language=en" },
   mod: { path: "mods", label: "Mods", url: "https://api.warframestat.us/mods?language=en" },
+  companion: { path: "companions", label: "Companions", url: "https://api.warframestat.us/mods?language=en" },
+  archwing: { path: "archwings", label: "Archwings", url: "https://api.warframestat.us/mods?language=en" },
+  railjack: { path: "railjack", label: "Railjack", url: "https://api.warframestat.us/mods?language=en" },
 };
 export interface Component { name: string; count: number; ducats?: number | null; drops: { location: string; type: string }[]; children: Component[] }
 export interface Entity {
@@ -20,6 +23,9 @@ const STAT_KEYS: Record<Cat, [string, string][]> = {
   warframe: [["health", "Health"], ["shield", "Shield"], ["armor", "Armor"], ["power", "Energy"]],
   weapon: [["totalDamage", "Damage"], ["criticalChance", "Crit chance"], ["criticalMultiplier", "Crit multiplier"], ["procChance", "Status chance"], ["fireRate", "Fire rate"]],
   mod: [["baseDrain", "Base drain"], ["fusionLimit", "Max rank"]],
+  companion: [["health", "Health"], ["shield", "Shield"], ["armor", "Armor"]],
+  archwing: [["health", "Health"], ["shield", "Shield"], ["armor", "Armor"], ["power", "Energy"]],
+  railjack: [["baseDrain", "Base drain"], ["fusionLimit", "Max rank"]],
 };
 const FACT_KEYS: [string, string][] = [["rarity", "Rarity"], ["polarity", "Polarity"], ["compatName", "Compatible with"], ["category", "Category"], ["masteryReq", "Mastery rank"]];
 function comps(v: unknown, depth = 0): Component[] {

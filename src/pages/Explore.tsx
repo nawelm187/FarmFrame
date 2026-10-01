@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useMany } from "../lib/data";
-import { CATS, CAT_SRC, imgUrl, parseCatalog, type Cat } from "../lib/catalog";
+import { useCatalog } from "../lib/useCatalog";
+import { CATS, imgUrl, type Cat } from "../lib/catalog";
 import { Badge, Prov, Unavailable } from "./parts";
 export default function Explore({ cat }: { cat: Cat }) {
   const c = CATS[cat], [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", [more, setMore] = useState(1);
-  const [{ rec, status }] = useMany([{ id: cat, file: "", url: c.url, src: CAT_SRC }]);
-  const all = parseCatalog(rec?.data, cat);
+  const { items: all, rec, status } = useCatalog(cat);
   if (!all) return <><h1>{c.label}</h1><Unavailable title={c.label} status={status} why={status === "LOADING" ? "Loading catalog…" : rec?.data ? "Unrecognised data shape, ignored." : "No verified data."} rec={rec} /></>;
   const l = q.trim().toLowerCase(), m = l ? all.filter(e => e.name.toLowerCase().includes(l)) : all, shown = m.slice(0, 60 * more);
   return (<><h1>{c.label}</h1><p className="lead">{all.length} entries from a community dataset. <Badge s={status} /></p>

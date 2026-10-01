@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useMany } from "../lib/data";
-import { CATS, CAT_SRC, imgUrl, parseCatalog, type Cat, type Component } from "../lib/catalog";
+import { useCatalog } from "../lib/useCatalog";
+import { CATS, imgUrl, type Cat, type Component } from "../lib/catalog";
 import { Logo } from "../Icons";
 import { MARKET_ENABLED } from "../lib/market";
 import MarketCheck from "../MarketCheck";
+import ModPrice from "../ModPrice";
 import SetPrice from "../SetPrice";
 import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
@@ -12,8 +13,7 @@ import { Badge, Prov, Unavailable } from "./parts";
 const Sub = ({ cs }: { cs: Component[] }) => cs.length ? <ul className="sub">{cs.map(k => <li key={k.name}>{k.name}{k.count > 1 ? ` ×${k.count}` : ""}<Sub cs={k.children} /></li>)}</ul> : null;
 export default function Entity({ cat }: { cat: Cat }) {
   const { slug } = useParams(), c = CATS[cat], [done, setDone] = useState(false), [goal, setGoal] = useState(false);
-  const [{ rec, status }] = useMany([{ id: cat, file: "", url: c.url, src: CAT_SRC }]);
-  const list = parseCatalog(rec?.data, cat), e = list?.find(x => x.slug === slug);
+  const { items: list, rec, status } = useCatalog(cat), e = list?.find(x => x.slug === slug);
   if (!list) return <Unavailable title={c.label} status={status} why={status === "LOADING" ? "Loading catalog…" : "No verified data."} rec={rec} />;
   if (!e) return <><h1>Not found</h1><p className="muted">"{slug}" is not in the loaded {c.label.toLowerCase()} data. <Link to={`/${c.path}`}>Browse {c.label.toLowerCase()}</Link></p></>;
   const q = encodeURIComponent(e.name);
@@ -27,11 +27,12 @@ export default function Entity({ cat }: { cat: Cat }) {
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <div className="bar"><Link className="btn" to={`/relics?q=${q}`}>Relics with this</Link><Link className="btn" to={`/finder?q=${q}`}>Where it drops</Link>
           <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button>
-          {e.components.length > 0 && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
+          {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
     {MARKET_ENABLED && e.isPrime && <SetPrice key={e.slug} e={e} />}
+    {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
       <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
-        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && e.isPrime && k.ducats != null && <MarketCheck name={`${e.name} ${k.name}`} />}</span></li>))}</ul></>}
+        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.name} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }
