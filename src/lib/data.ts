@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from "react";
+import { cget, cset } from "./idb";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
 export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
 export const API = "https://api.warframestat.us/pc/";
@@ -13,14 +14,19 @@ export async function load(id: string, url: string, window: number, src: string,
   if (loading.has(id) || (r?.at && Date.now() - r.at < minGap)) return;
   reqs.set(id, { url, window, src, alt }); loading.add(id); emit();
   const c = new AbortController(), t = setTimeout(() => c.abort(), 45_000);
+  let cached: { data: unknown; at: number; url: string } | undefined;
+  const persist = window >= DAY;
   try {
+    if (persist && !r?.data) { cached = await cget(id); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src }); return; } }
     const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
-    recs.set(id, { id, data, at: Date.now(), err: null, url: used, window, src });
+    const at = Date.now();
+    recs.set(id, { id, data, at, err: null, url: used, window, src });
+    if (persist) void cset(id, { data, at, url: used });
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
-    recs.set(id, { id, data: r?.data ?? null, at: r?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
+    recs.set(id, { id, data: r?.data ?? cached?.data ?? null, at: r?.at ?? cached?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
   } finally { clearTimeout(t); loading.delete(id); emit(); }
 }
 /** Re-requests a dataset now, ignoring the freshness gap. */

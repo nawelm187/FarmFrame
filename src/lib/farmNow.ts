@@ -19,3 +19,5 @@ export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | nul
   });
   return out.sort((a, b) => b.advances.length - a.advances.length).slice(0, 5);
 }
+/** Calculated relevance to the user's own goals (number of objectives advanced), not a universal ranking. */
+export const value = (n: number) => (n >= 3 ? "High" : n === 2 ? "Medium" : "Low");

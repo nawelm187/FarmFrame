@@ -1,6 +1,8 @@
 const P: Record<string, string> = {
   "/": "M3 11 12 4l9 7M5 10v10h14V10",
   "/roadmap": "M4 6h16M4 12h10M4 18h6",
+  "/profile": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 4-6 8-6s8 2 8 6",
+  "/planner": "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
   "/builds": "M4 8h16M4 16h16M8 4v16M16 4v16",
   "/warframes": "M12 3 20 7.5v9L12 21l-8-4.5v-9z",
   "/weapons": "M4 20 16 8m0 0 4-4m-4 4 2 2M6 14l4 4",

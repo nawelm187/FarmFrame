@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { drain, endoFor, evaluate, newBuild, requirements } from "./build";
 import type { Entity } from "./catalog";
-const mod = (name: string, baseDrain: number, polarity: string | null, maxRank = 5, rarity = "Common"): Entity => ({ slug: name.toLowerCase(), name, type: "", description: "", image: null, isPrime: false, vaulted: null, stats: [], facts: [], components: [], polarity, baseDrain, maxRank, compat: "", rarity, slots: null });
+const mod = (name: string, baseDrain: number, polarity: string | null, maxRank = 5, rarity = "Common"): Entity => ({ slug: name.toLowerCase(), name, type: "", description: "", image: null, isPrime: false, vaulted: null, stats: [], facts: [], components: [], polarity, baseDrain, maxRank, compat: "", rarity, slots: null, levelStats: null });
 it("drain rules", () => {
   const m = mod("Vitality", 4, "madurai");
   expect(drain(m, 10, "madurai")).toBe(7);

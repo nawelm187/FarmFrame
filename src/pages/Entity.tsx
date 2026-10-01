@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useMany } from "../lib/data";
 import { CATS, CAT_SRC, imgUrl, parseCatalog, type Cat, type Component } from "../lib/catalog";
 import { Logo } from "../Icons";
+import MarketCheck from "../MarketCheck";
 import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
 import { Badge, Prov, Unavailable } from "./parts";
@@ -27,7 +28,7 @@ export default function Entity({ cat }: { cat: Cat }) {
           {e.components.length > 0 && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
-        <span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span></li>))}</ul></>}
+      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
+        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{e.isPrime && <MarketCheck name={`${e.name} ${k.name}`} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

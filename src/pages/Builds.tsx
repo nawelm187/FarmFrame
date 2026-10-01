@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { evaluate, newBuild, readBuilds, requirements, writeBuilds, type ArcSlot, type Build, type Slot } from "../lib/build";
 import { readTracked, writeTracked } from "../lib/track";
+import { calc, LABEL } from "../lib/calc";
 import { CATS, CAT_SRC, parseCatalog } from "../lib/catalog";
 import { useMany } from "../lib/data";
 import { Unavailable } from "./parts";
@@ -26,7 +27,7 @@ export function BuildEditor() {
   if (!frames || !mods) return <Unavailable title="Build data" status={!frames ? wf.status : md.status} why="Warframe and mod catalogs are needed and not loaded yet." rec={(!frames ? wf : md).rec} />;
   const save = (nb: Build) => { const a = bs.map(x => (x.id === nb.id ? nb : x)); setBs(a); writeBuilds(a); };
   const bySlug = new Map(mods.map(m => [m.slug, m])), byName = new Map(mods.map(m => [m.name.toLowerCase(), m]));
-  const ev = evaluate(b, frames.find(f => f.slug === b.frame), bySlug);
+  const frameEnt = frames.find(f => f.slug === b.frame), ev = evaluate(b, frameEnt, bySlug), st = calc(b, bySlug);
   const setSlot = (i: number, s: Slot) => save({ ...b, slots: b.slots.map((x, j) => (j === i ? s : x)) });
   const arcs = parseCatalog(ar.rec?.data, "mod"), arcBy = new Map((arcs ?? []).map(a => [a.slug, a])), arcByName = new Map((arcs ?? []).map(a => [a.name.toLowerCase(), a]));
   const arcSlot = (i: number): ArcSlot => b.arcanes?.[i] ?? { mod: null };
@@ -58,5 +59,11 @@ export function BuildEditor() {
       <p className="muted">{rq.missingMods.length} missing mod{rq.missingMods.length === 1 ? "" : "s"}{rq.arcanes.length ? ` and ${rq.missingArcanes.length} missing arcane${rq.missingArcanes.length === 1 ? "" : "s"}` : ""}.{rq.endoKnown && rq.endoTotal > 0 ? ` Endo to rank every mod from zero: about ${rq.endoTotal} (calculated estimate from the standard rule).` : ""} Forma is counted from slot polarity changes when the source lists the Warframe's native polarities.</p>
       <div className="bar"><button className="btn" onClick={send} disabled={(!rq.missingMods.length && !rq.missingArcanes.length && !rq.forma) || sent}>{sent ? "Sent to Tracking" : "Send missing mods to my plan"}</button></div>
       {sent && <p className="muted">Added to Tracking. Home and the farming pages now take them into account.</p>}</>}
-    <p className="muted">Scope: capacity and validation only. Drain uses the standard rules (base + rank, polarity match halves, mismatch +25%) on data from a community source. Stat calculation, aura, exilus and shards are not included yet.</p></>);
+    {st.stats.length > 0 && <><h2>Statistics</h2>
+      <ul className="list comp">{st.stats.map(s => { const base = ["health", "shield", "armor", "energy"].includes(s.key) ? frameEnt?.stats.find(([l]) => l === LABEL[s.key])?.[1] : undefined, sg = s.pct > 0 ? "+" : "";
+        return (<li key={s.key}><span>{s.label} <b>{sg}{+s.pct.toFixed(1)}%</b>{base != null && <span className="muted"> · about {Math.round(base * (1 + s.pct / 100))} from the source's base {base}</span>}</span>
+          <details><summary>Explain</summary><ul className="sub">{s.parts.map((p, i) => <li key={i}>{p.mod} {p.pct > 0 ? "+" : ""}{p.pct}%</li>)}</ul>
+            <p className="muted">{base != null ? `Base ${base} (from the source, before Warframe rank scaling) × (1 + ${+s.pct.toFixed(1)}/100) = ${+(base * (1 + s.pct / 100)).toFixed(1)}. Approximation: rank 30 scaling and in-game rounding are not applied.` : `100% + ${+s.pct.toFixed(1)}% = ${+(100 + s.pct).toFixed(1)}%. In-game caps and diminishing returns are not applied.`}</p></details></li>); })}</ul>
+      <p className="muted">Only effects the source lists as plain percentages are counted, at the rank you set. Conditional effects are not included.{st.unparsed.length > 0 && ` Not calculated: ${st.unparsed.slice(0, 6).join("; ")}${st.unparsed.length > 6 ? ` and ${st.unparsed.length - 6} more` : ""}.`}</p></>}
+    <p className="muted">Scope: capacity, validation and percentage-based statistics. Drain uses the standard rules (base + rank, polarity match halves, mismatch +25%) on data from a community source. Aura, exilus, shards and weapon damage calculation are not included yet.</p></>);
 }

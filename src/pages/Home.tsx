@@ -3,6 +3,7 @@ import RelicArt from "../RelicArt";
 import { readBuilds } from "../lib/build";
 import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
+import { value } from "../lib/farmNow";
 import { useFarmNow } from "../lib/useFarmNow";
 import { VERSION } from "../version";
 import { Badge, Countdown, Panel, Unavailable } from "./parts";
@@ -30,6 +31,7 @@ function FarmRightNow() {
       : !opps.length ? <p className="muted">Nothing active right now advances your goals. Check back as fissures and invasions rotate.</p>
       : <ol className="opps">{opps.map(o => (<li key={o.key}><div className="row"><b className="oppt">{o.tier && <RelicArt tier={o.tier} size={32} />}{o.title}</b><Link className="btn" to={o.kind === "fissure" ? "/fissures" : "/invasions"}>View</Link></div>
           <div className="muted">Advances: {o.advances.slice(0, 4).join(", ")}{o.advances.length > 4 ? ` and ${o.advances.length - 4} more` : ""}</div>
+          <div className="muted">Value to your current goals: <b>{value(o.advances.length)}</b></div>
           <details><summary>Why this?</summary><ul>{o.why.map(w => <li key={w}>{w}</li>)}<li>Live data: fissures <Badge s={fis.status} />, invasions <Badge s={inv.status} /></li></ul></details></li>))}</ol>}
     {goals > 0 && <p className="muted">Based on your goals and live data. It cannot see everything, so treat it as a suggestion.</p>}
   </section>);
@@ -46,7 +48,7 @@ export default function Home() {
     </div>
     <FarmRightNow />
     <h2>Your plan</h2>
-    <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>
+    <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/planner">Planner</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>
     <h2>Tools</h2>
     <p><Link to="/finder">Resource Finder</Link> · <Link to="/relics">Relics</Link> · <Link to="/invasions">Invasions</Link> · <Link to="/sources">Data sources</Link></p>
     <p className="muted">FarmFrame v{VERSION}</p>
