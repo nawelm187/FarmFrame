@@ -12,9 +12,12 @@ const SOURCES: Record<Cat, Src[]> = {
   railjack: [f("Mods.json", "mod")],
 };
 /** Companions: real companions only (they have health). Railjack: mods the source itself lists as Railjack. */
+/** Hides broken or placeholder mod entries (no art, no effect text, set markers). */
+const okMod = (e: Entity) => !!e.image && !/mod\s*set/i.test(e.name) && !!(e.levelStats?.length || e.description);
 const FILTER: Partial<Record<Cat, (e: Entity) => boolean>> = {
+  mod: okMod,
   companion: e => e.stats.some(([l]) => l === "Health") && !/apothic|egg\b|genetic|imprint|mutagen|incubator|antigen|stabilizer/i.test(e.name),
-  railjack: e => /railjack/i.test(`${e.type} ${e.compat}`),
+  railjack: e => okMod(e) && /railjack/i.test(`${e.type} ${e.compat}`),
 };
 const mc = new Map<string, { refs: unknown[]; items: Entity[] }>();
 function merged(c: Cat, parts: (Entity[] | null)[], build: () => Entity[]): Entity[] {

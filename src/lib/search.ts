@@ -7,7 +7,8 @@ export function lev(a: string, b: string) {
   return d[a.length][b.length];
 }
 const q2 = (p: string, q: string) => `${p}?q=${encodeURIComponent(q)}`;
-export function search(q: string, relics: Relic[] | null): Hit[] {
+export interface Ent { name: string; cat: string; slug: string; label: string }
+export function search(q: string, relics: Relic[] | null, ents?: Ent[]): Hit[] {
   const l = q.trim().toLowerCase(); if (!l) return []; const o: Hit[] = [];
   const m = l.match(/^(?:where(?: do i| can i)? (?:farm|get|find)|how(?: do i)? (?:farm|get)|farm)\s+(.+?)\??$/);
   if (m) o.push({ label: `Where to farm "${m[1]}"`, cat: "Intent", to: q2("/finder", m[1]), s: -1 });
@@ -16,6 +17,11 @@ export function search(q: string, relics: Relic[] | null): Hit[] {
     relics.filter(r => r.name.toLowerCase().includes(l)).slice(0, 4).forEach(r => o.push({ label: r.name, cat: "Relic", to: q2("/relics", r.name), s: 1 }));
     const seen = new Set<string>();
     for (const r of relics) { for (const x of r.st.Intact ?? []) if (!seen.has(x.itemName) && x.itemName.toLowerCase().includes(l)) { seen.add(x.itemName); o.push({ label: x.itemName, cat: "Item", to: q2("/finder", x.itemName), s: 1 }); } if (seen.size >= 5) break; }
+  }
+  if (ents) {
+    const hits: Hit[] = [];
+    for (const e of ents) { const n = e.name.toLowerCase(); if (n.includes(l)) hits.push({ label: e.name, cat: e.label, to: `/${e.cat}/${e.slug}`, s: n.startsWith(l) ? 0 : 1 }); }
+    hits.sort((a, c) => a.s - c.s || a.label.length - c.label.length).slice(0, 8).forEach(h => o.push(h));
   }
   return o.sort((a, b) => a.s - b.s).slice(0, 9);
 }

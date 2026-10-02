@@ -19,3 +19,8 @@ it("rank filter picks the matching bucket for rankable mods", () => {
   const d = { payload: { statistics_closed: { "48hours": [{ mod_rank: 0, median: 5, min_price: 4, max_price: 6, volume: 9 }, { mod_rank: 10, median: 40, min_price: 30, max_price: 50, volume: 3 }] } } };
   expect(parseStats(d, 0)?.median).toBe(5); expect(parseStats(d, 10)?.median).toBe(40); expect(parseStats(d, 7)).toBeNull();
 });
+import { parseCurrency } from "./currency";
+it("finds currency art by exact name", () => {
+  expect(parseCurrency([{ name: "Platinum", imageName: "plat.png" }, { name: "Platinum Discount", imageName: "x.png" }, { name: "Credits", imageName: "cr.png" }])).toEqual({ platinum: "plat.png", credits: "cr.png" });
+  expect(parseCurrency([{ name: "Other" }])).toBeNull();
+});
