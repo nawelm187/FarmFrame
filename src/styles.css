@@ -114,3 +114,14 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .tr-yes{color:var(--acc)}.tr-no{color:var(--t3)}.tr-mixed{color:var(--gold)}
 .onb{margin-bottom:1rem}.onb .row{display:flex;justify-content:space-between;align-items:center;gap:.8rem}.onb h2{margin:0}
 .report{margin:2rem 0 1rem}.report label{display:block;margin-bottom:.6rem}.report select,.report textarea{width:100%;max-width:32rem;background:var(--b1);color:var(--t1);border:1px solid var(--b4);padding:.5rem;font:inherit}.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.CALCULATED{color:var(--acc);border-color:var(--b4);border-style:dashed}
+/* v0.41: farm plan, exact relics, goal progress */
+.relicchip.own{border-color:var(--acc)}.relicchip{text-decoration:none}
+.goalrow{display:flex;flex-wrap:wrap;gap:.4rem;margin:.35rem 0}
+.opps .chips{margin:.45rem 0}.opps>li:first-child{border-left-color:var(--acc)}
+.opps .row{margin-bottom:.2rem}.opps details{margin-top:.3rem}
+.tierplan{margin-bottom:.8rem}.tierplan h3{display:flex;align-items:center;gap:.5rem}
+.tierplan .list.comp li{align-items:start}.tierplan .btn{margin-top:.35rem}
+.nextacts li{align-items:start}
+.entity .chips{margin:.3rem 0}
+@media(max-width:700px){.opps>li{padding-left:2rem}.tierplan .list.comp li,.nextacts li{grid-template-columns:1fr}.relicchip{min-height:2.75rem}.goal .list.comp li{grid-template-columns:1fr}}

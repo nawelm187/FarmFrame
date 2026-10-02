@@ -13,6 +13,7 @@ const Sources = lazy(() => import("./pages/Sources"));
 const Explore = lazy(() => import("./pages/Explore"));
 const Roadmap = lazy(() => import("./pages/Roadmap"));
 const Farm = lazy(() => import("./pages/Farm"));
+const FarmPlan = lazy(() => import("./pages/FarmPlan"));
 const Planner = lazy(() => import("./pages/Planner"));
 const Lore = lazy(() => import("./pages/Lore"));
 const Hub = lazy(() => import("./pages/Hub"));
@@ -24,7 +25,7 @@ import ReportIssue from "./ReportIssue";
 const Palette = lazy(() => import("./Palette"));
 const GROUPS = [
   { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/lore"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/lore", "Lore"]] },
-  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/fissures", "/invasions"], items: [["/finder", "Resource Finder"], ["/planner", "Planner"], ["/fissures", "Fissures"], ["/invasions", "Invasions"]] },
+  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/fissures", "/invasions"], items: [["/farm-plan", "Farm Plan"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/fissures", "Fissures"], ["/invasions", "Invasions"]] },
   { label: "Plan", hub: "/plan", pre: ["/plan", "/roadmap", "/builds", "/build", "/tracking"], items: [["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
   { label: "Account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "Data sources"]] },
 ] as const;
@@ -50,7 +51,7 @@ export default function App() {
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
           <Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
             <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
-          <Route path="/farm/:item" element={<Farm />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
+          <Route path="/farm/:item" element={<Farm />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
         </Routes></Suspense>
         <ReportIssue />
       </main>
