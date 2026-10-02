@@ -47,3 +47,8 @@ it("relic sources come only from loaded rows", () => {
   const rows = [{ item: "Lith G1 Relic", where: "Ceres (Lith)", mode: "", rot: "A", ch: 5, rar: "", note: "", src: "Mission rewards" }, { item: "Lith G1 Relic", where: "Sortie", mode: "", rot: "", ch: 12, rar: "", note: "", src: "x" }, { item: "Meso A1 Relic", where: "Y", mode: "", rot: "", ch: 9, rar: "", note: "", src: "x" }] as Row[];
   expect(relicSources(rows, "Lith G1").map(r => r.where)).toEqual(["Sortie", "Ceres (Lith)"]); expect(relicSources(rows, "Lith Z9")).toEqual([]);
 });
+import { FIND } from "./drops";
+import { RELIC_SOURCE_IDS } from "./exact";
+it("every relic source table id exists in the drop tables list", () => {
+  for (const id of RELIC_SOURCE_IDS) expect(FIND.some(f => f.id === id), id).toBe(true);
+});

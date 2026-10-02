@@ -1,6 +1,8 @@
 import type { Component, Entity } from "./catalog";
 import { parseRelics, type Relic, type Row } from "./drops";
 import { missing, tiersOf, type Goal, type Owned } from "./goals";
+/** Drop tables that can say where a relic drops. Ids must match FIND in drops.ts ("missions", not "missionRewards"). */
+export const RELIC_SOURCE_IDS = ["missions", "cetusBountyRewards", "solarisBountyRewards", "zarimanRewards", "transientRewards"];
 export const STATES = ["Intact", "Exceptional", "Flawless", "Radiant"] as const;
 const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
 export interface RelicOpt { name: string; tier: string; rarity: string; chance: Record<string, number>; vaulted: boolean | null; stack: number }

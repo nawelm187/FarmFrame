@@ -7,6 +7,11 @@ export const PHASES: Record<string, [string, number][]> = {
   cambionCycle: [["fass", 100 * MIN], ["vome", 50 * MIN]],
   zarimanCycle: [["corpus", 150 * MIN], ["grineer", 150 * MIN]],
 };
+/** Progress 0..1 through the current phase, from the fixed phase length. null when the phase is unknown. */
+export function phaseProgress(key: string, state: string, expiry: string, now = Date.now()): number | null {
+  const ph = PHASES[key]?.find(([n]) => n === state.toLowerCase()), end = Date.parse(expiry); if (!ph || !Number.isFinite(end)) return null;
+  return Math.min(1, Math.max(0, 1 - (end - now) / ph[1]));
+}
 /** Longest gap that is still projected; beyond it the data is treated as missing instead of guessed. */
 export const MAX_GAP = 12 * 3_600_000;
 export interface Projected { state: string; expiry: string; calculated: boolean }

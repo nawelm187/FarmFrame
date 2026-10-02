@@ -20,3 +20,9 @@ it("refuses to guess unknown states or very old data", () => {
   expect(projectCycle("vallisCycle", "warm", at(now - 24 * 3_600_000), now)).toBeNull();
   expect(projectCycle("unknownCycle", "warm", at(now - 60_000), now)).toBeNull();
 });
+import { phaseProgress } from "./cycles";
+it("phase progress runs from 0 to 1 and is unknown for unknown phases", () => {
+  const now = Date.parse("2026-01-01T00:00:00Z"), end = new Date(now + 50 * 60_000).toISOString();
+  expect(phaseProgress("cetusCycle", "Day", end, now)).toBe(0.5); expect(phaseProgress("cetusCycle", "Day", end, now + 60 * 60_000)).toBe(1);
+  expect(phaseProgress("zarimanCycle", "Mystery", end, now)).toBeNull();
+});

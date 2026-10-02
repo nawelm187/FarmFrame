@@ -14,3 +14,8 @@ it("sets are priced only when parts can be traded", () => {
   expect(setTradable(e({}, [["A", null]]))).toBe(true);
   expect(setTradable(e({ isPrime: false }, [["A", true]]))).toBe(false);
 });
+it("Prime parts count as tradable when they carry ducats and the data has no flag", () => {
+  const p = e({ tradable: false }); p.components = [{ name: "Chassis", count: 1, drops: [], children: [], ducats: 45 }, { name: "Orokin Cell", count: 1, drops: [], children: [] }];
+  expect(tradeLine(p)?.label).toContain("Prime parts can: Chassis"); expect(setTradable(p)).toBe(true);
+  const n = e({ tradable: false, isPrime: false }); expect(tradeLine(n)?.tone).toBe("no");
+});
