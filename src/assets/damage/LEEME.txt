@@ -1,0 +1,4 @@
+Official damage-type icons go in this folder as .png, .webp or .svg files.
+File names (lowercase): impact, puncture, slash, cold, electricity, heat, toxin, blast, radiation, gas, magnetic, viral, corrosive, void, tau, true
+Example: cold.png
+Any icon that is missing is shown as a neutral FarmFrame marker, never as an invented "official" icon.
