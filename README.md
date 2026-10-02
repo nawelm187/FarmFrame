@@ -1,4 +1,5 @@
-# FarmFrame v0.39 (trading status per item and part, no prices for untradable things, damage-type icons and blank values handled in game text)
+# FarmFrame v0.40 (optional skippable onboarding, data problem reports; run supabase/schema.sql again for the data_reports table)
+<!-- v0.39 --> (trading status per item and part, no prices for untradable things, damage-type icons and blank values handled in game text)
 <!-- v0.38 --> (previous line follows)
 <!-- v0.37 --> (favorites with account sync, green test suite)
 <!-- v0.36 --> (official platinum and credits icons bundled, set-marker mods hidden, relic value by refinement, direct comic links)
