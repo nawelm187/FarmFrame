@@ -1,4 +1,6 @@
-# FarmFrame v0.31 (relics by item, mod market prices, companions/archwings/railjack catalogs)
+# FarmFrame v0.33 (performance: shared timer, memoized catalogs, deferred search, Supabase off the first load; grouped navigation with hubs)
+<!-- v0.32 --> (fresher catalog from warframe-items on GitHub, mod cards, detailed item info, Lore page, companion/railjack filters)
+<!-- v0.31 --> (relics by item, mod market prices, companions/archwings/railjack catalogs)
 <!-- v0.30 --> (full Prime set price on item pages and builds, with comparison against buying the parts)
 <!-- v0.29 --> (relic expected platinum value from live market medians; market check only for tradable parts)
 <!-- v0.28 --> (market price through a Supabase Edge Function; deploy supabase/functions/market)
