@@ -13,26 +13,29 @@ const isArr = (d: unknown): d is { tier: string; expiry: string }[] => Array.isA
 type Vals = Record<string, number | null> | "loading" | "error" | null;
 const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
 function RelicValue({ r }: { r: Relic }) {
-  const [vals, setVals] = useState<Vals>(null);
+  const [vals, setVals] = useState<Vals>(null), [sel, setSel] = useState("Intact");
   const names = [...new Set(Object.values(r.st).flat().map(x => x.itemName))];
   const run = async () => {
     setVals("loading"); const out: Record<string, number | null> = {};
     try { for (const n of names) { const st = await fetchStat(n); out[n] = st ? st.median : null; await new Promise(res => setTimeout(res, 400)); } setVals(out); } catch { setVals("error"); }
   };
-  const base = (r.st.Intact ?? Object.values(r.st)[0] ?? []).slice().sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3));
-  const states = STATES.filter(s => r.st[s]);
-  const part = (v: Record<string, number | null>, s: string, x: { itemName: string; rarity: string }) => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity), p = v[x.itemName]; return y && p != null ? +((y.chance * p) / 100).toFixed(2) : null; };
-  const total = (v: Record<string, number | null>, s: string) => +base.reduce((a, x) => a + (part(v, s, x) ?? 0), 0).toFixed(1);
-  return (<div style={{ marginTop: ".6rem" }}>
+  const states = STATES.filter(s => r.st[s]), cur = r.st[sel] ? sel : states[0];
+  const rows = (s: string) => (r.st[s] ?? []).slice().sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3) || a.itemName.localeCompare(b.itemName));
+  const value = (v: Record<string, number | null>, x: { itemName: string; chance: number }) => { const p = v[x.itemName]; return p == null ? null : +((x.chance * p) / 100).toFixed(2); };
+  const total = (v: Record<string, number | null>, s: string) => +rows(s).reduce((a, x) => a + (value(v, x) ?? 0), 0).toFixed(1);
+  return (<div className="rv" style={{ marginTop: ".6rem" }}>
     {(vals === null || vals === "error") && <button className="btn" onClick={() => void run()}>Estimate platinum value</button>}
     {vals === "loading" && <span className="muted">Checking {names.length} market prices…</span>}
     {vals === "error" && <div className="muted">Market data unavailable right now.</div>}
-    {vals && typeof vals === "object" && <>
-      <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th><th>Market price</th>{states.map(s => <th key={s}>{s}</th>)}</tr></thead>
-        <tbody>{base.map(x => <tr key={x.itemName + x.rarity}><td>{x.itemName}</td><td>{x.rarity}</td><td>{vals[x.itemName] != null ? <Plat n={vals[x.itemName] as number} /> : <span className="muted">no price</span>}</td>
-          {states.map(s => { const p = part(vals, s, x); return <td key={s}>{p != null ? <Plat n={p} /> : "—"}</td>; })}</tr>)}</tbody>
-        <tfoot><tr><th colSpan={3}>Expected value per relic</th>{states.map(s => <th key={s}><Plat n={total(vals, s)} /></th>)}</tr></tfoot></table></div>
-      <p className="muted">Each cell is drop chance × live market median for that refinement. Rewards without a market price count as 0. Market value, not a farming recommendation.</p></>}
+    {vals && typeof vals === "object" && cur && <>
+      <h4>Estimated value per relic</h4>
+      <div className="chips" role="tablist" aria-label="Refinement">{states.map(s => <button key={s} role="tab" aria-selected={s === cur} className={s === cur ? "on" : ""} onClick={() => setSel(s)}>{s} · <Plat n={total(vals, s)} size={14} /></button>)}</div>
+      <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th><th className="num">Drop chance</th><th className="num">Market price</th><th className="num">Worth per relic</th></tr></thead>
+        <tbody>{rows(cur).map(x => { const p = vals[x.itemName], w = value(vals, x); return (<tr key={x.itemName + x.rarity}>
+          <td>{x.itemName}</td><td><span className={"rar " + x.rarity}>{x.rarity}</span></td><td className="num">{x.chance}%</td>
+          <td className="num">{p != null ? <Plat n={p} /> : <span className="muted">no price</span>}</td><td className="num">{w != null ? <Plat n={w} /> : "—"}</td></tr>); })}</tbody>
+        <tfoot><tr><th colSpan={4}>Expected value per relic ({cur})</th><th className="num"><Plat n={total(vals, cur)} /></th></tr></tfoot></table></div>
+      <p className="muted">Worth per relic = drop chance × the item's live market median. Rewards with no market price count as 0. Market value, not a farming recommendation.</p></>}
   </div>);
 }
 function VaultBadge({ name }: { name: string }) {

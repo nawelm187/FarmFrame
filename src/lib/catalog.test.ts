@@ -9,3 +9,11 @@ it("parses tolerant and unique slugs", () => {
   expect(parseCatalog("bad", "mod")).toBeNull();
   expect(slugify("Rhino  Prime!")).toBe("rhino-prime");
 });
+import { okMod } from "./useCatalog";
+it("hides set markers and placeholder mods but keeps real ones", () => {
+  const mk = (name: string, type: string, imageName = "a.png") => parseCatalog([{ name, type, imageName, description: "x" }], "mod")![0];
+  expect(okMod(mk("Hawksetmod", "Mod Set Mod", "HawkHeader.png"))).toBe(false);
+  expect(okMod(mk("Unfused Artifact", "Peculiar Mod", "OmegaMod.png"))).toBe(false);
+  expect(okMod(mk("Rifle Riven Mod", "Rifle Riven Mod", "OmegaMod.png"))).toBe(false);
+  expect(okMod(mk("Serration", "Primary Mod"))).toBe(true);
+});

@@ -12,8 +12,8 @@ const SOURCES: Record<Cat, Src[]> = {
   railjack: [f("Mods.json", "mod")],
 };
 /** Companions: real companions only (they have health). Railjack: mods the source itself lists as Railjack. */
-/** Hides broken or placeholder mod entries (no art, no effect text, set markers). */
-const okMod = (e: Entity) => !!e.image && !/mod\s*set/i.test(e.name) && !!(e.levelStats?.length || e.description);
+/** Hides entries that are not real mods: set markers ("Hawksetmod"), placeholders (unveiled Rivens, "Unfused Artifact"), and entries with no art or no effect text. */
+export const okMod = (e: Entity) => !!e.image && !!(e.levelStats?.length || e.description) && e.type !== "Mod Set Mod" && !/set\s*mod$/i.test(e.name) && !/^omegamod/i.test(e.image) && !/^unfused artifact$/i.test(e.name);
 const FILTER: Partial<Record<Cat, (e: Entity) => boolean>> = {
   mod: okMod,
   companion: e => e.stats.some(([l]) => l === "Health") && !/apothic|egg\b|genetic|imprint|mutagen|incubator|antigen|stabilizer/i.test(e.name),

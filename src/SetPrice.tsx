@@ -28,7 +28,7 @@ export default function SetPrice({ e }: { e: Entity }) {
     {set === "error" && <p className="muted">Market data unavailable right now.</p>}
     {set === "none" && <p className="muted">This set is not listed on the market.</p>}
     {typeof set === "object" && <><div className="big"><b><Plat n={set.st.median} size={20} /></b> <span className="muted">median for the whole set</span></div>
-      <div className="muted">Low {set.st.min} · high {set.st.max} · {set.st.volume} traded in the last bucket · warframe.market, fetched {new Date(set.at).toLocaleTimeString()}</div></>}
+      <div className="muted">Low <Plat n={set.st.min} /> · high <Plat n={set.st.max} /> · {set.st.volume} traded in the last bucket · warframe.market, fetched {new Date(set.at).toLocaleTimeString()}</div></>}
     {typeof set === "object" && priced.length > 0 && <div style={{ marginTop: ".5rem" }}>
       {(parts === null || parts === "error") && <button className="btn" onClick={() => void run()}>Compare with buying the parts</button>}
       {parts === "loading" && <span className="muted">Checking {priced.length} part prices…</span>}
