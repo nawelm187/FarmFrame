@@ -12,12 +12,12 @@ const SOURCES: Record<Cat, Src[]> = {
   railjack: [f("Mods.json", "mod")],
 };
 /** Companions: real companions only (they have health). Railjack: mods the source itself lists as Railjack. */
-/** Hides entries that are not real mods: set markers ("Hawksetmod"), placeholders (unveiled Rivens, "Unfused Artifact"), and entries with no art or no effect text. */
-export const okMod = (e: Entity) => !!e.image && !!(e.levelStats?.length || e.description) && e.type !== "Mod Set Mod" && !/set\s*mod$/i.test(e.name) && !/^omegamod/i.test(e.image) && !/^unfused artifact$/i.test(e.name);
+/** Hides entries that are not real mods: Focus abilities ("Affinity Spike"), set markers ("Hawksetmod"), placeholders (unveiled Rivens, "Unfused Artifact"), and entries with no art or no effect text. */
+export const okMod = (e: Entity) => !!e.image && !!(e.levelStats?.length || e.description) && e.type !== "Mod Set Mod" && e.type !== "Focus Way" && !/set\s*mod$/i.test(e.name) && !/^omegamod/i.test(e.image) && !/^unfused artifact$/i.test(e.name);
 const FILTER: Partial<Record<Cat, (e: Entity) => boolean>> = {
-  mod: okMod,
+  mod: e => okMod(e) && e.type !== "Plexus Mod",
   companion: e => e.stats.some(([l]) => l === "Health") && !/apothic|egg\b|genetic|imprint|mutagen|incubator|antigen|stabilizer/i.test(e.name),
-  railjack: e => okMod(e) && /railjack/i.test(`${e.type} ${e.compat}`),
+  railjack: e => okMod(e) && (e.type === "Plexus Mod" || /railjack/i.test(`${e.type} ${e.compat}`)),
 };
 const mc = new Map<string, { refs: unknown[]; items: Entity[] }>();
 function merged(c: Cat, parts: (Entity[] | null)[], build: () => Entity[]): Entity[] {

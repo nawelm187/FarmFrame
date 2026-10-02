@@ -1,4 +1,5 @@
-# FarmFrame v0.37 (favorites with account sync, green test suite)
+# FarmFrame v0.38 (game markup cleaned from descriptions, Focus abilities out of Mods, Plexus mods under Railjack)
+<!-- v0.37 --> (favorites with account sync, green test suite)
 <!-- v0.36 --> (official platinum and credits icons bundled, set-marker mods hidden, relic value by refinement, direct comic links)
 <!-- v0.35 --> (currency icons, per-reward relic value table, junk mods hidden, in-site lore)
 <!-- v0.34 --> (AI build analysis through a server function, search covers the catalogs)

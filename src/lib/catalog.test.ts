@@ -15,5 +15,10 @@ it("hides set markers and placeholder mods but keeps real ones", () => {
   expect(okMod(mk("Hawksetmod", "Mod Set Mod", "HawkHeader.png"))).toBe(false);
   expect(okMod(mk("Unfused Artifact", "Peculiar Mod", "OmegaMod.png"))).toBe(false);
   expect(okMod(mk("Rifle Riven Mod", "Rifle Riven Mod", "OmegaMod.png"))).toBe(false);
+  expect(okMod(mk("Affinity Spike", "Focus Way", "FocusIcon60.jpg"))).toBe(false);
   expect(okMod(mk("Serration", "Primary Mod"))).toBe(true);
+});
+it("cleans game markup in descriptions and level stats", () => {
+  const e = parseCatalog([{ name: "X", description: "Hits <DT_FIRE_COLOR>Heat enemies", levelStats: [{ stats: ["+15% <DT_PUNCTURE_COLOR>Puncture"] }] }], "mod")![0];
+  expect(e.description).toBe("Hits Heat enemies"); expect(e.levelStats).toEqual([["+15% Puncture"]]);
 });
