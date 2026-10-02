@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Onboarding from "../Onboarding";
 import RelicArt from "../RelicArt";
 import { readBuilds } from "../lib/build";
 import { useWorld } from "../lib/data";
@@ -41,6 +42,7 @@ export default function Home() {
   return (<>
     <h1>FarmFrame</h1>
     <p className="lead">Plan what you need, then see where and when to get it.</p>
+    <Onboarding />
     <h2>World state</h2>
     <div className="grid">
       <Cycle title="Cetus (Plains)" k="cetusCycle" /><Cycle title="Orb Vallis" k="vallisCycle" />
