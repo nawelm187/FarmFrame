@@ -109,3 +109,6 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .comics{list-style:none;padding:0;margin:0}.comics li{padding:.6rem 0;border-bottom:1px solid var(--b3)}.comics .links{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.4rem}
 .unk{color:var(--gold);border-bottom:1px dotted var(--gold);cursor:help;padding:0 .1em}
 .abil li span,.entity .lead,.modcard p{white-space:pre-line}
+/* v0.39 damage icons, trading badges, unavailable values */
+.dmgic{vertical-align:middle;margin-right:.25rem;flex:none}.unk{border-bottom:1px dotted var(--t3);color:var(--t3);font-style:italic}
+.tr-yes{color:var(--acc)}.tr-no{color:var(--t3)}.tr-mixed{color:var(--gold)}

@@ -8,3 +8,10 @@ it("strips game markup but never invents the missing values", () => {
   expect(clean("One<br>Two")).toBe("One\nTwo");
   expect(clean("a < b and c > d")).toBe("a < b and c > d");
 });
+import { rich } from "./text";
+it("turns damage tags into markers and keeps blanks visible as blanks", () => {
+  const t = rich("Enemies take |DAMAGE|% more <DT_FREEZE_COLOR>Cold damage and <DT_FIRE>Heat.</DT_FIRE>");
+  expect(t.filter(x => x.k === "dmg").map(x => x.v)).toEqual(["cold", "heat"]);
+  expect(t.filter(x => x.k === "unk")).toHaveLength(1);
+  expect(t.filter(x => x.k === "t").map(x => x.v).join("")).toContain("% more ");
+});

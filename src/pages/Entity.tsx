@@ -9,6 +9,7 @@ import Details from "../Details";
 import ModCard from "../ModCard";
 import ModPrice from "../ModPrice";
 import SetPrice from "../SetPrice";
+import { setTradable } from "../lib/trade";
 import { favId, readFavs, toggleFav, writeFavs } from "../lib/fav";
 import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
@@ -35,11 +36,12 @@ export default function Entity({ cat }: { cat: Cat }) {
           <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button>
           {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
     {cat !== "mod" && cat !== "railjack" && <Details e={e} cat={cat} />}
-    {MARKET_ENABLED && e.isPrime && <SetPrice key={e.slug} e={e} />}
+    {MARKET_ENABLED && setTradable(e) && <SetPrice key={e.slug} e={e} />}
+    {e.isPrime && e.components.length > 0 && !setTradable(e) && <p className="muted">This item and its parts cannot be traded between players, so there is no player market price.</p>}
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
-        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.name} />}</span></li>))}</ul></>}
+      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{k.tradable != null && <span className={"tag " + (k.tradable ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{k.tradable ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
+        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && k.tradable !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

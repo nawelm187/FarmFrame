@@ -12,10 +12,10 @@ export const CATS: Record<Cat, { path: string; label: string; url: string }> = {
   archwing: { path: "archwings", label: "Archwings", url: "https://api.warframestat.us/mods?language=en" },
   railjack: { path: "railjack", label: "Railjack", url: "https://api.warframestat.us/mods?language=en" },
 };
-export interface Component { name: string; count: number; ducats?: number | null; drops: { location: string; type: string }[]; children: Component[] }
+export interface Component { name: string; count: number; ducats?: number | null; tradable?: boolean | null; drops: { location: string; type: string }[]; children: Component[] }
 export interface Entity {
   slug: string; name: string; type: string; description: string; image: string | null; isPrime: boolean; vaulted: boolean | null;
-  stats: [string, number][]; facts: [string, string][]; components: Component[];
+  stats: [string, number][]; facts: [string, string][]; components: Component[]; tradable: boolean | null;
   polarity: string | null; baseDrain: number | null; maxRank: number | null; compat: string; rarity: string; slots: string[] | null; levelStats: string[][] | null; category: string; raw: Record<string, unknown>;
 }
 type O = Record<string, unknown>;
@@ -36,7 +36,7 @@ const FACT_KEYS: [string, string][] = [["rarity", "Rarity"], ["polarity", "Polar
 function comps(v: unknown, depth = 0): Component[] {
   if (!Array.isArray(v) || depth > 5) return [];
   return v.filter(isO).map(c => ({
-    name: s(c.name), count: n(c.itemCount) ?? 1, ducats: n(c.ducats),
+    name: s(c.name), count: n(c.itemCount) ?? 1, ducats: n(c.ducats), tradable: typeof c.tradable === "boolean" ? c.tradable : null,
     drops: Array.isArray(c.drops) ? c.drops.filter(isO).map(t => ({ location: s(t.location), type: s(t.type) })).filter(t => t.location) : [],
     children: comps(c.components, depth + 1) })).filter(c => c.name);
 }
@@ -55,7 +55,7 @@ export function parseCatalog(d: unknown, cat: Cat): Entity[] | null {
     for (const [key, label] of FACT_KEYS) { const v = x[key]; if (typeof v === "string" && v) facts.push([label, v]); else if (typeof v === "number") facts.push([label, String(v)]); }
     const components = comps(x.components);
     out.push({ slug, name: s(x.name), type: s(x.type), description: txt(x.description), image: s(x.imageName) || null, isPrime: x.isPrime === true || /\bprime$/i.test(s(x.name)),
-      vaulted: typeof x.vaulted === "boolean" ? x.vaulted : null, stats, facts, components,
+      vaulted: typeof x.vaulted === "boolean" ? x.vaulted : null, stats, facts, components, tradable: typeof x.tradable === "boolean" ? x.tradable : null,
       polarity: s(x.polarity).toLowerCase() || null, baseDrain: n(x.baseDrain), maxRank: n(x.fusionLimit), compat: s(x.compatName), rarity: s(x.rarity),
       slots: Array.isArray(x.polarities) ? x.polarities.filter((p): p is string => typeof p === "string").map(p => p.toLowerCase()) : null,
       category: s(x.category), raw: x, levelStats: Array.isArray(x.levelStats) ? x.levelStats.map(l => (isO(l) && Array.isArray(l.stats) ? l.stats.filter((z): z is string => typeof z === "string").map(clean) : [])) : null });

@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import type { Cat, Entity } from "./lib/catalog";
 import { Credits, Plat } from "./Money";
-import { clean, pieces } from "./lib/text";
+import { DamageIcon } from "./DamageIcon";
+import GameText from "./GameText";
+import { tradeLine } from "./lib/trade";
 type R = Record<string, unknown>;
 type Row = [string, ReactNode];
 const isR = (v: unknown): v is R => !!v && typeof v === "object" && !Array.isArray(v);
@@ -13,8 +15,8 @@ const time = (sec: number) => (sec >= 3600 ? `${f(sec / 3600)} h` : `${f(sec / 6
 const DMG = ["Impact", "Puncture", "Slash", "Cold", "Electricity", "Heat", "Toxin", "Blast", "Radiation", "Gas", "Magnetic", "Viral", "Corrosive", "Void", "Tau", "Cinematic", "Shield drain", "Health drain", "Energy drain", "True"];
 const num = (rows: Row[], raw: R, key: string, label: string, fmt: (x: number) => ReactNode = f) => { const v = n(raw[key]); if (v != null && v !== 0) rows.push([label, fmt(v)]); };
 const txt = (rows: Row[], raw: R, key: string, label: string) => { const v = s(raw[key]); if (v) rows.push([label, v]); };
-/** Game text where values the source left blank show as a muted "?" instead of the raw placeholder. */
-const Txt = ({ t }: { t: string }) => <>{pieces(clean(t)).map((p, i) => p.unknown ? <span key={i} className="unk" title="The data source does not provide this value">?</span> : p.t)}</>;
+/** Game text: damage types as icons, blank values marked as unavailable. */
+const Txt = ({ t }: { t: string }) => <GameText t={t} />;
 /** Everything the source knows about an item, grouped like a codex entry. Missing fields are simply left out. */
 export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
   const raw = e.raw, secs: { title: string; rows: Row[] }[] = [];
@@ -38,14 +40,16 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
   const aura = Array.isArray(raw.aura) ? raw.aura.filter((x): x is string => typeof x === "string").join(", ") : s(raw.aura); if (aura) info.push(["Aura polarity", aura]);
   const intro = isR(raw.introduced) ? [s(raw.introduced.name), s(raw.introduced.date)].filter(Boolean).join(" · ") : null; if (intro) info.push(["Introduced", intro]);
   txt(info, raw, "releaseDate", "Release date"); txt(info, raw, "vaultDate", "Vault date");
-  num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(info, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(info, raw, "marketCost", "Market price", x => <Plat n={x} />);
-  if (typeof raw.tradable === "boolean") info.push(["Tradable", raw.tradable ? "Yes" : "No"]);
+  num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(info, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(info, raw, "marketCost", "In-game store price", x => <Plat n={x} />);
+  const tl = tradeLine(e); if (tl) info.push(["Trading between players", <span className={"tr-" + tl.tone}>{tl.label}</span>]);
   if (info.length) secs.push({ title: "Information", rows: info });
   const abilities = Array.isArray(raw.abilities) ? raw.abilities.filter(isR).map(a => ({ name: s(a.name), description: s(a.description) })).filter(a => a.name) : [], passive = s(raw.passiveDescription);
   if (!secs.length && !abilities.length && !passive) return null;
+  const missingVals = [...abilities.map(a => a.description), passive].some(t => t && /\|[A-Za-z_0-9]+\|/.test(t));
   return (<>
     {abilities.length > 0 && <><h2>Abilities</h2><ul className="abil">{abilities.map(a => <li key={a.name}><b>{a.name}</b>{a.description && <span className="muted"><Txt t={a.description} /></span>}</li>)}</ul></>}
     {passive && <><h2>Passive</h2><p className="muted"><Txt t={passive} /></p></>}
-    {secs.map(x => <section key={x.title}><h2>{x.title}</h2><dl className="dgrid">{x.rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></section>)}
+    {missingVals && <p className="muted">Some numbers in this game text are missing from the community data source. FarmFrame does not guess them.</p>}
+    {secs.map(x => <section key={x.title}><h2>{x.title}</h2><dl className="dgrid">{x.rows.map(([k, v]) => <div key={k}><dt>{x.title === "Damage per shot" && k !== "Total damage" && <DamageIcon type={k} />}{k}</dt><dd>{v}</dd></div>)}</dl></section>)}
   </>);
 }
