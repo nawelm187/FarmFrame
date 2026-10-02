@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCatalog } from "../lib/useCatalog";
-import { CATS, imgUrl, type Cat, type Component } from "../lib/catalog";
+import { CATS, imgUrl, type Cat, type Component, type Entity as Ent } from "../lib/catalog";
+import RelicArt from "../RelicArt";
+import { useMany } from "../lib/data";
+import { byValue, relicsForPart, relicsOf } from "../lib/exact";
+import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
 import { Logo, Star } from "../Icons";
 import { MARKET_ENABLED } from "../lib/market";
 import MarketCheck from "../MarketCheck";
@@ -11,9 +15,16 @@ import ModPrice from "../ModPrice";
 import SetPrice from "../SetPrice";
 import { setTradable } from "../lib/trade";
 import { favId, readFavs, toggleFav, writeFavs } from "../lib/fav";
-import { goalId, readGoals, writeGoals } from "../lib/goals";
+import { goalId, readGoals, tiersOf, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
 import { Badge, Prov, Unavailable } from "./parts";
+/** Exact relics for one part, from the relic tables (not just the tier). Vaulted relics are marked. */
+function PartRelics({ e, k }: { e: Ent; k: Component }) {
+  const [rr, vr] = useMany([{ id: "relics", file: "relics.json" }, { id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), relics = relicsOf(rr.rec?.data);
+  if (!relics) return null;
+  const o = relicsForPart(relics, e.name, k, parseVault(vr.rec?.data)).sort(byValue).slice(0, 4);
+  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><span className="muted">{r.rarity}</span>{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}</div> : null;
+}
 const Sub = ({ cs }: { cs: Component[] }) => cs.length ? <ul className="sub">{cs.map(k => <li key={k.name}>{k.name}{k.count > 1 ? ` ×${k.count}` : ""}<Sub cs={k.children} /></li>)}</ul> : null;
 export default function Entity({ cat }: { cat: Cat }) {
   const { slug } = useParams(), c = CATS[cat], [done, setDone] = useState(false), [goal, setGoal] = useState(false), [, bump] = useState(0);
@@ -41,7 +52,7 @@ export default function Entity({ cat }: { cat: Cat }) {
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{k.tradable != null && <span className={"tag " + (k.tradable ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{k.tradable ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span><Sub cs={k.children} /></span>
+      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{k.tradable != null && <span className={"tag " + (k.tradable ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{k.tradable ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
         <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && k.tradable !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

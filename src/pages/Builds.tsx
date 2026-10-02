@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { evaluate, KIND_LABEL, modFits, newBuild, readBuilds, requirements, writeBuilds, type ArcSlot, type Build, type Kind, type Slot } from "../lib/build";
 import { readTracked, writeTracked } from "../lib/track";
 import { calc, LABEL } from "../lib/calc";
-import { parseCatalog, type Cat } from "../lib/catalog";
+import { parseCatalog, type Cat, type Entity } from "../lib/catalog";
+import { acquisition, fromBuild, readReqs, writeReqs } from "../lib/reqs";
 import { useCatalogs } from "../lib/useCatalog";
 import { useMany } from "../lib/data";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
@@ -16,7 +17,11 @@ const ARC_ALT = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/jso
 const ARC_SRC = "WFCD warframe-items on GitHub (community, unofficial)";
 const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "any"];
 export function BuildList() {
-  const [bs, setBs] = useState(readBuilds), nav = useNavigate();
+  const [bs, setBs] = useState(readBuilds), nav = useNavigate(), [sp] = useSearchParams(), made = useRef(false);
+  // Deep link from search ("build Rhino" -> /builds?new=warframe:rhino): create the build once and open it.
+  useEffect(() => { const n = sp.get("new"); if (!n || made.current) return; const [kind, slug] = n.split(":");
+    if (!(kind in KIND_LABEL) || !slug) return; made.current = true;
+    const b = { ...newBuild(), kind: kind as Kind, frame: slug, name: sp.get("n") ? `${sp.get("n")} build` : "New build" }; const a = [...readBuilds(), b]; writeBuilds(a); nav(`/build/${b.id}`, { replace: true }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const commit = (a: Build[]) => { setBs(a); writeBuilds(a); };
   const add = () => { const b = newBuild(); commit([...bs, b]); nav(`/build/${b.id}`); };
   return (<><h1>Builds</h1><p className="lead">Plan mod loadouts with capacity checks. Stored only in this browser.</p>
@@ -24,7 +29,7 @@ export function BuildList() {
     {!bs.length ? <p className="muted">No builds yet. Create one to check mod capacity and see what you still need to farm.</p> : <ul className="list comp">{bs.map(b => (<li key={b.id}><span><Link to={`/build/${b.id}`}>{b.name}</Link> <span className="muted">{KIND_LABEL[b.kind ?? "warframe"]}</span></span><button className="btn" onClick={() => commit(bs.filter(x => x.id !== b.id))}>Delete</button></li>))}</ul>}</>);
 }
 export function BuildEditor() {
-  const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [sent, setSent] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
+  const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [sent, setSent] = useState(false), [road, setRoad] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
   const b = bs.find(x => x.id === id), kind: Kind = b?.kind ?? "warframe";
   const catKey: Cat = kind === "warframe" ? "warframe" : kind === "companion" ? "companion" : kind === "archwing" ? "archwing" : "weapon";
   const both = useCatalogs([catKey, "mod"]), itemsC = both[catKey]!, modC = both.mod!;
@@ -44,6 +49,8 @@ export function BuildEditor() {
   const setArc = (i: number, v: ArcSlot) => { const a = [arcSlot(0), arcSlot(1)]; a[i] = v; save({ ...b, arcanes: a }); };
   const onArc = (i: number, v: string) => { const m = arcByName.get(v.trim().toLowerCase()); if (m) { setArc(i, { mod: m.slug, owned: false }); setAq(["", ""]); } else setAq(aq.map((x, j) => (j === i ? v : x))); };
   const rq = requirements(b, frames.find(f => f.slug === b.frame), bySlug, arcBy);
+  const acqLine = (e?: Entity) => { const a = acquisition(e); return <div className="muted">{a.length ? "How to get: " + a.join("; ") : "No acquisition data in the item source."}</div>; };
+  const addRoad = () => { writeReqs(fromBuild(b, rq, bySlug, arcBy, readReqs())); setRoad(true); };
   const send = () => { const a = readTracked(); const add = [...rq.missingMods, ...rq.missingArcanes].filter(m => !a.some(t => t.n === m.name)).map(m => ({ n: m.name, o: 0, t: 1 }));
     if (rq.forma > 0 && !a.some(t => t.n === "Forma Blueprint")) add.push({ n: "Forma Blueprint", o: 0, t: rq.forma });
     if (rq.omni > 0 && !a.some(t => t.n === "Omni Forma Blueprint")) add.push({ n: "Omni Forma Blueprint", o: 0, t: rq.omni }); writeTracked([...a, ...add]); setSent(true); };
@@ -77,12 +84,14 @@ export function BuildEditor() {
       <ul className="list comp"><li><span>{rq.frame.name}</span><label className="muted"><input type="checkbox" checked={!!b.haveFrame} onChange={e => save({ ...b, haveFrame: e.target.checked })} /> I have it {!rq.frame.have && (kind === "warframe" || kind === "primary" || kind === "secondary" || kind === "melee") && <Link to={`/${kind === "warframe" ? "warframe" : "weapon"}/${rq.frame.slug}`}>Open to plan it</Link>}</label></li>
         {rq.forma > 0 && <li><span>Forma <b>×{rq.forma}</b> <span className="muted">from slot polarity changes</span></span><Link to="/farm/Forma%20Blueprint">Farm</Link></li>}
         {rq.omni > 0 && <li><span>Omni Forma <b>×{rq.omni}</b> <span className="muted">for omni (universal) slots</span></span><Link to="/farm/Omni%20Forma%20Blueprint">Farm</Link></li>}
-        {rq.mods.map(m => (<li key={m.slug}><span>{m.name} <span className="muted">rank {m.rank}{m.endo != null ? ` · about ${m.endo} endo` : ""}</span>{prices && typeof prices === "object" && !m.owned && <span className="muted">{prices[m.slug] != null ? <> · about <Plat n={prices[m.slug] as number} /> (rank 0)</> : bySlug.get(m.slug)?.tradable === false ? " · cannot be traded" : " · no market price"}</span>}</span>
+        {rq.mods.map(m => (<li key={m.slug}><span>{m.name} <span className="muted">rank {m.rank}{m.endo != null ? ` · about ${m.endo} endo` : ""}</span>{prices && typeof prices === "object" && !m.owned && <span className="muted">{prices[m.slug] != null ? <> · about <Plat n={prices[m.slug] as number} /> (rank 0)</> : bySlug.get(m.slug)?.tradable === false ? " · cannot be traded" : " · no market price"}</span>}{!m.owned && acqLine(bySlug.get(m.slug))}</span>
           <span><span className={"tag " + (m.owned ? "FRESH" : "ERROR")}>{m.owned ? "Have" : "Missing"}</span> {!m.owned && <Link to={`/farm/${encodeURIComponent(m.name)}`}>Farm</Link>}</span></li>))}
-        {rq.arcanes.map(a => (<li key={a.slug}><span>{a.name} <span className="muted">arcane</span></span><span><span className={"tag " + (a.owned ? "FRESH" : "ERROR")}>{a.owned ? "Have" : "Missing"}</span> {!a.owned && <Link to={`/farm/${encodeURIComponent(a.name)}`}>Farm</Link>}</span></li>))}</ul>
+        {rq.arcanes.map(a => (<li key={a.slug}><span>{a.name} <span className="muted">arcane</span>{!a.owned && acqLine(arcBy.get(a.slug))}</span><span><span className={"tag " + (a.owned ? "FRESH" : "ERROR")}>{a.owned ? "Have" : "Missing"}</span> {!a.owned && <Link to={`/farm/${encodeURIComponent(a.name)}`}>Farm</Link>}</span></li>))}</ul>
       <p className="muted">{rq.missingMods.length} missing mod{rq.missingMods.length === 1 ? "" : "s"}{rq.arcanes.length ? ` and ${rq.missingArcanes.length} missing arcane${rq.missingArcanes.length === 1 ? "" : "s"}` : ""}.{rq.endoKnown && rq.endoTotal > 0 ? ` Endo to rank every mod from zero: about ${rq.endoTotal} (calculated estimate from the standard rule).` : ""} Forma is counted from slot polarity changes when the source lists the Warframe's native polarities.</p>
       {MARKET_ENABLED && rq.missingMods.length > 0 && <div className="bar">{(prices === null || prices === "error") && <button className="btn" onClick={() => void runPrices()}>Check market prices of missing mods</button>}{prices === "loading" && <span className="muted">Checking {rq.missingMods.length} prices…</span>}{prices === "error" && <span className="muted">Market data unavailable right now.</span>}{priceTotal != null && <span className="muted">Buying all missing mods unranked: about <b><Plat n={priceTotal} /></b> (sum of medians; mods with no price count as 0). Market value.</span>}</div>}
-      <div className="bar"><button className="btn" onClick={send} disabled={(!rq.missingMods.length && !rq.missingArcanes.length && !rq.forma && !rq.omni) || sent}>{sent ? "Sent to Tracking" : "Send missing mods to my plan"}</button></div>
+      <div className="bar"><button className="btn" onClick={send} disabled={(!rq.missingMods.length && !rq.missingArcanes.length && !rq.forma && !rq.omni) || sent}>{sent ? "Sent to Tracking" : "Send missing mods to my plan"}</button>
+        <button className="btn" onClick={addRoad} disabled={!rq.missingMods.length && !rq.missingArcanes.length && !rq.forma && !rq.omni && !readReqs().some(r => r.build === b.id)}>{road || readReqs().some(r => r.build === b.id) ? "Update in Roadmap" : "Add to Roadmap"}</button></div>
+      {road && <p className="muted">Roadmap updated with this build's missing mods, arcanes and Forma, each with how to get it. <Link to="/roadmap">Open Roadmap</Link></p>}
       {sent && <p className="muted">Added to Tracking. Home and the farming pages now take them into account.</p>}</>}
     {st.stats.length > 0 && <><h2>Statistics</h2>
       <ul className="list comp">{st.stats.map(s => { const base = ["health", "shield", "armor", "energy"].includes(s.key) ? frameEnt?.stats.find(([l]) => l === LABEL[s.key])?.[1] : undefined, sg = s.pct > 0 ? "+" : "";

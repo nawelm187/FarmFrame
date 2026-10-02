@@ -1,18 +1,20 @@
-import { useCatalogs } from "./useCatalog";
 import { useWorld } from "./data";
-import { farmNow, type Fis, type Inv } from "./farmNow";
-import { missing, readGoals, readOwned, tiersOf } from "./goals";
+import { farmNow, type Inv, type Link, type OppGoal } from "./farmNow";
+import { progress, readOwned } from "./goals";
+import { label } from "./exact";
+import { useExact } from "./useExact";
 import { useNeeded } from "./useNeeded";
-const isFis = (d: unknown): d is Fis[] => Array.isArray(d);
+import { useCatalogs } from "./useCatalog";
 const isInv = (d: unknown): d is Inv[] => Array.isArray(d);
 export function useFarmNow() {
-  const goals = readGoals(), own = readOwned(), cats = [...new Set(goals.map(g => g.cat))];
-  const cat = useCatalogs(cats);
-  const fis = useWorld("fissures", isFis), inv = useWorld("invasions", isInv), needed = useNeeded();
-  const tiers = new Map<string, string[]>();
-  for (const g of goals) {
-    const e = cat[g.cat]?.items?.find(x => x.slug === g.slug); if (!e) continue;
-    for (const c of missing(e.components, own[g.id])) for (const t of tiersOf(c)) tiers.set(t, [...(tiers.get(t) ?? []), `${c.name} (${e.name})`]);
+  const ex = useExact(), inv = useWorld("invasions", isInv), needed = useNeeded(), own = readOwned();
+  const cat = useCatalogs([...new Set(ex.goals.map(g => g.cat))]);
+  const tiers = new Map<string, string[]>(), links: Link[] = [], prog = new Map<string, OppGoal>();
+  for (const g of ex.goals) { const e = cat[g.cat]?.items?.find(x => x.slug === g.slug); if (e) { const p = progress(e.components, own[g.id]); prog.set(g.name, { name: g.name, have: p.have, total: p.total }); } }
+  for (const p of ex.plans) {
+    for (const t of p.relicTiers) tiers.set(t, [...(tiers.get(t) ?? []), label(p)]);
+    for (const r of p.relics) links.push({ tier: r.tier, relic: r.name, rarity: r.rarity, part: label(p), goal: p.goal.name, vaulted: r.vaulted, owned: ex.mine[r.name] ?? 0 });
   }
-  return { goals: goals.length, fis, inv, opps: farmNow({ tiers, fissures: fis.data, invasions: inv.data, needed, now: Date.now() }) };
+  const opps = farmNow({ tiers, fissures: ex.fis.data, invasions: inv.data, needed, now: Date.now(), exact: ex.relics ? links : null, progress: prog });
+  return { goals: ex.goals.length, fis: ex.fis, inv, opps, exact: ex };
 }

@@ -47,6 +47,14 @@ export function useWorld<T>(key: string, guard: (d: unknown) => d is T) {
   const r = recs.get(key);
   return { data: r && guard(r.data) ? r.data : null, status: statusOf(r, loading.has(key)), rec: r };
 }
+/** Re-requests a dataset shortly after a known end time (cached upstream data often lags), so expired panels fix themselves. */
+export function useRefreshAt(key: string, at: number | null) {
+  useEffect(() => {
+    if (at == null || !Number.isFinite(at)) return;
+    const wait = Math.max(at - Date.now(), 0) + 4000; if (wait > 6 * 3_600_000) return;
+    const t = setTimeout(() => retry(key), wait); return () => clearTimeout(t);
+  }, [key, at]);
+}
 export const allRecs = () => [...recs.entries()];
 const tickSubs = new Set<() => void>();
 let tickTimer: ReturnType<typeof setInterval> | undefined;

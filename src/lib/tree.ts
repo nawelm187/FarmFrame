@@ -11,6 +11,6 @@ export function needs(c: Component, m: number, label: string, acc: Map<string, N
   }
   return acc;
 }
-export type Group = "Relics" | "Blueprints" | "Resources" | "Other";
-export const GROUPS: Group[] = ["Relics", "Resources", "Blueprints", "Other"];
+export type Group = "Relics" | "Blueprints" | "Resources" | "Builds" | "Other";
+export const GROUPS: Group[] = ["Relics", "Resources", "Blueprints", "Builds", "Other"];
 export const groupOf = (c: Component): Group => (/blueprint/i.test(c.name) ? "Blueprints" : tiersOf(c).length ? "Relics" : "Other");
