@@ -15,15 +15,15 @@ export async function load(id: string, url: string, window: number, src: string,
   reqs.set(id, { url, window, src, alt }); loading.add(id); emit();
   const c = new AbortController(), t = setTimeout(() => c.abort(), 45_000);
   let cached: { data: unknown; at: number; url: string } | undefined;
-  const persist = window >= DAY;
+  const persist = window >= 3_600_000;
   try {
-    if (persist && !r?.data) { cached = await cget(id); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src }); return; } }
+    if (persist && !r?.data) { cached = await cget(`v2:${id}`); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src }); return; } }
     const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
     const at = Date.now();
     recs.set(id, { id, data, at, err: null, url: used, window, src });
-    if (persist) void cset(id, { data, at, url: used });
+    if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
     recs.set(id, { id, data: r?.data ?? cached?.data ?? null, at: r?.at ?? cached?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
@@ -48,18 +48,25 @@ export function useWorld<T>(key: string, guard: (d: unknown) => d is T) {
   return { data: r && guard(r.data) ? r.data : null, status: statusOf(r, loading.has(key)), rec: r };
 }
 export const allRecs = () => [...recs.entries()];
+const tickSubs = new Set<() => void>();
+let tickTimer: ReturnType<typeof setInterval> | undefined;
+function subTick(f: () => void) {
+  tickSubs.add(f); if (!tickTimer) tickTimer = setInterval(() => tickSubs.forEach(x => x()), 1000);
+  return () => { tickSubs.delete(f); if (!tickSubs.size && tickTimer) { clearInterval(tickTimer); tickTimer = undefined; } };
+}
+/** One shared timer drives every countdown on the page. */
 export function useNow(ms = 1000) {
-  const s = useSyncExternalStore((f) => { const i = setInterval(f, ms); return () => clearInterval(i); }, () => Math.floor(Date.now() / ms));
+  const s = useSyncExternalStore(subTick, () => Math.floor(Date.now() / ms));
   return s * ms;
 }
 
 export const DROPS = "https://drops.warframestat.us/data/";
 export const DAY = 86_400_000;
-export interface Item { id: string; file: string; url?: string; src?: string; alt?: string }
+export interface Item { id: string; file: string; url?: string; src?: string; alt?: string; win?: number }
 /** Loads official drop-table datasets once (24h window). */
 export function useMany(items: Item[]) {
   useSyncExternalStore(subscribe, () => ver);
   const key = items.map(i => i.id).join();
-  useEffect(() => { items.forEach(i => void load(i.id, i.url ?? DROPS + i.file, DAY, i.src ?? "Digital Extremes drop tables via WFCD/warframe-drop-data", DAY, i.alt)); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { items.forEach(i => void load(i.id, i.url ?? DROPS + i.file, i.win ?? DAY, i.src ?? "Digital Extremes drop tables via WFCD/warframe-drop-data", i.win ?? DAY, i.alt)); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   return items.map(i => { const rec = recs.get(i.id); return { rec, status: statusOf(rec, loading.has(i.id)) }; });
 }

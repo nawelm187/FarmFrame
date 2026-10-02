@@ -1,16 +1,15 @@
-import { CATS, CAT_SRC, parseCatalog } from "./catalog";
-import { useMany } from "./data";
+import { useCatalogs } from "./useCatalog";
 import { readGoals, readOwned, readRes } from "./goals";
 import { readTracked } from "./track";
 import { needs } from "./tree";
 /** Lowercase names of everything the user still needs (goal parts, their resources, tracked items). Read from local progress. */
 export function useNeeded(): Set<string> {
   const goals = readGoals(), own = readOwned(), res = readRes(), cats = [...new Set(goals.map(g => g.cat))];
-  const r = useMany(cats.map(c => ({ id: c, file: "", url: CATS[c].url, src: CAT_SRC })));
+  const cat = useCatalogs(cats);
   const s = new Set<string>();
   for (const t of readTracked()) if (t.o < t.t) s.add(t.n.toLowerCase());
   for (const g of goals) {
-    const e = parseCatalog(r[cats.indexOf(g.cat)]?.rec?.data, g.cat)?.find(x => x.slug === g.slug); if (!e) continue;
+    const e = cat[g.cat]?.items?.find(x => x.slug === g.slug); if (!e) continue;
     const o = own[g.id] ?? {};
     for (const c of e.components) {
       const left = c.count - (o[c.name] ?? 0); if (left <= 0) continue;

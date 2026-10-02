@@ -1,6 +1,6 @@
 export interface Stat { median: number; min: number; max: number; volume: number }
 export const slugOf = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-import { SUPABASE_KEY, SUPABASE_URL } from "./supabase";
+import { SUPABASE_KEY, SUPABASE_URL } from "./config";
 /** Goes through our own Supabase Edge Function (supabase/functions/market), because warframe.market blocks direct browser calls. */
 export const MARKET_URL = (slug: string) => `${SUPABASE_URL}/functions/v1/market?slug=${slug}`;
 /** Latest closed 48h bucket, only if every figure is a real number. Anything else is "no data", never a guess. */
