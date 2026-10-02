@@ -20,6 +20,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Entity = lazy(() => import("./pages/Entity"));
 const BuildList = lazy(() => import("./pages/Builds").then(m => ({ default: m.BuildList })));
 const BuildEditor = lazy(() => import("./pages/Builds").then(m => ({ default: m.BuildEditor })));
+import ReportIssue from "./ReportIssue";
 const Palette = lazy(() => import("./Palette"));
 const GROUPS = [
   { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/lore"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/lore", "Lore"]] },
@@ -51,6 +52,7 @@ export default function App() {
             <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
           <Route path="/farm/:item" element={<Farm />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
         </Routes></Suspense>
+        <ReportIssue />
       </main>
       {open && <Suspense fallback={null}><Palette onClose={() => setOpen(false)} /></Suspense>}
     </div>

@@ -112,3 +112,5 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 /* v0.39 damage icons, trading badges, unavailable values */
 .dmgic{vertical-align:middle;margin-right:.25rem;flex:none}.unk{border-bottom:1px dotted var(--t3);color:var(--t3);font-style:italic}
 .tr-yes{color:var(--acc)}.tr-no{color:var(--t3)}.tr-mixed{color:var(--gold)}
+.onb{margin-bottom:1rem}.onb .row{display:flex;justify-content:space-between;align-items:center;gap:.8rem}.onb h2{margin:0}
+.report{margin:2rem 0 1rem}.report label{display:block;margin-bottom:.6rem}.report select,.report textarea{width:100%;max-width:32rem;background:var(--b1);color:var(--t1);border:1px solid var(--b4);padding:.5rem;font:inherit}.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
