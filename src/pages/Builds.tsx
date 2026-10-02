@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { evaluate, KIND_LABEL, modFits, newBuild, readBuilds, requirements, writeBuilds, type ArcSlot, type Build, type Kind, type Slot } from "../lib/build";
 import { readTracked, writeTracked } from "../lib/track";
 import { calc, LABEL } from "../lib/calc";
-import { CATS, CAT_SRC, parseCatalog, type Cat } from "../lib/catalog";
+import { parseCatalog, type Cat } from "../lib/catalog";
+import { useCatalogs } from "../lib/useCatalog";
 import { useMany } from "../lib/data";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
 import SetPrice from "../SetPrice";
@@ -11,11 +12,6 @@ import { Unavailable } from "./parts";
 const ARC_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arcanes.json";
 const ARC_ALT = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/Arcanes.json";
 const ARC_SRC = "WFCD warframe-items on GitHub (community, unofficial)";
-const RAW = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/", CDN = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/";
-const WF = [{ id: "warframe", url: CATS.warframe.url, cat: "warframe" as Cat }], WP = [{ id: "weapon", url: CATS.weapon.url, cat: "weapon" as Cat }];
-const SRCS: Record<Kind, { id: string; url: string; alt?: string; cat: Cat }[]> = { warframe: WF, primary: WP, secondary: WP, melee: WP,
-  companion: [{ id: "sentinels", url: RAW + "Sentinels.json", alt: CDN + "Sentinels.json", cat: "warframe" }, { id: "pets", url: RAW + "Pets.json", alt: CDN + "Pets.json", cat: "warframe" }],
-  archwing: [{ id: "archwing", url: RAW + "Archwing.json", alt: CDN + "Archwing.json", cat: "warframe" }] };
 const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "any"];
 export function BuildList() {
   const [bs, setBs] = useState(readBuilds), nav = useNavigate();
@@ -27,14 +23,16 @@ export function BuildList() {
 }
 export function BuildEditor() {
   const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [sent, setSent] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
-  const b = bs.find(x => x.id === id), kind: Kind = b?.kind ?? "warframe", srcs = SRCS[kind];
-  const res = useMany([...srcs.map(s => ({ id: s.id, file: "", url: s.url, alt: s.alt, src: s.alt ? ARC_SRC : CAT_SRC })), { id: "mod", file: "", url: CATS.mod.url, src: CAT_SRC }, { id: "arcane", file: "", url: ARC_URL, alt: ARC_ALT, src: ARC_SRC }]);
-  const modRes = res[srcs.length], ar = res[srcs.length + 1];
+  const b = bs.find(x => x.id === id), kind: Kind = b?.kind ?? "warframe";
+  const catKey: Cat = kind === "warframe" ? "warframe" : kind === "companion" ? "companion" : kind === "archwing" ? "archwing" : "weapon";
+  const both = useCatalogs([catKey, "mod"]), itemsC = both[catKey]!, modC = both.mod!;
+  const ar = useMany([{ id: "arcane", file: "", url: ARC_URL, alt: ARC_ALT, src: ARC_SRC }])[0];
   if (!b) return <><h1>Build not found</h1><Link to="/builds">Back to builds</Link></>;
-  const all = srcs.flatMap((s, i) => parseCatalog(res[i].rec?.data, s.cat) ?? []);
-  const frames = (kind === "primary" || kind === "secondary" || kind === "melee" ? all.filter(e => e.category.toLowerCase() === kind) : all).sort((x, y) => x.name.localeCompare(y.name));
-  const mods = parseCatalog(modRes.rec?.data, "mod");
-  if (!all.length || !mods) return <Unavailable title="Build data" status={!all.length ? res[0].status : modRes.status} why="The item and mod catalogs are needed and not loaded yet." rec={(!all.length ? res[0] : modRes).rec} />;
+  const all = itemsC.items ?? [];
+  const isWeapon = kind === "primary" || kind === "secondary" || kind === "melee", aw = all.filter(e => /^archwing$/i.test(e.category) || /^archwing$/i.test(e.type));
+  const frames = (isWeapon ? all.filter(e => e.category.toLowerCase() === kind) : kind === "archwing" && aw.length ? aw : all).slice().sort((x, y) => x.name.localeCompare(y.name));
+  const mods = modC.items;
+  if (!all.length || !mods) return <Unavailable title="Build data" status={!all.length ? itemsC.status : modC.status} why="The item and mod catalogs are needed and not loaded yet." rec={(!all.length ? itemsC : modC).rec} />;
   const save = (nb: Build) => { const a = bs.map(x => (x.id === nb.id ? nb : x)); setBs(a); writeBuilds(a); };
   const bySlug = new Map(mods.map(m => [m.slug, m])), fit = mods.filter(m => modFits(kind, m)), byName = new Map(fit.map(m => [m.name.toLowerCase(), m]));
   const frameEnt = frames.find(f => f.slug === b.frame), ev = evaluate(b, frameEnt, bySlug), st = calc(b, bySlug);

@@ -1,10 +1,11 @@
+import { useDeferredValue } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useMany } from "../lib/data";
 import { FIND, collect, parseRelics, query } from "../lib/drops";
 import { Unavailable } from "./parts";
 const items = [...FIND.map(f => ({ id: f.id, file: f.file })), { id: "relics", file: "relics.json" }];
 export default function Finder() {
-  const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", l = q.trim().toLowerCase();
+  const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", dq = useDeferredValue(q), l = dq.trim().toLowerCase();
   const res = useMany(items);
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
   const relics = parseRelics(res[res.length - 1].rec?.data) ?? [];

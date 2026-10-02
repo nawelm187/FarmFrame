@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import { useMany, useWorld } from "../lib/data";
@@ -34,7 +34,7 @@ function VaultBadge({ name }: { name: string }) {
   return <span className={"tag " + (v === undefined ? "UNAVAILABLE" : v ? "STALE" : "FRESH")} title="Community dataset, may lag behind the game">{label}</span>;
 }
 export default function Relics() {
-  const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", l = q.trim().toLowerCase();
+  const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", dq = useDeferredValue(q), l = dq.trim().toLowerCase();
   const [{ rec, status }] = useMany([{ id: "relics", file: "relics.json" }]);
   const fis = useWorld("fissures", isArr).data;
   const relics = parseRelics(rec?.data);

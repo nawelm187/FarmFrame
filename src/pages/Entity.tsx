@@ -5,6 +5,8 @@ import { CATS, imgUrl, type Cat, type Component } from "../lib/catalog";
 import { Logo } from "../Icons";
 import { MARKET_ENABLED } from "../lib/market";
 import MarketCheck from "../MarketCheck";
+import Details from "../Details";
+import ModCard from "../ModCard";
 import ModPrice from "../ModPrice";
 import SetPrice from "../SetPrice";
 import { goalId, readGoals, writeGoals } from "../lib/goals";
@@ -21,13 +23,14 @@ export default function Entity({ cat }: { cat: Cat }) {
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };
   return (<article className="entity">
     <div className="hero">
-      <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</div>
+      {cat === "mod" || cat === "railjack" ? <div className="art" style={{ background: "none", WebkitMaskImage: "none", maskImage: "none" }}><ModCard e={e} big /></div> : <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</div>}
       <div><p className="muted">{e.type || c.label}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">PRIME</span>} <Badge s={status} /></p>
         <h1>{e.name}</h1>{e.description && <p className="lead">{e.description}</p>}
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <div className="bar"><Link className="btn" to={`/relics?q=${q}`}>Relics with this</Link><Link className="btn" to={`/finder?q=${q}`}>Where it drops</Link>
-          <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button>
+          <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button><a className="btn" href={`https://wiki.warframe.com/w/${encodeURIComponent(e.name.replace(/ /g, "_"))}`} target="_blank" rel="noopener noreferrer">Lore and codex</a>
           {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
+    {cat !== "mod" && cat !== "railjack" && <Details e={e} cat={cat} />}
     {MARKET_ENABLED && e.isPrime && <SetPrice key={e.slug} e={e} />}
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}

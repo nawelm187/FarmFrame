@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CATS, CAT_SRC, parseCatalog } from "../lib/catalog";
-import { useMany, useWorld } from "../lib/data";
+import { useCatalogs } from "../lib/useCatalog";
+import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
 import { missing, progress, readGoals, readOwned, readRes, tiersOf, writeGoals, writeOwned, writeRes, type Goal } from "../lib/goals";
 import { GROUPS, groupOf, needs, type Group, type Need } from "../lib/tree";
@@ -11,9 +11,9 @@ const isFis = (d: unknown): d is Fis[] => Array.isArray(d);
 export default function Roadmap() {
   const [goals, setGoals] = useState(readGoals), [own, setOwn] = useState(readOwned), [res2, setRes2] = useState(readRes);
   const cats = [...new Set(goals.map(g => g.cat))];
-  const res = useMany(cats.map(c => ({ id: c, file: "", url: CATS[c].url, src: CAT_SRC })));
+  const cat = useCatalogs(cats);
   const fis = useWorld("fissures", isFis);
-  const ent = (g: Goal) => parseCatalog(res[cats.indexOf(g.cat)]?.rec?.data, g.cat)?.find(e => e.slug === g.slug);
+  const ent = (g: Goal) => cat[g.cat]?.items?.find(e => e.slug === g.slug);
   const setO = (gid: string, name: string, v: number) => { const o = { ...own, [gid]: { ...own[gid], [name]: Math.max(0, v) } }; setOwn(o); writeOwned(o); };
   const drop = (g: Goal) => { const a = goals.filter(x => x.id !== g.id); setGoals(a); writeGoals(a); };
   const setR = (name: string, v: number) => { const o = { ...res2, [name]: Math.max(0, v) }; setRes2(o); writeRes(o); };
