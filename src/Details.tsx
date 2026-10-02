@@ -33,14 +33,14 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
     txt(stats, raw, "trigger", "Trigger"); txt(stats, raw, "noise", "Noise");
   }
   if (stats.length) secs.unshift({ title: "Stats from the source", rows: stats });
-  const info: Row[] = [];
+  const info: Row[] = [], store: Row[] = [];
   num(info, raw, "masteryReq", "Mastery rank", x => String(x)); txt(info, raw, "type", "Type"); txt(info, raw, "category", "Category");
   const dis = n(raw.disposition); if (dis) info.push(["Riven disposition", `${dis} of 5`]);
   if (e.slots?.length) info.push(["Slot polarities", e.slots.filter(Boolean).join(", ") || "none"]);
   const aura = Array.isArray(raw.aura) ? raw.aura.filter((x): x is string => typeof x === "string").join(", ") : s(raw.aura); if (aura) info.push(["Aura polarity", aura]);
   const intro = isR(raw.introduced) ? [s(raw.introduced.name), s(raw.introduced.date)].filter(Boolean).join(" · ") : null; if (intro) info.push(["Introduced", intro]);
   txt(info, raw, "releaseDate", "Release date"); txt(info, raw, "vaultDate", "Vault date");
-  num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(info, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(info, raw, "marketCost", "In-game store price", x => <Plat n={x} />);
+  num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(store, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(store, raw, "marketCost", "Store price", x => <Plat n={x} />);
   const tl = tradeLine(e); if (tl) info.push(["Trading between players", <span className={"tr-" + tl.tone}>{tl.label}</span>]);
   if (info.length) secs.push({ title: "Information", rows: info });
   const abilities = Array.isArray(raw.abilities) ? raw.abilities.filter(isR).map(a => ({ name: s(a.name), description: s(a.description) })).filter(a => a.name) : [], passive = s(raw.passiveDescription);
@@ -50,6 +50,7 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
     {abilities.length > 0 && <><h2>Abilities</h2><ul className="abil">{abilities.map(a => <li key={a.name}><b>{a.name}</b>{a.description && <span className="muted"><Txt t={a.description} /></span>}</li>)}</ul></>}
     {passive && <><h2>Passive</h2><p className="muted"><Txt t={passive} /></p></>}
     {missingVals && <p className="muted">Some numbers in this game text are missing from the community data source. FarmFrame does not guess them.</p>}
+    {store.length > 0 && <details className="storebox"><summary>In-game store prices (Digital Extremes, not player trading)</summary><dl className="dgrid">{store.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></details>}
     {secs.map(x => <section key={x.title}><h2>{x.title}</h2><dl className="dgrid">{x.rows.map(([k, v]) => <div key={k}><dt>{x.title === "Damage per shot" && k !== "Total damage" && <DamageIcon type={k} />}{k}</dt><dd>{v}</dd></div>)}</dl></section>)}
   </>);
 }

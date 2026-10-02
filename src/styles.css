@@ -125,3 +125,8 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .nextacts li{align-items:start}
 .entity .chips{margin:.3rem 0}
 @media(max-width:700px){.opps>li{padding-left:2rem}.tierplan .list.comp li,.nextacts li{grid-template-columns:1fr}.relicchip{min-height:2.75rem}.goal .list.comp li{grid-template-columns:1fr}}
+/* v0.42 sky, portraits, store prices */
+.sky{width:100%;max-width:14rem;height:auto;display:block;margin:.2rem 0 .4rem;border:1px solid var(--b4)}
+.npc{display:flex;flex-direction:column;align-items:center;gap:.3rem;margin:0 0 .5rem;text-align:center}.npc img,.npc svg{width:var(--s,72px);height:var(--s,72px);object-fit:cover;background:var(--b3);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+.npc figcaption{display:flex;flex-direction:column;font-size:.85rem}
+.storebox{margin:.6rem 0}.storebox summary{cursor:pointer;color:var(--t3)}
