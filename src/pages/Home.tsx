@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Baro from "../Baro";
+import CycleSky from "../CycleSky";
 import Onboarding from "../Onboarding";
 import { readBuilds } from "../lib/build";
 import { projectCycle } from "../lib/cycles";
@@ -22,7 +23,7 @@ function Cycle({ title, k }: { title: string; k: string }) {
   const p = projectCycle(k, data.state, data.expiry, now);
   if (!p) return <Unavailable title={title} status="LOADING" why="" note="Updating…" rec={rec} />;
   // A phase that has not ended is still true even if the last retrieval is a few minutes old, so it is not flagged STALE.
-  return <Panel title={title} status={p.calculated ? "CALCULATED" : status === "STALE" ? "FRESH" : status} rec={rec}><b>{p.state}</b><br /><Countdown exp={p.expiry} pre="ends in " />
+  return <Panel title={title} status={p.calculated ? "CALCULATED" : status === "STALE" ? "FRESH" : status} rec={rec}><CycleSky k={k} state={p.state} expiry={p.expiry} now={now} /><b>{p.state}</b><br /><Countdown exp={p.expiry} pre="ends in " />
     {p.calculated && <div className="muted">Calculated from the last verified cycle while live data refreshes.</div>}</Panel>;
 }
 function FissureCount() {

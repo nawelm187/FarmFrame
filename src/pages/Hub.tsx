@@ -7,7 +7,7 @@ const HUBS: Record<string, Hub> = {
     ["/companions", "Companions", "Sentinels, beasts and more"], ["/archwings", "Archwings", "Archwings and their weapons"], ["/railjack", "Railjack", "Railjack mods"],
     ["/relics", "Relics", "Search by relic or by item"], ["/lore", "Lore", "Comics and codex pages"]] },
   farm: { title: "Farm", lead: "Where and when to get what you need.", links: [
-    ["/farm-plan", "Farm Plan", "Exact relics, fissures and refinement for your goals"], ["/finder", "Resource Finder", "Where any item drops"], ["/planner", "Planner", "Daily and weekly activities that matter to you"], ["/fissures", "Fissures", "Live Void Fissures"], ["/invasions", "Invasions", "Live invasion rewards"]] },
+    ["/farm-plan", "Farm Plan", "Exact relics, fissures and refinement for your goals"], ["/finder", "Resource Finder", "Where any item drops"], ["/planner", "Planner", "Daily and weekly activities that matter to you"], ["/rotations", "Rotations", "Weekly shops and rotating rewards: Baro, Varzia, Teshin, Duviri, 1999"], ["/fissures", "Fissures", "Live Void Fissures"], ["/invasions", "Invasions", "Live invasion rewards"]] },
   plan: { title: "Plan", lead: "Your goals, builds and progress.", links: [
     ["/roadmap", "Roadmap", "Goals, checklist and resources"], ["/builds", "Builds", "Mods, Forma, arcanes and statistics"], ["/tracking", "Tracking", "Items you are collecting"]] },
 };

@@ -5,6 +5,7 @@ import { baroMatches, expired, isExp, type Archon, type Sortie, type Steel, type
 import { useFarmNow } from "../lib/useFarmNow";
 import { useNeeded } from "../lib/useNeeded";
 import Baro from "../Baro";
+import Npc from "../Npc";
 import { Countdown, Panel, Unavailable } from "./parts";
 const at = (d: { expiry: string } | null) => (d ? Date.parse(d.expiry) : null);
 const isSortie = (d: unknown): d is Sortie => isExp(d), isArchon = (d: unknown): d is Archon => isExp(d), isSteel = (d: unknown): d is Steel => isExp(d), isWave = (d: unknown): d is Wave => isExp(d), isTrader = (d: unknown): d is Trader => isExp(d);
@@ -17,19 +18,19 @@ function Sortie() {
 function ArchonHunt() {
   const { data, status, rec } = useWorld("archonHunt", isArchon); useRefreshAt("archonHunt", at(data));
   if (!data || expired(data)) return <Unavailable title="Archon Hunt" status={data ? "LOADING" : status} why="No verified data." note="Updating…" rec={rec} />;
-  return <Panel title="Archon Hunt" status={status} rec={rec}><b>{data.boss}</b><div><Countdown exp={data.expiry} pre="resets in " /></div>
+  return <Panel title="Archon Hunt" status={status} rec={rec}><Npc name={data.boss ?? "Archon"} role="Archon Hunt" /><b>{data.boss}</b><div><Countdown exp={data.expiry} pre="resets in " /></div>
     <ul className="sub">{(data.missions ?? []).map((m, i) => <li key={i}>{m.type} · {m.node}</li>)}</ul></Panel>;
 }
 function SteelPath() {
   const { data, status, rec } = useWorld("steelPath", isSteel); useRefreshAt("steelPath", at(data));
   if (!data || expired(data)) return <Unavailable title="Steel Path Honors" status={data ? "LOADING" : status} why="No verified data." note="Updating…" rec={rec} />;
-  return <Panel title="Steel Path Honors" status={status} rec={rec}><b>{data.currentReward?.name ?? "Unknown reward"}</b>{data.currentReward?.cost != null && <span className="muted"> · {data.currentReward.cost} Steel Essence</span>}<div><Countdown exp={data.expiry} pre="rotates in " /></div></Panel>;
+  return <Panel title="Steel Path Honors" status={status} rec={rec}><Npc name="Teshin" role="Steel Path Honors" /><b>{data.currentReward?.name ?? "Unknown reward"}</b>{data.currentReward?.cost != null && <span className="muted"> · {data.currentReward.cost} Steel Essence</span>}<div><Countdown exp={data.expiry} pre="rotates in " /></div></Panel>;
 }
 function Nightwave() {
   const { data, status, rec } = useWorld("nightwave", isWave); useRefreshAt("nightwave", at(data));
   if (!data || expired(data)) return <Unavailable title="Nightwave" status={data ? "LOADING" : status} why="No verified data, or no active season." note="Updating…" rec={rec} />;
   const c = data.activeChallenges ?? [];
-  return <Panel title="Nightwave" status={status} rec={rec}><b>{c.length} active challenges</b><div><Countdown exp={data.expiry} pre="season ends in " /></div>
+  return <Panel title="Nightwave" status={status} rec={rec}><Npc name="Nora Night" role="Nightwave" /><b>{c.length} active challenges</b><div><Countdown exp={data.expiry} pre="season ends in " /></div>
     <ul className="sub">{c.slice(0, 6).map((x, i) => <li key={i}>{x.title}{x.isDaily ? " (daily)" : ""}{x.reputation ? ` · ${x.reputation} standing` : ""}</li>)}</ul></Panel>;
 }
 export default function Planner() {

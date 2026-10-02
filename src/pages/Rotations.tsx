@@ -1,0 +1,67 @@
+import Baro from "../Baro";
+import Npc from "../Npc";
+import { useRefreshAt, useWorld } from "../lib/data";
+import { archView, calendarView, duviriView, nextWeeklyReset, steelView, stockView } from "../lib/rotations";
+import { Countdown, Panel, Unavailable } from "./parts";
+const ok = (d: unknown): d is object => !!d && typeof d === "object";
+const at = (d: unknown) => { const e = (Array.isArray(d) ? d[0] : d) as { expiry?: unknown } | null; return typeof e?.expiry === "string" ? Date.parse(e.expiry) : null; };
+const iso = (ms: number) => new Date(ms).toISOString();
+function Teshin() {
+  const { data, status, rec } = useWorld("steelPath", ok); useRefreshAt("steelPath", at(data));
+  const v = steelView(data);
+  if (!v || (!v.current && !v.rotation.length)) return <Unavailable title="Steel Path Honors" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Steel Path Honors" status={status} rec={rec}><Npc name="Teshin" role="Steel Path Honors shop" />
+    {v.current && <p><b>This week:</b> {v.current.name}{v.current.cost != null && <span className="muted"> · {v.current.cost} Steel Essence</span>}</p>}
+    {v.rotation.length > 0 && <><div className="muted">Weekly rotation, one step each week:</div><ol className="sub">{v.rotation.map((o, i) => <li key={i} className={o.name === v.current?.name ? "gold" : undefined}>{o.name}{o.cost != null && <span className="muted"> · {o.cost}</span>}{o.name === v.current?.name && " (this week)"}</li>)}</ol></>}
+    {v.evergreens.length > 0 && <><div className="muted">Always available:</div><ul className="sub">{v.evergreens.map((o, i) => <li key={i}>{o.name}{o.cost != null && <span className="muted"> · {o.cost}</span>}</li>)}</ul></>}
+  </Panel>);
+}
+function Duviri() {
+  const { data, status, rec } = useWorld("duviriCycle", ok); useRefreshAt("duviriCycle", at(data));
+  const v = duviriView(data);
+  if (!v) return <Unavailable title="Duviri" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Duviri" status={status} rec={rec}>{v.state && <p><b>Mood:</b> {v.state}{v.expiry && <> · <Countdown exp={v.expiry} pre="changes in " /></>}</p>}
+    {v.choices.length ? v.choices.map(c => <div key={c.category}><div className="muted">The Circuit, {c.category}:</div><ul className="sub">{c.items.map(i => <li key={i}>{i}</li>)}</ul></div>) : <p className="muted">No Circuit rotation in the data right now.</p>}
+  </Panel>);
+}
+function Calendar() {
+  const { data, status, rec } = useWorld("calendar", ok); useRefreshAt("calendar", at(data));
+  const v = calendarView(data);
+  if (!v || !v.season) return <Unavailable title="1999 Calendar" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="1999 Calendar" status={status} rec={rec}><p><b>{v.season}</b>{v.loop != null && <span className="muted"> · loop {v.loop}</span>}{v.expiry && <> · <Countdown exp={v.expiry} pre="ends in " /></>}</p>
+    {v.days.length > 0 ? <details><summary>{v.days.length} days with events</summary><ul className="sub">{v.days.map(d => <li key={d.day}><b>Day {d.day}</b><span className="muted"> {d.events.join(" · ")}</span></li>)}</ul></details> : <p className="muted">No readable events in the data.</p>}
+  </Panel>);
+}
+function Varzia() {
+  const { data, status, rec } = useWorld("vaultTrader", ok); useRefreshAt("vaultTrader", at(data));
+  const v = stockView(data);
+  if (!v) return <Unavailable title="Prime Resurgence" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Prime Resurgence" status={status} rec={rec}><Npc name="Varzia" role="Prime Resurgence" />{v.location && <p><b>{v.location}</b></p>}
+    {v.expiry && <div><Countdown exp={v.expiry} pre={v.active ? "leaves in " : "next change in "} /></div>}
+    {v.items.length > 0 ? <details open><summary>Stock ({v.items.length})</summary><ul className="sub">{v.items.map((x, i) => <li key={i}>{x}</li>)}</ul></details> : <p className="muted">No stock listed in the data.</p>}
+  </Panel>);
+}
+function Archimedeas() {
+  const { data, status, rec } = useWorld("archimedeas", ok); useRefreshAt("archimedeas", at(data));
+  const v = archView(data);
+  if (!v.length) return <Unavailable title="Archimedea" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Archimedea" status={status} rec={rec}>{v.map((a, i) => <div key={i}><b>{a.type}</b>{a.expiry && <> · <Countdown exp={a.expiry} pre="resets in " /></>}
+    <ul className="sub">{a.missions.map((m, j) => <li key={j}>{m}</li>)}</ul></div>)}</Panel>);
+}
+const Fixed = ({ name, role, where, lines }: { name: string; role: string; where: string; lines: string[] }) => (
+  <section className="panel"><div className="row"><h3>{name}</h3><span className="tag UNAVAILABLE">Fixed info</span></div><Npc name={name} role={role} />
+    <p className="muted">{where}</p><ul className="sub">{lines.map(l => <li key={l}>{l}</li>)}</ul>
+    <p className="muted">His or her exact stock this week is not in our data source, so it is not listed.</p></section>
+);
+export default function Rotations() {
+  const reset = iso(nextWeeklyReset());
+  return (<><h1>Rotations</h1>
+    <p className="lead">Shops and rewards that rotate. Weekly vendors and the Circuit reset every Monday at 00:00 UTC.</p>
+    <p className="muted"><b>Next weekly reset:</b> <Countdown exp={reset} /> <span>(calculated from the fixed weekly schedule)</span></p>
+    <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
+    <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
+    <h2>Other weekly vendors</h2><div className="grid">
+      <Fixed name="Palladino" role="Iron Wake, Earth" where="Paid with Riven Slivers. Weekly offers include Riven mods, Endo, Kuva and Credits caches, and a Veiled Riven Cipher." lines={["Riven mods", "Endo", "Kuva", "Credits cache", "Veiled Riven Cipher (once a week)"]} />
+      <Fixed name="Acrithis" role="Duviri" where="Paid with Pathos Clamps. Weekly offers include Orokin Catalyst and Reactor blueprints, Riven mods and Adapters." lines={["Orokin Catalyst and Reactor", "Riven mods", "Adapters"]} />
+    </div></>);
+}

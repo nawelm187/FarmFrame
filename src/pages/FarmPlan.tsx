@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import { useMany } from "../lib/data";
 import { FIND, collect } from "../lib/drops";
-import { label, nextAction, refinement, relicSources, STATES, type TierPlan } from "../lib/exact";
+import { label, nextAction, refinement, RELIC_SOURCE_IDS, relicSources, STATES, type TierPlan } from "../lib/exact";
 import { readRelics, writeRelics, type MyRelics } from "../lib/myrelics";
 import { useExact } from "../lib/useExact";
 import { Badge, Countdown, Skeleton } from "./parts";
-const SRC = FIND.filter(f => ["missionRewards", "cetusBountyRewards", "solarisBountyRewards", "zarimanRewards", "transientRewards"].includes(f.id)).map(f => ({ id: f.id, file: f.file }));
+const SRC = FIND.filter(f => RELIC_SOURCE_IDS.includes(f.id)).map(f => ({ id: f.id, file: f.file }));
 function Sources({ relic }: { relic: string }) {
   const res = useMany(SRC), { rows, ok } = collect(FIND.filter(f => SRC.some(s => s.id === f.id)).map(f => { const i = SRC.findIndex(s => s.id === f.id); return { f, rec: res[i].rec, status: res[i].status }; }));
   if (!ok) return <p className="muted">Loading drop tables…</p>;
