@@ -1,4 +1,6 @@
-# FarmFrame v0.33 (performance: shared timer, memoized catalogs, deferred search, Supabase off the first load; grouped navigation with hubs)
+# FarmFrame v0.35 (currency icons, per-reward relic value table, junk mods hidden, in-site lore)
+<!-- v0.34 --> (AI build analysis through a server function, search covers the catalogs)
+<!-- v0.33 --> (performance: shared timer, memoized catalogs, deferred search, Supabase off the first load; grouped navigation with hubs)
 <!-- v0.32 --> (fresher catalog from warframe-items on GitHub, mod cards, detailed item info, Lore page, companion/railjack filters)
 <!-- v0.31 --> (relics by item, mod market prices, companions/archwings/railjack catalogs)
 <!-- v0.30 --> (full Prime set price on item pages and builds, with comparison against buying the parts)
