@@ -9,6 +9,10 @@ const P: Record<string, string> = {
   "/companions": "M8 20c0-3 2-5 4-5s4 2 4 5M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 12l3 1M21 12l-3 1",
   "/archwings": "M3 8l9 4 9-4-3 9-6-3-6 3z",
   "/railjack": "M4 17h16M6 17l2-7h8l2 7M10 10V6h4v4",
+  "/lore": "M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h10",
+  "/explore": "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z",
+  "/farm": "M12 3v4M12 17v4M3 12h4M17 12h4M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  "/plan": "M4 6h16M4 12h10M4 18h6",
   "/mods": "M6 4h12v16H6zM9 8h6M9 12h6M9 16h3",
   "/relics": "M12 3 19 12 12 21 5 12z",
   "/fissures": "M12 3v6l-3 3 4 3-2 6",
@@ -37,3 +41,11 @@ export const TierIcon = ({ tier, size = 22 }: { tier: string; size?: number }) =
     </svg>
   );
 };
+const POL: Record<string, string> = {
+  madurai: "M4 4l8 16 8-16", vazarin: "M6 4v16h6a8 8 0 0 0 0-16z", naramon: "M5 5l14 14M19 5L5 19", zenurik: "M12 3l8 5v8l-8 5-8-5V8z",
+  unairu: "M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", penjaga: "M4 20l8-16 8 16z", any: "M12 3v18M3 12h18M6 6l12 12M18 6L6 18",
+};
+/** Simple polarity glyphs (original shapes, not the game's artwork). */
+export const PolIcon = ({ pol, size = 16 }: { pol: string | null; size?: number }) => pol && POL[pol.toLowerCase()] ? (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" role="img" aria-label={pol + " polarity"}><path d={POL[pol.toLowerCase()]} /></svg>
+) : null;
