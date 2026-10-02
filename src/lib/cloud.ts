@@ -1,4 +1,4 @@
-export const KEYS = ["ff.track", "ff.goals", "ff.goalprog", "ff.res", "ff.builds"] as const;
+export const KEYS = ["ff.track", "ff.goals", "ff.goalprog", "ff.res", "ff.builds", "ff.fav"] as const;
 export type Snap = Record<string, unknown>;
 export function stable(v: unknown): string {
   if (v === null || typeof v !== "object") return JSON.stringify(v) ?? "null";

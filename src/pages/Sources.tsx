@@ -4,7 +4,7 @@ import { parseRelicImages } from "../lib/vault";
 import { VERSION } from "../version";
 import { Badge } from "./parts";
 export default function Sources() {
-  useWorld("fissures", (d): d is unknown => true);
+  useWorld("fissures", (_d): _d is unknown => true);
   return (
     <>
       <h1>Data Sources</h1>

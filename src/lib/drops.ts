@@ -59,7 +59,7 @@ const cache = new WeakMap<object, R[] | null>();
 export function collect(items: { f: Finder; rec?: Rec; status: Status }[]) {
   const rows: Row[] = [], gaps: string[] = []; let ok = 0;
   for (const { f, rec, status } of items) {
-    if (!rec || rec.data == null || typeof rec.data !== "object") { gaps.push(`${f.label}: ${status.toLowerCase()}`); continue; }
+    if (!rec || rec.data == null || typeof rec.data !== "object") { gaps.push(`${f.label}: ${rec && rec.data != null ? "unrecognised data shape, ignored" : status.toLowerCase()}`); continue; }
     if (!cache.has(rec.data)) cache.set(rec.data, f.ex(rec.data));
     const r = cache.get(rec.data);
     if (!r) { gaps.push(`${f.label}: unrecognised data shape, ignored`); continue; }

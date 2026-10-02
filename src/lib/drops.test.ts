@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FIND, collect, parseRelics, query } from "./drops";
 import type { Rec } from "./data";
-const rec = (data: unknown): Rec => ({ data, at: 1, err: null, url: "", window: 1, src: "" });
+const rec = (data: unknown): Rec => ({ id: "t", data, at: 1, err: null, url: "", window: 1, src: "" });
 const f = (id: string) => FIND.find(x => x.id === id)!;
 describe("drops", () => {
   it("enemy effective chance", () => {

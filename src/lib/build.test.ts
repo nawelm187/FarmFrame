@@ -11,7 +11,7 @@ it("drain rules", () => {
 });
 it("flags capacity, duplicates, rank", () => {
   const b = newBuild(); b.reactor = false; b.slots[0] = { mod: "vitality", rank: 9 }; b.slots[1] = { mod: "vitality", rank: 5 };
-  const r = evaluate(b, undefined, new Map([["vitality", mod("Vitality", 4, null)]]));
+  const r = evaluate(b, undefined, new Map([["vitality", mod("Vitality", 12, null)]]));
   const t = r.issues.map(i => i.text).join("|");
   expect(t).toContain("more than once"); expect(t).toContain("exceeds max rank"); expect(t).toContain("Capacity exceeded");
 });

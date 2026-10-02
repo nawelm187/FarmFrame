@@ -49,3 +49,6 @@ const POL: Record<string, string> = {
 export const PolIcon = ({ pol, size = 16 }: { pol: string | null; size?: number }) => pol && POL[pol.toLowerCase()] ? (
   <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" role="img" aria-label={pol + " polarity"}><path d={POL[pol.toLowerCase()]} /></svg>
 ) : null;
+export const Star = ({ on }: { on: boolean }) => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="miter" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>
+);
