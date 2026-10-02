@@ -1,3 +1,4 @@
+# FarmFrame v0.42 (Farm Plan relic sources fixed, Prime parts shown as tradable, store prices separated, day and night sky on cycles, vendor portraits, Rotations page)
 # FarmFrame v0.41 (exact relic planning: goal > missing part > exact relic > how to get it > active fissures > refinement; Farm Plan page; Farm Now by exact relics with goal progress; Roadmap next actions and build requirements; build requirements to Roadmap; search intents; Baro Ki'Teer on Home; calculated open-world cycles instead of orange STALE; run no new SQL)
 <!-- v0.40 --> (optional skippable onboarding, data problem reports; run supabase/schema.sql again for the data_reports table)
 <!-- v0.39 --> (trading status per item and part, no prices for untradable things, damage-type icons and blank values handled in game text)
