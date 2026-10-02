@@ -6,10 +6,12 @@ import { parseRelics, relicsByItem, type Relic } from "../lib/drops";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
 import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
 import { ts } from "../lib/format";
+import { Plat } from "../Money";
 import { Prov, Unavailable } from "./parts";
 const STATES = ["Intact", "Exceptional", "Flawless", "Radiant"];
 const isArr = (d: unknown): d is { tier: string; expiry: string }[] => Array.isArray(d);
 type Vals = Record<string, number | null> | "loading" | "error" | null;
+const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
 function RelicValue({ r }: { r: Relic }) {
   const [vals, setVals] = useState<Vals>(null);
   const names = [...new Set(Object.values(r.st).flat().map(x => x.itemName))];
@@ -17,14 +19,20 @@ function RelicValue({ r }: { r: Relic }) {
     setVals("loading"); const out: Record<string, number | null> = {};
     try { for (const n of names) { const st = await fetchStat(n); out[n] = st ? st.median : null; await new Promise(res => setTimeout(res, 400)); } setVals(out); } catch { setVals("error"); }
   };
-  const ev = (s: string) => +((r.st[s] ?? []).reduce((a, x) => a + (typeof vals === "object" && vals && vals[x.itemName] != null ? (x.chance * (vals[x.itemName] as number)) / 100 : 0), 0)).toFixed(1);
-  const missing = typeof vals === "object" && vals ? names.filter(n => vals[n] == null) : [];
-  return (<div className="muted" style={{ marginTop: ".5rem" }}>
+  const base = (r.st.Intact ?? Object.values(r.st)[0] ?? []).slice().sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3));
+  const states = STATES.filter(s => r.st[s]);
+  const part = (v: Record<string, number | null>, s: string, x: { itemName: string; rarity: string }) => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity), p = v[x.itemName]; return y && p != null ? +((y.chance * p) / 100).toFixed(2) : null; };
+  const total = (v: Record<string, number | null>, s: string) => +base.reduce((a, x) => a + (part(v, s, x) ?? 0), 0).toFixed(1);
+  return (<div style={{ marginTop: ".6rem" }}>
     {(vals === null || vals === "error") && <button className="btn" onClick={() => void run()}>Estimate platinum value</button>}
-    {vals === "loading" && <span>Checking {names.length} market prices…</span>}
-    {vals === "error" && <div>Market data unavailable right now.</div>}
-    {vals && typeof vals === "object" && <div><b>Expected value per relic</b> (platinum, live market medians × drop chance): {STATES.filter(s => r.st[s]).map(s => `${s} ${ev(s)}`).join(" · ")}.
-      {" "}{names.filter(n => vals[n] != null).map(n => `${n} ${vals[n]}`).join(", ")}.{missing.length > 0 && ` No market price for ${missing.join(", ")} (counted as 0).`} This is market value, not a farming recommendation.</div>}
+    {vals === "loading" && <span className="muted">Checking {names.length} market prices…</span>}
+    {vals === "error" && <div className="muted">Market data unavailable right now.</div>}
+    {vals && typeof vals === "object" && <>
+      <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th><th>Market price</th>{states.map(s => <th key={s}>{s}</th>)}</tr></thead>
+        <tbody>{base.map(x => <tr key={x.itemName + x.rarity}><td>{x.itemName}</td><td>{x.rarity}</td><td>{vals[x.itemName] != null ? <Plat n={vals[x.itemName] as number} /> : <span className="muted">no price</span>}</td>
+          {states.map(s => { const p = part(vals, s, x); return <td key={s}>{p != null ? <Plat n={p} /> : "—"}</td>; })}</tr>)}</tbody>
+        <tfoot><tr><th colSpan={3}>Expected value per relic</th>{states.map(s => <th key={s}><Plat n={total(vals, s)} /></th>)}</tr></tfoot></table></div>
+      <p className="muted">Each cell is drop chance × live market median for that refinement. Rewards without a market price count as 0. Market value, not a farming recommendation.</p></>}
   </div>);
 }
 function VaultBadge({ name }: { name: string }) {

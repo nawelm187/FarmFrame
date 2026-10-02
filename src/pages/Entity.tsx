@@ -28,7 +28,7 @@ export default function Entity({ cat }: { cat: Cat }) {
         <h1>{e.name}</h1>{e.description && <p className="lead">{e.description}</p>}
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <div className="bar"><Link className="btn" to={`/relics?q=${q}`}>Relics with this</Link><Link className="btn" to={`/finder?q=${q}`}>Where it drops</Link>
-          <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button><a className="btn" href={`https://wiki.warframe.com/w/${encodeURIComponent(e.name.replace(/ /g, "_"))}`} target="_blank" rel="noopener noreferrer">Lore and codex</a>
+          <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button>
           {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
     {cat !== "mod" && cat !== "railjack" && <Details e={e} cat={cat} />}
     {MARKET_ENABLED && e.isPrime && <SetPrice key={e.slug} e={e} />}

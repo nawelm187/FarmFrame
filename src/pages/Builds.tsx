@@ -7,6 +7,8 @@ import { parseCatalog, type Cat } from "../lib/catalog";
 import { useCatalogs } from "../lib/useCatalog";
 import { useMany } from "../lib/data";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
+import BuildAI from "../BuildAI";
+import { Plat } from "../Money";
 import SetPrice from "../SetPrice";
 import { Unavailable } from "./parts";
 const ARC_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arcanes.json";
@@ -50,6 +52,12 @@ export function BuildEditor() {
     try { for (const m of rq.missingMods) { const st = await fetchStat(m.name, undefined, 0); out[m.slug] = st ? st.median : null; await new Promise(r => setTimeout(r, 400)); } setPrices(out); } catch { setPrices("error"); }
   };
   const priceTotal = prices && typeof prices === "object" ? +rq.missingMods.reduce((a, m) => a + (prices[m.slug] ?? 0), 0).toFixed(1) : null;
+  const facts = {
+    type: KIND_LABEL[kind], item: frameEnt?.name ?? null, baseStats: frameEnt?.stats ?? [], capacity: { used: ev.total, max: ev.capacity },
+    mods: ev.rows.filter(r => r.m).map(r => ({ slot: r.i + 1, slotPolarity: r.pol, mod: r.m!.name, rank: b.slots[r.i].rank, drain: r.d, effectsAtThisRank: r.m!.levelStats?.[Math.min(b.slots[r.i].rank, Math.max((r.m!.levelStats?.length ?? 1) - 1, 0))] ?? [] })),
+    totals: st.stats.map(s => ({ stat: s.label, bonusPercent: +s.pct.toFixed(1), from: s.parts })), notCalculated: st.unparsed, validation: ev.issues,
+    forma: rq.forma, omniForma: rq.omni, arcanes: rq.arcanes.map(a => a.name), missingMods: rq.missingMods.map(m => m.name),
+  };
   const onAdd = (v: string) => { setQ(v); const m = byName.get(v.trim().toLowerCase()), i = b.slots.findIndex(s => !s.mod); if (m && i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setQ(""); } };
   return (<><h1><input aria-label="Build name" value={b.name} onChange={e => save({ ...b, name: e.target.value })} style={{ fontSize: "1.2rem" }} /></h1>
     <div className="bar"><select aria-label="Build type" value={kind} onChange={e => save({ ...b, kind: e.target.value as Kind, frame: "", haveFrame: false, slots: newBuild().slots, arcanes: undefined })}>{(Object.keys(KIND_LABEL) as Kind[]).map(k => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select><select aria-label="Item" value={b.frame} onChange={e => save({ ...b, frame: e.target.value })}><option value="">Choose {KIND_LABEL[kind].toLowerCase()}</option>{frames.map(f => <option key={f.slug} value={f.slug}>{f.name}</option>)}</select>
@@ -69,11 +77,11 @@ export function BuildEditor() {
       <ul className="list comp"><li><span>{rq.frame.name}</span><label className="muted"><input type="checkbox" checked={!!b.haveFrame} onChange={e => save({ ...b, haveFrame: e.target.checked })} /> I have it {!rq.frame.have && (kind === "warframe" || kind === "primary" || kind === "secondary" || kind === "melee") && <Link to={`/${kind === "warframe" ? "warframe" : "weapon"}/${rq.frame.slug}`}>Open to plan it</Link>}</label></li>
         {rq.forma > 0 && <li><span>Forma <b>×{rq.forma}</b> <span className="muted">from slot polarity changes</span></span><Link to="/farm/Forma%20Blueprint">Farm</Link></li>}
         {rq.omni > 0 && <li><span>Omni Forma <b>×{rq.omni}</b> <span className="muted">for omni (universal) slots</span></span><Link to="/farm/Omni%20Forma%20Blueprint">Farm</Link></li>}
-        {rq.mods.map(m => (<li key={m.slug}><span>{m.name} <span className="muted">rank {m.rank}{m.endo != null ? ` · about ${m.endo} endo` : ""}</span>{prices && typeof prices === "object" && !m.owned && <span className="muted">{prices[m.slug] != null ? ` · about ${prices[m.slug]} platinum (rank 0)` : " · no market price"}</span>}</span>
+        {rq.mods.map(m => (<li key={m.slug}><span>{m.name} <span className="muted">rank {m.rank}{m.endo != null ? ` · about ${m.endo} endo` : ""}</span>{prices && typeof prices === "object" && !m.owned && <span className="muted">{prices[m.slug] != null ? <> · about <Plat n={prices[m.slug] as number} /> (rank 0)</> : " · no market price"}</span>}</span>
           <span><span className={"tag " + (m.owned ? "FRESH" : "ERROR")}>{m.owned ? "Have" : "Missing"}</span> {!m.owned && <Link to={`/farm/${encodeURIComponent(m.name)}`}>Farm</Link>}</span></li>))}
         {rq.arcanes.map(a => (<li key={a.slug}><span>{a.name} <span className="muted">arcane</span></span><span><span className={"tag " + (a.owned ? "FRESH" : "ERROR")}>{a.owned ? "Have" : "Missing"}</span> {!a.owned && <Link to={`/farm/${encodeURIComponent(a.name)}`}>Farm</Link>}</span></li>))}</ul>
       <p className="muted">{rq.missingMods.length} missing mod{rq.missingMods.length === 1 ? "" : "s"}{rq.arcanes.length ? ` and ${rq.missingArcanes.length} missing arcane${rq.missingArcanes.length === 1 ? "" : "s"}` : ""}.{rq.endoKnown && rq.endoTotal > 0 ? ` Endo to rank every mod from zero: about ${rq.endoTotal} (calculated estimate from the standard rule).` : ""} Forma is counted from slot polarity changes when the source lists the Warframe's native polarities.</p>
-      {MARKET_ENABLED && rq.missingMods.length > 0 && <div className="bar">{(prices === null || prices === "error") && <button className="btn" onClick={() => void runPrices()}>Check market prices of missing mods</button>}{prices === "loading" && <span className="muted">Checking {rq.missingMods.length} prices…</span>}{prices === "error" && <span className="muted">Market data unavailable right now.</span>}{priceTotal != null && <span className="muted">Buying all missing mods unranked: about <b>{priceTotal} platinum</b> (sum of medians; mods with no price count as 0). Market value.</span>}</div>}
+      {MARKET_ENABLED && rq.missingMods.length > 0 && <div className="bar">{(prices === null || prices === "error") && <button className="btn" onClick={() => void runPrices()}>Check market prices of missing mods</button>}{prices === "loading" && <span className="muted">Checking {rq.missingMods.length} prices…</span>}{prices === "error" && <span className="muted">Market data unavailable right now.</span>}{priceTotal != null && <span className="muted">Buying all missing mods unranked: about <b><Plat n={priceTotal} /></b> (sum of medians; mods with no price count as 0). Market value.</span>}</div>}
       <div className="bar"><button className="btn" onClick={send} disabled={(!rq.missingMods.length && !rq.missingArcanes.length && !rq.forma && !rq.omni) || sent}>{sent ? "Sent to Tracking" : "Send missing mods to my plan"}</button></div>
       {sent && <p className="muted">Added to Tracking. Home and the farming pages now take them into account.</p>}</>}
     {st.stats.length > 0 && <><h2>Statistics</h2>
@@ -82,5 +90,6 @@ export function BuildEditor() {
           <details><summary>Explain</summary><ul className="sub">{s.parts.map((p, i) => <li key={i}>{p.mod} {p.pct > 0 ? "+" : ""}{p.pct}%</li>)}</ul>
             <p className="muted">{base != null ? `Base ${base} (from the source, before Warframe rank scaling) × (1 + ${+s.pct.toFixed(1)}/100) = ${+(base * (1 + s.pct / 100)).toFixed(1)}. Approximation: rank 30 scaling and in-game rounding are not applied.` : ["strength", "duration", "efficiency", "range"].includes(s.key) ? `100% + ${+s.pct.toFixed(1)}% = ${+(100 + s.pct).toFixed(1)}%. In-game caps and diminishing returns are not applied.` : `Sum of the listed bonuses: ${+s.pct.toFixed(1)}%. They add to the item's own base value; in-game rounding and caps are not applied.`}</p></details></li>); })}</ul>
       <p className="muted">Only effects the source lists as plain percentages are counted, at the rank you set. Conditional effects are not included.{st.unparsed.length > 0 && ` Not calculated: ${st.unparsed.slice(0, 6).join("; ")}${st.unparsed.length > 6 ? ` and ${st.unparsed.length - 6} more` : ""}.`}</p></>}
+    {b.slots.some(s => s.mod) && <BuildAI facts={facts} />}
     <p className="muted">Scope: capacity, validation and percentage-based statistics. Drain uses the standard rules (base + rank, polarity match halves, mismatch +25%) on data from a community source. Aura, exilus, shards and full weapon damage calculation are not included yet. Weapon arcanes are not supported yet.</p></>);
 }

@@ -4,6 +4,7 @@ import { value } from "../lib/farmNow";
 import { baroMatches, expired, isExp, type Archon, type Sortie, type Steel, type Trader, type Wave } from "../lib/planner";
 import { useFarmNow } from "../lib/useFarmNow";
 import { useNeeded } from "../lib/useNeeded";
+import { Credits } from "../Money";
 import { Countdown, Panel, Unavailable } from "./parts";
 const isSortie = (d: unknown): d is Sortie => isExp(d), isArchon = (d: unknown): d is Archon => isExp(d), isSteel = (d: unknown): d is Steel => isExp(d), isWave = (d: unknown): d is Wave => isExp(d), isTrader = (d: unknown): d is Trader => isExp(d);
 function Sortie() {
@@ -36,7 +37,7 @@ function VoidTrader() {
   if (!data.active) return <Panel title="Void Trader" status={status} rec={rec}><b>Not here yet</b>{data.location && <span className="muted"> · arrives at {data.location}</span>}{data.activation && <div><Countdown exp={data.activation} pre="arrives in " /></div>}</Panel>;
   const hit = baroMatches(data, needed);
   return <Panel title="Void Trader" status={status} rec={rec}><b>{data.location}</b><div><Countdown exp={data.expiry} pre="leaves in " /></div>
-    {hit.length ? <p><b>Stock you need:</b> {hit.map(i => `${i.item}${i.ducats != null ? ` (${i.ducats} ducats, ${i.credits ?? "?"} credits)` : ""}`).join(", ")}</p> : <p className="muted">Nothing in his stock matches what you still need (matched by item name).</p>}</Panel>;
+    {hit.length ? <p><b>Stock you need:</b> {hit.map((i, k) => <span key={i.item}>{k > 0 && ", "}{i.item}{i.ducats != null && <> ({i.ducats} ducats, {i.credits != null ? <Credits n={i.credits} /> : "? credits"})</>}</span>)}</p> : <p className="muted">Nothing in his stock matches what you still need (matched by item name).</p>}</Panel>;
 }
 export default function Planner() {
   const { goals, opps, fis, inv } = useFarmNow(), trader = useWorld("voidTrader", isTrader), needed = useNeeded();
