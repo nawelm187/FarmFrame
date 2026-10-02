@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Entity } from "./lib/catalog";
 import { fetchStat, type Stat } from "./lib/market";
+import { Plat } from "./Money";
 type V = { r0: Stat | null; rm: Stat | null; at: number } | "loading" | "error";
-const line = (s: Stat) => `${s.median} platinum median (low ${s.min}, high ${s.max}, ${s.volume} traded)`;
+const line = (s: Stat) => <><Plat n={s.median} /> median (low <Plat n={s.min} />, high <Plat n={s.max} />, {s.volume} traded)</>;
 /** Live market price of a mod, unranked and at max rank when it has ranks. */
 export default function ModPrice({ e }: { e: Entity }) {
   const [v, setV] = useState<V>("loading");

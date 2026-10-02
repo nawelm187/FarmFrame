@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { fetchAny, type Stat } from "./lib/market";
+import { Plat } from "./Money";
 type S = { st: Stat; at: number } | "loading" | "error" | "none" | null;
 /** On-demand market lookup (dynamic data from warframe.market, community-run). Nothing is shown unless the response is complete. */
 export default function MarketCheck({ name, alt }: { name: string; alt?: string }) {
@@ -14,6 +15,6 @@ export default function MarketCheck({ name, alt }: { name: string; alt?: string 
     {s === "loading" && <span>Checking market…</span>}
     {s === "error" && <div>Market data unavailable (the market service did not answer or has no data for this exact item).</div>}
     {s === "none" && <div>No market data found for this item.</div>}
-    {s && typeof s === "object" && <div><b>Market value</b> (dynamic): median {s.st.median} platinum · low {s.st.min} · high {s.st.max} · {s.st.volume} traded in the last bucket. warframe.market, fetched {new Date(s.at).toLocaleTimeString()}. This is not a farming value.</div>}
+    {s && typeof s === "object" && <div><b>Market value</b> (dynamic): median <Plat n={s.st.median} /> · low <Plat n={s.st.min} /> · high <Plat n={s.st.max} /> · {s.st.volume} traded in the last bucket. warframe.market, fetched {new Date(s.at).toLocaleTimeString()}. This is not a farming value.</div>}
   </div>);
 }

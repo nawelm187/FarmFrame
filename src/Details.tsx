@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
 import type { Cat, Entity } from "./lib/catalog";
+import { Credits, Plat } from "./Money";
 type R = Record<string, unknown>;
-type Row = [string, string];
+type Row = [string, ReactNode];
 const isR = (v: unknown): v is R => !!v && typeof v === "object" && !Array.isArray(v);
 const n = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const s = (v: unknown) => (typeof v === "string" && v ? v : null);
@@ -8,7 +10,7 @@ const f = (v: number) => String(+v.toFixed(2));
 const pct = (v: number) => `${f(v <= 1 ? v * 100 : v)}%`;
 const time = (sec: number) => (sec >= 3600 ? `${f(sec / 3600)} h` : `${f(sec / 60)} min`);
 const DMG = ["Impact", "Puncture", "Slash", "Cold", "Electricity", "Heat", "Toxin", "Blast", "Radiation", "Gas", "Magnetic", "Viral", "Corrosive", "Void", "Tau", "Cinematic", "Shield drain", "Health drain", "Energy drain", "True"];
-const num = (rows: Row[], raw: R, key: string, label: string, fmt: (x: number) => string = f) => { const v = n(raw[key]); if (v != null && v !== 0) rows.push([label, fmt(v)]); };
+const num = (rows: Row[], raw: R, key: string, label: string, fmt: (x: number) => ReactNode = f) => { const v = n(raw[key]); if (v != null && v !== 0) rows.push([label, fmt(v)]); };
 const txt = (rows: Row[], raw: R, key: string, label: string) => { const v = s(raw[key]); if (v) rows.push([label, v]); };
 /** Everything the source knows about an item, grouped like a codex entry. Missing fields are simply left out. */
 export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
@@ -33,7 +35,7 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
   const aura = Array.isArray(raw.aura) ? raw.aura.filter((x): x is string => typeof x === "string").join(", ") : s(raw.aura); if (aura) info.push(["Aura polarity", aura]);
   const intro = isR(raw.introduced) ? [s(raw.introduced.name), s(raw.introduced.date)].filter(Boolean).join(" · ") : null; if (intro) info.push(["Introduced", intro]);
   txt(info, raw, "releaseDate", "Release date"); txt(info, raw, "vaultDate", "Vault date");
-  num(info, raw, "buildPrice", "Foundry cost (credits)"); num(info, raw, "buildTime", "Build time", time); num(info, raw, "skipBuildTimePrice", "Rush cost (platinum)"); num(info, raw, "marketCost", "Market price (platinum)");
+  num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(info, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(info, raw, "marketCost", "Market price", x => <Plat n={x} />);
   if (typeof raw.tradable === "boolean") info.push(["Tradable", raw.tradable ? "Yes" : "No"]);
   if (info.length) secs.push({ title: "Information", rows: info });
   const abilities = Array.isArray(raw.abilities) ? raw.abilities.filter(isR).map(a => ({ name: s(a.name), description: s(a.description) })).filter(a => a.name) : [], passive = s(raw.passiveDescription);

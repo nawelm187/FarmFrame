@@ -99,3 +99,4 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .grphead{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-top:.5rem}.grphead.active{color:var(--t1)}
 .hubgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.7rem}.hubtile{display:flex;gap:.7rem;align-items:flex-start;background:var(--b2);border-left:2px solid var(--b4);padding:.8rem;text-decoration:none;color:var(--t1)}.hubtile:hover{border-left-color:var(--gold);background:var(--b3)}.hubtile span{display:block}
 @media(max-width:700px){.grp{display:contents}.sublink{display:none}nav .tab{flex:1 1 0;justify-content:center;text-align:center}.grphead{text-transform:none;letter-spacing:0;font-size:.68rem;margin-top:0;color:var(--t2)}.grphead.active{color:var(--t1)}}
+.money{display:inline-flex;align-items:center;gap:.25rem;font-variant-numeric:tabular-nums;white-space:nowrap}.money img,.money svg{flex:none}

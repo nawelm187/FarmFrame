@@ -1,12 +1,17 @@
 import { useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { CATS, type Cat } from "./lib/catalog";
 import { useMany } from "./lib/data";
+import { useCatalogs } from "./lib/useCatalog";
 import { parseRelics } from "./lib/drops";
 import { search, type Hit } from "./lib/search";
 export default function Palette({ onClose }: { onClose: () => void }) {
   const [{ rec }] = useMany([{ id: "relics", file: "relics.json" }]);
   const [q, setQ] = useState(""), [sel, setSel] = useState(0), nav = useNavigate();
-  const hits = search(q, parseRelics(rec?.data));
+  const cats: Cat[] = q.trim().length >= 3 ? ["warframe", "weapon", "companion", "archwing", "mod"] : ["warframe", "weapon", "companion", "archwing"];
+  const loaded = useCatalogs(cats);
+  const ents = cats.flatMap(c => (loaded[c]?.items ?? []).map(e => ({ name: e.name, cat: c, slug: e.slug, label: CATS[c].label.replace(/s$/, "") })));
+  const hits = search(q, parseRelics(rec?.data), ents);
   const go = (h?: Hit) => { if (h) { nav(h.to); onClose(); } };
   const key = (e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
