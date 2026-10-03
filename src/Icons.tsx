@@ -21,6 +21,7 @@ const P: Record<string, string> = {
   "/tracking": "M4 12l5 5L20 6",
   "/sources": "M4 6c0-1.5 3.5-3 8-3s8 1.5 8 3-3.5 3-8 3-8-1.5-8-3zM4 6v12c0 1.5 3.5 3 8 3s8-1.5 8-3V6",
 };
+P["/patches"] ??= P["/lore"];
 P["/farm-plan"] ??= P["/planner"] ?? P["/finder"];
 P["/rotations"] ??= P["/planner"] ?? P["/finder"];
 export const Icon = ({ n }: { n: string }) => (

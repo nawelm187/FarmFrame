@@ -4,9 +4,10 @@ import CycleSky from "../CycleSky";
 import Onboarding from "../Onboarding";
 import { readBuilds } from "../lib/build";
 import { projectCycle } from "../lib/cycles";
-import { useNow, useRefreshAt, useWorld } from "../lib/data";
+import { useMany, useNow, useRefreshAt, useWorld } from "../lib/data";
 import { ts } from "../lib/format";
 import { label } from "../lib/exact";
+import { PATCH_ALT, PATCH_SRC, PATCH_URL, PATCH_WINDOW, latestUpdate, parsePatches } from "../lib/patchlogs";
 import { useFarmNow } from "../lib/useFarmNow";
 import { VERSION } from "../version";
 import OppList from "./OppList";
@@ -25,6 +26,12 @@ function Cycle({ title, k }: { title: string; k: string }) {
   // A phase that has not ended is still true even if the last retrieval is a few minutes old, so it is not flagged STALE.
   return <Panel title={title} status={p.calculated ? "CALCULATED" : status === "STALE" ? "FRESH" : status} rec={rec}><CycleSky k={k} state={p.state} expiry={p.expiry} now={now} /><b>{p.state}</b><br /><Countdown exp={p.expiry} pre="ends in " />
     {p.calculated && <div className="muted">Calculated from the last verified cycle while live data refreshes.</div>}</Panel>;
+}
+/** Newest full update from the patch-notes dataset. Shows nothing when the data is unavailable instead of guessing. */
+function LatestUpdate() {
+  const [r] = useMany([{ id: "patchlogs", file: "", url: PATCH_URL, alt: PATCH_ALT, src: PATCH_SRC, win: PATCH_WINDOW }]);
+  const d = parsePatches(r.rec?.data), p = d ? latestUpdate(d.patches) : null;
+  return p ? <p className="muted">Latest update: <Link to={"/patches?q=" + encodeURIComponent(p.name)}>{p.name}</Link> ({new Date(p.date).toLocaleDateString()}) · <Link to="/patches">Patch notes</Link></p> : null;
 }
 function FissureCount() {
   const { data, status, rec } = useWorld("fissures", isFis);
@@ -48,6 +55,7 @@ export default function Home() {
     <h1>FarmFrame</h1>
     <p className="lead">Goal, what you are missing, how to get it, and what you can do right now.</p>
     <Onboarding />
+    <LatestUpdate />
     <FarmRightNow f={f} />
     <h2>World state</h2>
     <div className="grid">
@@ -57,7 +65,7 @@ export default function Home() {
     <h2>Your plan</h2>
     <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/farm-plan">Farm Plan</Link> · <Link to="/planner">Planner</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>
     <h2>Tools</h2>
-    <p><Link to="/finder">Resource Finder</Link> · <Link to="/relics">Relics</Link> · <Link to="/invasions">Invasions</Link> · <Link to="/sources">Data sources</Link></p>
+    <p><Link to="/finder">Resource Finder</Link> · <Link to="/relics">Relics</Link> · <Link to="/invasions">Invasions</Link> · <Link to="/patches">Patch notes</Link> · <Link to="/sources">Data sources</Link></p>
     <p className="muted">FarmFrame v{VERSION}</p>
   </>);
 }

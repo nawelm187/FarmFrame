@@ -113,7 +113,7 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .dmgic{vertical-align:middle;margin-right:.25rem;flex:none}.unk{border-bottom:1px dotted var(--t3);color:var(--t3);font-style:italic}
 .tr-yes{color:var(--acc)}.tr-no{color:var(--t3)}.tr-mixed{color:var(--gold)}
 .onb{margin-bottom:1rem}.onb .row{display:flex;justify-content:space-between;align-items:center;gap:.8rem}.onb h2{margin:0}
-.report{margin:2rem 0 1rem}.report label{display:block;margin-bottom:.6rem}.report select,.report textarea{width:100%;max-width:32rem;background:var(--b1);color:var(--t1);border:1px solid var(--b4);padding:.5rem;font:inherit}.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.report{margin:2rem 0 1rem}.report label{display:block;margin-bottom:.6rem}.report select,.report textarea{width:100%;max-width:32rem;background:var(--b1);color:var(--t1);border:1px solid var(--b4);padding:.5rem;font:inherit}.disclaimer{max-width:42rem;font-size:.8rem}
 .CALCULATED{color:var(--acc);border-color:var(--b4);border-style:dashed}
 /* v0.41: farm plan, exact relics, goal progress */
 .relicchip.own{border-color:var(--acc)}.relicchip{text-decoration:none}
@@ -130,3 +130,6 @@ nav{box-shadow:inset -1px 0 0 rgba(255,255,255,.03)}
 .npc{display:flex;flex-direction:column;align-items:center;gap:.3rem;margin:0 0 .5rem;text-align:center}.npc img,.npc svg{width:var(--s,72px);height:var(--s,72px);object-fit:cover;background:var(--b3);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
 .npc figcaption{display:flex;flex-direction:column;font-size:.85rem}
 .storebox{margin:.6rem 0}.storebox summary{cursor:pointer;color:var(--t3)}
+
+.linkbtn{background:none;border:0;padding:0;color:var(--gold);text-decoration:underline;cursor:pointer;font:inherit}
+.patchtext{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--t2);max-height:32rem;overflow:auto}details.panel summary{cursor:pointer}
