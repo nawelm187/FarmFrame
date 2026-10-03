@@ -13,6 +13,8 @@ El nombre del archivo es el nombre del personaje en minúsculas, con guiones.
 | Darvo | `darvo.png` | Rotations (oferta diaria) |
 | Cephalon Simaris | `cephalon-simaris.png` | Rotations (Synthesis) |
 | Nora Night | `nora-night.png` | Planner (Nightwave) |
+| Palladino | `palladino.png` | Rotations (Riven vendor) |
+| Acrithis | `acrithis.png` | Rotations (Duviri vendor) |
 | Archon Amar | `archon-amar.png` | Planner (Archon Hunt, según la semana) |
 | Archon Nira | `archon-nira.png` | Planner (Archon Hunt, según la semana) |
 | Archon Boreal | `archon-boreal.png` | Planner (Archon Hunt, según la semana) |
