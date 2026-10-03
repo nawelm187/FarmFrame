@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countOf, datasetHealth, healthTag, nextStat, worst, type LoadStat } from "./health";
+import { allExpired, bust, countOf, datasetHealth, healthTag, nextStat, worst, type LoadStat } from "./health";
 const rec = (o: Partial<{ data: unknown; at: number | null; err: string | null; window: number }> = {}) => ({ id: "x", data: [1], at: 1000, err: null, url: "", window: 500, src: "", ...o });
 describe("health", () => {
   it("counts records and folds outcomes, resetting the failure streak on success", () => {
@@ -15,4 +15,10 @@ describe("health", () => {
     expect(datasetHealth(rec(), nextStat(undefined, { ok: true, at: 1, ms: 1, http: 200, data: [], drift: ["empty response"] }), 1200)).toBe("SCHEMA_DRIFT");
     expect(worst(["HEALTHY", "STALE", "DOWN"])).toBe("DOWN"); expect(worst([])).toBe("UNKNOWN"); expect(healthTag("DOWN")).toBe("ERROR"); expect(healthTag("HEALTHY")).toBe("FRESH");
   });
+});
+it("spots a list that is entirely in the past and builds a cache-busting address", () => {
+  const past = "2020-01-01T00:00:00Z", future = "2999-01-01T00:00:00Z";
+  expect(allExpired([{ expiry: past }, { expiry: past }])).toBe(true); expect(allExpired([{ expiry: past }, { expiry: future }])).toBe(false);
+  expect(allExpired([])).toBe(false); expect(allExpired({ expiry: past })).toBe(false); expect(allExpired([{ id: 1 }])).toBe(false);
+  expect(bust("https://x.test/a", 5)).toBe("https://x.test/a?_=5"); expect(bust("https://x.test/a?b=1", 5)).toBe("https://x.test/a?b=1&_=5");
 });

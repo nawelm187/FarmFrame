@@ -29,3 +29,10 @@ it("daily deal, arbitration, kuva, simaris and anomaly views", () => {
   expect(simarisView({ target: "Mutalist Alad V", isTargetActive: true })).toEqual({ target: "Mutalist Alad V", active: true });
   expect(anomalyView([{ active: true, mission: { node: "Hydron", faction: "Sentient", type: "Defense" } }])?.faction).toBe("Sentient");
 });
+import { arbView as arb2 } from "./rotations";
+it("arbitration placeholder from the source is no data", () => {
+  const now = Date.parse("2026-10-03T00:00:00Z");
+  expect(arb2({ node: "SolNode000", type: "Unknown", enemy: "Tenno", expired: true, expiry: "+275760-09-13T00:00:00.000Z" }, now)).toBeNull();
+  expect(arb2({ node: "Hydron (Sedna)", type: "Defense", expiry: "2026-10-03T01:00:00Z" }, now)?.node).toBe("Hydron (Sedna)");
+  expect(arb2({ node: "Hydron (Sedna)", expiry: "2026-10-02T01:00:00Z" }, now)).toBeNull();
+});

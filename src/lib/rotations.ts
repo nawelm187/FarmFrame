@@ -43,7 +43,12 @@ export function dealsView(d: unknown) {
   const a = Array.isArray(d) ? d : isO(d) ? [d] : [];
   return a.filter(isO).map(x => { const t = num(x.total), s = num(x.sold); return { item: str(x.item) ?? "", price: num(x.salePrice), original: num(x.originalPrice), left: t != null && s != null ? Math.max(0, t - s) : null, expiry: str(x.expiry) }; }).filter(x => x.item);
 }
-export function arbView(d: unknown) { if (!isO(d)) return null; const node = str(d.node); return node ? { node, type: str(d.type), enemy: str(d.enemy), expiry: str(d.expiry) } : null; }
+/** The source sends a placeholder ("SolNode000", expired, ends in the year 275760) when no arbitration is scheduled. That is "no data", not an arbitration. */
+export function arbView(d: unknown, now = Date.now()) {
+  if (!isO(d)) return null; const node = str(d.node); if (!node || /^SolNode0+$/i.test(node) || d.expired === true) return null;
+  const end = Date.parse(str(d.expiry) ?? ""); if (Number.isFinite(end) && (end < now || end - now > 400 * 864e5)) return null;
+  return { node, type: str(d.type) === "Unknown" ? null : str(d.type), enemy: str(d.enemy), expiry: str(d.expiry) };
+}
 export function kuvaView(d: unknown) { return (Array.isArray(d) ? d : []).filter(isO).map(x => ({ node: str(x.node) ?? "", type: str(x.type), enemy: str(x.enemy), expiry: str(x.expiry) })).filter(x => x.node); }
 export function simarisView(d: unknown) { if (!isO(d)) return null; const t = str(d.target); return t ? { target: t, active: d.isTargetActive === true } : null; }
 export function anomalyView(d: unknown) {

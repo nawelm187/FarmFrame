@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { cget, cset } from "./idb";
-import { countOf, nextStat, type LoadStat } from "./health";
+import { allExpired, bust, countOf, nextStat, type LoadStat } from "./health";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
 export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
 export const API = "https://api.warframestat.us/pc/";
@@ -25,8 +25,11 @@ export async function load(id: string, url: string, window: number, src: string,
     const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); http = res.status; if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
+    // A caching layer in front of the API can answer with an old copy. If every entry has already ended, ask once more with a unique address.
+    let old = false;
+    if (allExpired(data)) { try { const fresh = await get(bust(used)); if (allExpired(fresh)) old = true; else data = fresh; } catch { old = true; } }
     const at = Date.now();
-    recs.set(id, { id, data, at, err: null, url: used, window, src });
+    recs.set(id, { id, data, at, err: old ? "The source is serving old data (every entry has already ended)" : null, url: used, window, src });
     stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: countOf(data) === 0 ? ["empty response"] : [] }));
     if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {

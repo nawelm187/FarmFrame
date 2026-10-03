@@ -35,3 +35,8 @@ const RANK: Health[] = ["DOWN", "BLOCKED", "RATE_LIMITED", "SCHEMA_DRIFT", "STAL
 export const worst = (hs: Health[]): Health => RANK.find(h => hs.includes(h)) ?? "UNKNOWN";
 /** CSS class (one of the existing tag colors) for a health state. */
 export const healthTag = (h: Health) => (h === "HEALTHY" ? "FRESH" : h === "UNKNOWN" ? "UNAVAILABLE" : h === "DEGRADED" || h === "STALE" || h === "SCHEMA_DRIFT" ? "STALE" : "ERROR");
+/** True when a list of timed entries is non-empty and every one has already ended: the source (or its cache) is serving old data. */
+export const allExpired = (d: unknown, now = Date.now()): boolean =>
+  Array.isArray(d) && d.length > 0 && d.every(x => !!x && typeof x === "object" && typeof (x as { expiry?: unknown }).expiry === "string" && Date.parse((x as { expiry: string }).expiry) < now);
+/** The same address with a unique query value, so a caching layer in front of the API cannot answer from an old copy. */
+export const bust = (u: string, now = Date.now()) => u + (u.includes("?") ? "&" : "?") + "_=" + now;
