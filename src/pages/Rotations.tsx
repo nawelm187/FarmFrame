@@ -8,6 +8,7 @@ import { Countdown, Panel, Unavailable } from "./parts";
 const ok = (d: unknown): d is object => !!d && typeof d === "object";
 const at = (d: unknown) => { const e = (Array.isArray(d) ? d[0] : d) as { expiry?: unknown } | null; return typeof e?.expiry === "string" ? Date.parse(e.expiry) : null; };
 const iso = (ms: number) => new Date(ms).toISOString();
+const dayLabel = (d: string) => { const t = Date.parse(d); return Number.isFinite(t) && /^\d{4}-\d\d-\d\d/.test(d) ? new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" }) : `Day ${d}`; };
 function Teshin() {
   const { data, status, rec } = useWorld("steelPath", ok); useRefreshAt("steelPath", at(data));
   const v = steelView(data);
@@ -15,7 +16,7 @@ function Teshin() {
   return (<Panel title="Steel Path Honors" status={status} rec={rec}><Npc name="Teshin" role="Steel Path Honors shop" />
     {v.current && <p><b>This week:</b> {v.current.name}{v.current.cost != null && <span className="muted"> · {v.current.cost} Steel Essence</span>}</p>}
     {v.rotation.length > 0 && <><div className="muted">Weekly rotation, one step each week:</div><ol className="sub">{v.rotation.map((o, i) => <li key={i} className={o.name === v.current?.name ? "gold" : undefined}>{o.name}{o.cost != null && <span className="muted"> · {o.cost}</span>}{o.name === v.current?.name && " (this week)"}</li>)}</ol></>}
-    {v.evergreens.length > 0 && <><div className="muted">Always available:</div><ul className="sub">{v.evergreens.map((o, i) => <li key={i}>{o.name}{o.cost != null && <span className="muted"> · {o.cost}</span>}</li>)}</ul></>}
+    {v.evergreens.length > 0 && <><div className="muted">Always available (Steel Essence):</div><VendorStock items={v.evergreens.map(o => ({ name: o.name, cost: o.cost ?? undefined }))} /></>}
   </Panel>);
 }
 function Duviri() {
@@ -31,7 +32,7 @@ function Calendar() {
   const v = calendarView(data);
   if (!v || !v.season) return <Unavailable title="1999 Calendar" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
   return (<Panel title="1999 Calendar" status={status} rec={rec}><p><b>{v.season}</b>{v.loop != null && <span className="muted"> · loop {v.loop}</span>}{v.expiry && <> · <Countdown exp={v.expiry} pre="ends in " /></>}</p>
-    {v.days.length > 0 ? <details><summary>{v.days.length} days with events</summary><ul className="sub">{v.days.map(d => <li key={d.day}><b>Day {d.day}</b><span className="muted"> {d.events.join(" · ")}</span></li>)}</ul></details> : <p className="muted">No readable events in the data.</p>}
+    {v.days.length > 0 ? <details><summary>{v.days.length} days with events</summary><ul className="sub">{v.days.map(d => <li key={d.day}><b>{dayLabel(d.day)}</b>{d.groups.map(g => <div key={g.kind}><span className="muted">{g.kind}: </span>{g.items.join(" · ")}</div>)}</li>)}</ul></details> : <p className="muted">No readable events in the data.</p>}
   </Panel>);
 }
 function Varzia() {

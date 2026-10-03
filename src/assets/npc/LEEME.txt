@@ -1,4 +1,4 @@
 Portraits of vendors and characters go in this folder as .png, .webp or .jpg files.
 The file name is the character name in lowercase with dashes. The full list is in NPC_IMAGES.md at the project root:
-baro-ki-teer, varzia, teshin, darvo, cephalon-simaris, nora-night, archon-amar, archon-nira, archon-boreal
+baro-ki-teer, varzia, teshin, darvo, cephalon-simaris, nora-night, archon-amar, archon-nira, archon-boreal, palladino, acrithis
 Without a file here, FarmFrame asks the Warframe wiki for a portrait. If that fails too, a neutral silhouette with the name is shown.

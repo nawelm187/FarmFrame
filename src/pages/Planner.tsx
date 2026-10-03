@@ -18,7 +18,7 @@ function Sortie() {
 function ArchonHunt() {
   const { data, status, rec } = useWorld("archonHunt", isArchon); useRefreshAt("archonHunt", at(data));
   if (!data || expired(data)) return <Unavailable title="Archon Hunt" status={data ? "LOADING" : status} why="No verified data." note="Updating…" rec={rec} />;
-  return <Panel title="Archon Hunt" status={status} rec={rec}><Npc name={data.boss ?? "Archon"} role="Archon Hunt" /><b>{data.boss}</b><div><Countdown exp={data.expiry} pre="resets in " /></div>
+  return <Panel title="Archon Hunt" status={status} rec={rec}>{data.boss && <Npc name={data.boss} role="Archon Hunt" />}<b>{data.boss}</b><div><Countdown exp={data.expiry} pre="resets in " /></div>
     <ul className="sub">{(data.missions ?? []).map((m, i) => <li key={i}>{m.type} · {m.node}</li>)}</ul></Panel>;
 }
 function SteelPath() {

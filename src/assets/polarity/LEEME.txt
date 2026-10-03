@@ -1,0 +1,5 @@
+Official polarity images go in this folder as .png, .webp or .svg files.
+The file name is the polarity name in lowercase:
+madurai, vazarin, naramon, zenurik, unairu, penjaga, umbra, aura, koneksi, any
+("any" is the omni / universal polarity.) The full list is in POLARITY_ICONS.md at the project root.
+Without a file, a small labeled marker with the first three letters is shown instead of an invented symbol.
