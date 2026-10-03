@@ -11,7 +11,7 @@ it("duviri choices accept strings or objects", () => {
 });
 it("calendar keeps only days with readable events", () => {
   const v = calendarView([{ season: "Spring", yearIteration: 2, days: [{ day: "3", events: [{ type: "challenge", challenge: { title: "Do a thing" } }] }, { day: "4", events: [] }] }])!;
-  expect(v.season).toBe("Spring"); expect(v.days).toEqual([{ day: "3", events: ["Do a thing"] }]);
+  expect(v.season).toBe("Spring"); expect(v.days).toEqual([{ day: "3", events: ["Do a thing"], groups: [{ kind: "Challenges", items: ["Do a thing"] }] }]);
 });
 it("archimedea, stock and label", () => {
   expect(archView([{ typeKey: "Deep", missions: [{ missionType: "Survival", faction: "Grineer" }] }])[0].missions).toEqual(["Survival · Grineer"]);

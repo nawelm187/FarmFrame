@@ -46,7 +46,13 @@ export const TierIcon = ({ tier, size = 22 }: { tier: string; size?: number }) =
 };
 const pfiles = import.meta.glob("./assets/polarity/*.{png,webp,svg}", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
 const polArt: Record<string, string> = {};
-for (const [p, u] of Object.entries(pfiles)) polArt[(p.split("/").pop() ?? "").replace(/\.[a-z]+$/i, "").toLowerCase()] = u;
+const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "umbra", "koneksi", "aura", "any"];
+// The file name is matched by the polarity name it contains ("Madurai_icon.png" works). If one file contains two names, the longest/earliest exact one wins and the file is skipped as ambiguous.
+for (const [p, u] of Object.entries(pfiles)) {
+  const base = (p.split("/").pop() ?? "").replace(/\.[a-z]+$/i, "").toLowerCase(), hits = POLS.filter(k => base.includes(k));
+  const key = POLS.includes(base) ? base : hits.length === 1 ? hits[0] : /omni|universal/.test(base) ? "any" : null;
+  if (key) polArt[key] = u;
+}
 const POL_ALIAS: Record<string, string> = { omni: "any", universal: "any" };
 export const polKey = (pol: string) => { const k = pol.toLowerCase().trim(); return POL_ALIAS[k] ?? k; };
 /** Polarity icon. Uses the official image when it exists in src/assets/polarity (file name = polarity name, e.g. madurai.png).

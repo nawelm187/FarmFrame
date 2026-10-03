@@ -17,6 +17,6 @@ export default function VendorStock({ items, needed }: { items: Stock[]; needed?
     {shown.map(g => (<section key={g.cat}><h4>{VCATS.find(c => c[0] === g.cat)?.[1]} <span className="muted">({g.items.length})</span></h4>
       <ul className="sub">{g.items.map((i, n) => { const want = needed?.has(i.name.toLowerCase());
         return <li key={n} className={want ? "gold" : undefined}>{g.cat === "mod" || g.cat === "weapon" || g.cat === "warframe" ? <Link to={`/item/${encodeURIComponent(i.name)}`}>{i.name}</Link> : i.name}{want && " ★ you need this"}
-          {(i.ducats != null || i.credits != null) && <span className="muted"> · {i.ducats != null ? `${i.ducats} ducats` : ""}{i.ducats != null && i.credits != null ? ", " : ""}{i.credits != null && <Credits n={i.credits} />}</span>}</li>; })}</ul></section>))}
+          {i.cost != null && <span className="muted"> · {i.cost}{i.unit ? ` ${i.unit}` : ""}</span>}{(i.ducats != null || i.credits != null) && <span className="muted"> · {i.ducats != null ? `${i.ducats} ducats` : ""}{i.ducats != null && i.credits != null ? ", " : ""}{i.credits != null && <Credits n={i.credits} />}</span>}</li>; })}</ul></section>))}
   </div>);
 }

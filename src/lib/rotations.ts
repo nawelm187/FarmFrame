@@ -19,9 +19,15 @@ export function duviriView(d: unknown) {
   const choices = Array.isArray(d.choices) ? d.choices.filter(isO).map(c => ({ category: str(c.category) ?? str(c.categoryKey) ?? "Choices", items: (Array.isArray(c.choices) ? c.choices : []).map(x => label(x)).filter((x): x is string => !!x) })).filter(c => c.items.length) : [];
   return { state: str(d.state), expiry: str(d.expiry), choices };
 }
+const kindOf = (t: unknown) => { const k = typeof t === "string" ? t.toLowerCase() : ""; return /challenge/.test(k) ? "Challenges" : /reward/.test(k) ? "Rewards" : /upgrade|bonus|override|boost/.test(k) ? "Bonuses" : "Other"; };
+const KORDER = ["Challenges", "Rewards", "Bonuses", "Other"];
 export function calendarView(d: unknown) {
   const o = Array.isArray(d) ? d[0] : d; if (!isO(o)) return null;
-  const days = Array.isArray(o.days) ? o.days.filter(isO).map((x, i) => ({ day: str(x.day) ?? str(x.date) ?? String(i + 1), events: (Array.isArray(x.events) ? x.events : []).map(e => label(e)).filter((s): s is string => !!s) })).filter(x => x.events.length) : [];
+  const days = Array.isArray(o.days) ? o.days.filter(isO).map((x, i) => {
+    const evs = (Array.isArray(x.events) ? x.events : []).map(e => ({ kind: kindOf(isO(e) ? e.type : null), text: label(e) })).filter((e): e is { kind: string; text: string } => !!e.text);
+    const groups = KORDER.map(kind => ({ kind, items: evs.filter(e => e.kind === kind).map(e => e.text) })).filter(g => g.items.length);
+    return { day: str(x.day) ?? str(x.date) ?? String(i + 1), events: evs.map(e => e.text), groups };
+  }).filter(x => x.events.length) : [];
   return { season: str(o.season), loop: typeof o.yearIteration === "number" ? o.yearIteration : null, expiry: str(o.expiry), days };
 }
 export function archView(d: unknown) {

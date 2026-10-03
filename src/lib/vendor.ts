@@ -3,7 +3,7 @@
 export type VCat = "mod" | "weapon" | "warframe" | "cosmetic" | "pack" | "relic" | "part" | "resource" | "other";
 export const VCATS: [VCat, string][] = [["mod", "Mods"], ["weapon", "Weapons"], ["warframe", "Warframes and companions"], ["cosmetic", "Cosmetics and decorations"], ["pack", "Packs"], ["relic", "Relics and Void Projections"], ["part", "Blueprints and parts"], ["resource", "Resources and boosters"], ["other", "Other"]];
 export interface Known { mods: Set<string>; weapons: Set<string>; frames: Set<string> }
-export interface Stock { name: string; ducats?: number | null; credits?: number | null }
+export interface Stock { name: string; ducats?: number | null; credits?: number | null; cost?: number; unit?: string }
 const COSMETIC = /\b(skin|syandana|helmet|ephemera|armou?r|bobble|sigil|glyph|cape|beacon|tail|collar|plates?|guard|scarf|emblem|poster|decoration|decor|ornament|statue|banner|animation|tattoo|hairstyle|lens|plush|kubrow|kavat|cloak|mask|aura mesh|nameplate|display|sticker|color palette|palette)\b/i;
 const PART = /\b(blueprint|chassis|neuroptics|systems|barrel|receiver|stock|blade|hilt|handle|string|grip|link|limbs?|pouch|harness|wings|carapace|cerebrum)\b/i;
 const RESOURCE = /\b(orokin cell|neurode|alloy plate|ferrite|polymer bundle|nano spores|plastids|rubedo|salvage|control module|gallium|morphics|detonite|fieldron|mutagen mass|cryotic|tellurium|argon crystal|neural sensors|forma|catalyst|reactor|kuva|endo|credits?|ducats?|resource|booster|potato|exilus adapter|aura forma|riven)\b/i;
