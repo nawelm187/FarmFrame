@@ -1,7 +1,8 @@
 import Baro from "../Baro";
 import Npc from "../Npc";
 import { useRefreshAt, useWorld } from "../lib/data";
-import { archView, calendarView, duviriView, nextWeeklyReset, steelView, stockView } from "../lib/rotations";
+import { Plat } from "../Money";
+import { anomalyView, arbView, archView, calendarView, dealsView, duviriView, kuvaView, nextWeeklyReset, simarisView, steelView, stockView } from "../lib/rotations";
 import { Countdown, Panel, Unavailable } from "./parts";
 const ok = (d: unknown): d is object => !!d && typeof d === "object";
 const at = (d: unknown) => { const e = (Array.isArray(d) ? d[0] : d) as { expiry?: unknown } | null; return typeof e?.expiry === "string" ? Date.parse(e.expiry) : null; };
@@ -48,6 +49,38 @@ function Archimedeas() {
   return (<Panel title="Archimedea" status={status} rec={rec}>{v.map((a, i) => <div key={i}><b>{a.type}</b>{a.expiry && <> · <Countdown exp={a.expiry} pre="resets in " /></>}
     <ul className="sub">{a.missions.map((m, j) => <li key={j}>{m}</li>)}</ul></div>)}</Panel>);
 }
+function Darvo() {
+  const { data, status, rec } = useWorld("dailyDeals", ok); useRefreshAt("dailyDeals", at(data));
+  const v = dealsView(data);
+  if (!v.length) return <Unavailable title="Daily deal" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Daily deal" status={status} rec={rec}><Npc name="Darvo" role="Daily deal" />{v.map((d, i) => <div key={i}><b>{d.item}</b>
+    <div className="muted">{d.price != null && <>Price <Plat n={d.price} /></>}{d.original != null && <> instead of <Plat n={d.original} /></>}{d.left != null && ` · ${d.left} left`}</div>
+    {d.expiry && <div><Countdown exp={d.expiry} pre="ends in " /></div>}</div>)}<p className="muted">In-game store deal paid with platinum, not a player price.</p></Panel>);
+}
+function Arbitration() {
+  const { data, status, rec } = useWorld("arbitration", ok); useRefreshAt("arbitration", at(data));
+  const v = arbView(data);
+  if (!v) return <Unavailable title="Arbitration" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Arbitration" status={status} rec={rec}><b>{v.node}</b><div className="muted">{[v.type, v.enemy].filter(Boolean).join(" · ")}</div>{v.expiry && <div><Countdown exp={v.expiry} pre="rotates in " /></div>}</Panel>);
+}
+function Kuva() {
+  const { data, status, rec } = useWorld("kuva", ok); useRefreshAt("kuva", Array.isArray(data) ? at(data) : null);
+  const v = kuvaView(data);
+  if (!v.length) return <Unavailable title="Kuva missions" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Kuva missions" status={status} rec={rec}><ul className="sub">{v.slice(0, 8).map((k, i) => <li key={i}><b>{k.node}</b><span className="muted"> {[k.type, k.enemy].filter(Boolean).join(" · ")}</span></li>)}</ul>{v.length > 8 && <p className="muted">Showing 8 of {v.length}.</p>}</Panel>);
+}
+function Simaris() {
+  const { data, status, rec } = useWorld("simaris", ok);
+  const v = simarisView(data);
+  if (!v) return <Unavailable title="Sanctuary" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Sanctuary" status={status} rec={rec}><Npc name="Cephalon Simaris" role="Synthesis target" /><b>{v.target}</b><div className="muted">{v.active ? "Current synthesis target" : "Not currently active"}</div></Panel>);
+}
+function Anomaly() {
+  const { data, status, rec } = useWorld("sentientOutposts", ok); useRefreshAt("sentientOutposts", at(data));
+  const v = anomalyView(data);
+  if (!v) return <Unavailable title="Sentient Anomaly" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
+  return (<Panel title="Sentient Anomaly" status={status} rec={rec}>{v.active ? <><b>{v.node}</b><div className="muted">{[v.type, v.faction].filter(Boolean).join(" · ")}</div>{v.expiry && <div><Countdown exp={v.expiry} pre="ends in " /></div>}</> : <p className="muted">Not active right now.</p>}</Panel>);
+}
 const Fixed = ({ name, role, where, lines }: { name: string; role: string; where: string; lines: string[] }) => (
   <section className="panel"><div className="row"><h3>{name}</h3><span className="tag UNAVAILABLE">Fixed info</span></div><Npc name={name} role={role} />
     <p className="muted">{where}</p><ul className="sub">{lines.map(l => <li key={l}>{l}</li>)}</ul>
@@ -60,6 +93,7 @@ export default function Rotations() {
     <p className="muted"><b>Next weekly reset:</b> <Countdown exp={reset} /> <span>(calculated from the fixed weekly schedule)</span></p>
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
     <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
+    <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><Kuva /><Simaris /><Anomaly /></div>
     <h2>Other weekly vendors</h2><div className="grid">
       <Fixed name="Palladino" role="Iron Wake, Earth" where="Paid with Riven Slivers. Weekly offers include Riven mods, Endo, Kuva and Credits caches, and a Veiled Riven Cipher." lines={["Riven mods", "Endo", "Kuva", "Credits cache", "Veiled Riven Cipher (once a week)"]} />
       <Fixed name="Acrithis" role="Duviri" where="Paid with Pathos Clamps. Weekly offers include Orokin Catalyst and Reactor blueprints, Riven mods and Adapters." lines={["Orokin Catalyst and Reactor", "Riven mods", "Adapters"]} />

@@ -38,3 +38,15 @@ export function nextWeeklyReset(now = Date.now()) {
   const d = new Date(now), add = ((1 - d.getUTCDay() + 7) % 7) || 7;
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + add);
 }
+const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+export function dealsView(d: unknown) {
+  const a = Array.isArray(d) ? d : isO(d) ? [d] : [];
+  return a.filter(isO).map(x => { const t = num(x.total), s = num(x.sold); return { item: str(x.item) ?? "", price: num(x.salePrice), original: num(x.originalPrice), left: t != null && s != null ? Math.max(0, t - s) : null, expiry: str(x.expiry) }; }).filter(x => x.item);
+}
+export function arbView(d: unknown) { if (!isO(d)) return null; const node = str(d.node); return node ? { node, type: str(d.type), enemy: str(d.enemy), expiry: str(d.expiry) } : null; }
+export function kuvaView(d: unknown) { return (Array.isArray(d) ? d : []).filter(isO).map(x => ({ node: str(x.node) ?? "", type: str(x.type), enemy: str(x.enemy), expiry: str(x.expiry) })).filter(x => x.node); }
+export function simarisView(d: unknown) { if (!isO(d)) return null; const t = str(d.target); return t ? { target: t, active: d.isTargetActive === true } : null; }
+export function anomalyView(d: unknown) {
+  const o = Array.isArray(d) ? d[0] : d; if (!isO(o)) return null; const m = isO(o.mission) ? o.mission : null;
+  return { active: o.active === true, expiry: str(o.expiry), node: m ? str(m.node) : null, faction: m ? str(m.faction) : null, type: m ? str(m.type) : null };
+}

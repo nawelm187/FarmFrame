@@ -21,3 +21,11 @@ it("weekly reset is the next Monday 00:00 UTC", () => {
   expect(new Date(nextWeeklyReset(Date.parse("2026-10-07T12:00:00Z"))).toISOString()).toBe("2026-10-12T00:00:00.000Z");
   expect(new Date(nextWeeklyReset(Date.parse("2026-10-12T00:00:01Z"))).toISOString()).toBe("2026-10-19T00:00:00.000Z");
 });
+import { anomalyView, arbView, dealsView, kuvaView, simarisView } from "./rotations";
+it("daily deal, arbitration, kuva, simaris and anomaly views", () => {
+  expect(dealsView([{ item: "Forma", salePrice: 35, originalPrice: 50, total: 20, sold: 5, expiry: "x" }, { price: 3 }])).toEqual([{ item: "Forma", price: 35, original: 50, left: 15, expiry: "x" }]);
+  expect(arbView({ node: "Hydron (Sedna)", type: "Defense", enemy: "Grineer" })?.node).toBe("Hydron (Sedna)"); expect(arbView({})).toBeNull();
+  expect(kuvaView([{ node: "Taveuni (Kuva Fortress)", type: "Survival" }, {}])).toHaveLength(1);
+  expect(simarisView({ target: "Mutalist Alad V", isTargetActive: true })).toEqual({ target: "Mutalist Alad V", active: true });
+  expect(anomalyView([{ active: true, mission: { node: "Hydron", faction: "Sentient", type: "Defense" } }])?.faction).toBe("Sentient");
+});
