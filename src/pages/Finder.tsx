@@ -19,7 +19,7 @@ export default function Finder() {
     {!l && ok > 0 && <p className="muted">Search for a resource, mod, part or item.</p>}
     {l && ok > 0 && !m.length && <p className="muted">No drop for "{q}" in the loaded tables.</p>}
     {m.length > 0 && <div className="wrap"><table><thead><tr><th>Item</th><th>Source</th><th>Location</th><th>Rot.</th><th>Chance</th><th>Rarity</th><th>Detail</th></tr></thead><tbody>
-      {m.map((r, i) => <tr key={i}><td>{r.item}</td><td>{r.src}</td><td>{r.where}{r.mode && r.mode !== r.src ? <span className="muted"> {r.mode}</span> : null}</td><td>{r.rot || "—"}</td><td>{r.ch == null ? "—" : r.ch + "%"}</td><td>{r.rar}</td><td className="muted">{r.note}</td></tr>)}</tbody></table></div>}
+      {m.map((r, i) => <tr key={i}><td><Link to={`/item/${encodeURIComponent(r.item)}`}>{r.item}</Link></td><td>{r.src}</td><td>{r.where}{r.mode && r.mode !== r.src ? <span className="muted"> {r.mode}</span> : null}</td><td>{r.rot || "—"}</td><td>{r.ch == null ? "—" : r.ch + "%"}</td><td>{r.rar}</td><td className="muted">{r.note}</td></tr>)}</tbody></table></div>}
     {m.length > 0 && <p className="muted">Mission chances are per reward roll in that rotation, not per run. Enemy chances combine the enemy's drop chance with the table chance.</p>}
     {rl.length > 0 && <><h2>Relics containing it</h2><p>{rl.map(r => <Link key={r.name} to={`/relics?q=${encodeURIComponent(r.name)}`}>{r.name} </Link>)}</p></>}</>);
 }

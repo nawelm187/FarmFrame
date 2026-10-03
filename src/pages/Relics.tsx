@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import { useMany, useWorld } from "../lib/data";
 import { parseRelics, relicsByItem, type Relic } from "../lib/drops";
@@ -32,7 +32,7 @@ function RelicValue({ r }: { r: Relic }) {
       <div className="chips" role="tablist" aria-label="Refinement">{states.map(s => <button key={s} role="tab" aria-selected={s === cur} className={s === cur ? "on" : ""} onClick={() => setSel(s)}>{s} · <Plat n={total(vals, s)} size={14} /></button>)}</div>
       <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th><th className="num">Drop chance</th><th className="num">Market price</th><th className="num">Worth per relic</th></tr></thead>
         <tbody>{rows(cur).map(x => { const p = vals[x.itemName], w = value(vals, x); return (<tr key={x.itemName + x.rarity}>
-          <td>{x.itemName}</td><td><span className={"rar " + x.rarity}>{x.rarity}</span></td><td className="num">{x.chance}%</td>
+          <td><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td><span className={"rar " + x.rarity}>{x.rarity}</span></td><td className="num">{x.chance}%</td>
           <td className="num">{p != null ? <Plat n={p} /> : <span className="muted">no price</span>}</td><td className="num">{w != null ? <Plat n={w} /> : "—"}</td></tr>); })}</tbody>
         <tfoot><tr><th colSpan={4}>Expected value per relic ({cur})</th><th className="num"><Plat n={total(vals, cur)} /></th></tr></tfoot></table></div>
       <p className="muted">Worth per relic = drop chance × the item's live market median. Rewards with no market price count as 0. Market value, not a farming recommendation.</p></>}
@@ -58,7 +58,7 @@ export default function Relics() {
     <div className="bar"><input aria-label="Relic or item name" placeholder="Relic or item name" value={q} onChange={e => setSp({ q: e.target.value }, { replace: true })} /></div>
     {!l && <p className="muted">Type a relic or item name.</p>}
     {l && !hit.length && <p className="muted">No relic matches "{q}".</p>}
-    {grouped.length > 0 && <><h2>Relics by item</h2>{grouped.map(([item, list]) => (<section className="panel" key={item} style={{ marginBottom: ".6rem" }}><h3>{item}</h3>
+    {grouped.length > 0 && <><h2>Relics by item</h2>{grouped.map(([item, list]) => (<section className="panel" key={item} style={{ marginBottom: ".6rem" }}><h3><Link to={`/item/${encodeURIComponent(item)}`}>{item}</Link></h3>
       <div className="chips">{list.map(x => <button key={x.relic.name} className="relicchip" onClick={() => setSp({ q: x.relic.name }, { replace: true })}><RelicArt tier={x.relic.tier} name={x.relic.name} size={26} /><span>{x.relic.name}</span><span className="muted">{x.rarity}</span><VaultBadge name={x.relic.name} /></button>)}</div></section>))}
       {all.length > hit.length && <p className="muted">Showing {hit.length} of {all.length} matching relics below. Pick a relic above to see only that one.</p>}</>}
     {hit.map(r => { const base = r.st.Intact ?? Object.values(r.st)[0] ?? [];
@@ -66,6 +66,6 @@ export default function Relics() {
       return (<section className="panel" key={r.name} style={{ marginBottom: ".6rem" }}>
         <div className="row"><h3><RelicArt tier={r.tier} name={r.name} size={40} /> {r.name} <VaultBadge name={r.name} /></h3><span className="muted">{n == null ? "Fissure data unavailable" : `${n} active ${r.tier} fissures`}</span></div>
         <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th>{STATES.map(s => <th key={s}>{s}</th>)}</tr></thead><tbody>
-          {base.map(x => <tr key={x.itemName + x.rarity}><td>{x.itemName}</td><td>{x.rarity}</td>{STATES.map(s => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity); return <td key={s}>{y ? y.chance + "%" : "—"}</td>; })}</tr>)}</tbody></table></div>{MARKET_ENABLED && <RelicValue r={r} />}</section>); })}
+          {base.map(x => <tr key={x.itemName + x.rarity}><td><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td>{x.rarity}</td>{STATES.map(s => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity); return <td key={s}>{y ? y.chance + "%" : "—"}</td>; })}</tr>)}</tbody></table></div>{MARKET_ENABLED && <RelicValue r={r} />}</section>); })}
     <Prov rec={rec} /></>);
 }
