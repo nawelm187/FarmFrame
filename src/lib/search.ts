@@ -7,7 +7,7 @@ export function lev(a: string, b: string) {
   return d[a.length][b.length];
 }
 const q2 = (p: string, q: string) => `${p}?q=${encodeURIComponent(q)}`;
-export interface Ent { name: string; cat: string; slug: string; label: string; kind?: string }
+export interface Ent { name: string; cat: string; slug: string; label: string; kind?: string; parts?: string[] }
 const FARM = /^(?:where(?: do i| can i| to)? (?:farm|get|find)|how(?: do i| can i| to)? (?:farm|get|obtain|find)|farm)\s+(.+?)\s*\??$/;
 const RELIC = /^(?:what|which) relics?(?: (?:do|does))? (?:contains?|has|have|drops?|holds?|gives?|includes?)\s+(.+?)\s*\??$|^relics? (?:for|with|containing)\s+(.+?)\s*\??$/;
 const NEED = /^what (?:do|will|would|should) i need (?:for|to (?:build|make|craft|get))\s+(.+?)\s*\??$|^what(?:'s| is) (?:needed|required) (?:for|to (?:build|make|craft))\s+(.+?)\s*\??$|^(?:requirements?|parts?) (?:for|of)\s+(.+?)\s*\??$|^what do i need\s+(.+?)\s*\??$/;
@@ -34,12 +34,17 @@ export function search(q: string, relics: Relic[] | null, ents?: Ent[]): Hit[] {
   if (relics) {
     relics.filter(x => x.name.toLowerCase().includes(l)).slice(0, 4).forEach(x => o.push({ label: x.name, cat: "Relic", to: q2("/relics", x.name), s: 1 }));
     const seen = new Set<string>();
-    for (const x of relics) { for (const y of x.st.Intact ?? []) if (!seen.has(y.itemName) && y.itemName.toLowerCase().includes(l)) { seen.add(y.itemName); o.push({ label: y.itemName, cat: "Item", to: q2("/finder", y.itemName), s: 1 }); } if (seen.size >= 5) break; }
+    for (const x of relics) { for (const y of x.st.Intact ?? []) if (!seen.has(y.itemName) && y.itemName.toLowerCase().includes(l)) { seen.add(y.itemName); o.push({ label: y.itemName, cat: "Item", to: `/item/${enc(y.itemName)}`, s: 1 }); } if (seen.size >= 5) break; }
   }
   if (ents) {
     const hits: Hit[] = [];
     for (const e of ents) { const nm = e.name.toLowerCase(); if (nm.includes(l)) hits.push({ label: e.name, cat: e.label, to: `/${e.cat}/${e.slug}`, s: nm.startsWith(l) ? 0 : 1 }); }
     hits.sort((a, c) => a.s - c.s || a.label.length - c.label.length).slice(0, 8).forEach(h => o.push(h));
+    // Parts and blueprints: "ash prime neuroptics" or "ash prime blueprint" open the part page (what it is, where to get it, price), not the relic list.
+    if (l.length >= 4) { let n = 0;
+      for (const e of ents) { for (const p of e.parts ?? []) {
+        const main = p.toLowerCase() === "blueprint", names = main ? [`${e.name} Blueprint`] : [`${e.name} ${p}`, `${e.name} ${p} Blueprint`];
+        const hit = names.find(x => x.toLowerCase().includes(l)); if (hit && n < 6) { n++; o.push({ label: names[names.length - 1], cat: "Part", to: `/item/${enc(names[names.length - 1])}`, s: hit.toLowerCase().startsWith(l) ? 0.5 : 1.5 }); } } } }
   }
   return o.sort((a, c) => a.s - c.s).slice(0, 9);
 }

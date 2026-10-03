@@ -9,7 +9,7 @@ export type Reach = "browser" | "via-our-function" | "unverified";
 export interface SourceDef {
   id: string; name: string; kind: "official" | "community" | "app"; confidence: Confidence;
   /** Hostnames whose responses count as this source in the health table (only for sources loaded through the shared loader). */
-  hosts: string[]; provides: string; use: "active" | "planned"; reach: Reach;
+  hosts: string[]; /** Dataset ids (as in the loader) that belong to this source when its host is shared with another one. */ recIds?: string[]; provides: string; use: "active" | "planned"; reach: Reach;
   /** Which source takes over when this one fails, if one exists in the app today. */
   fallback?: string; note: string;
 }
@@ -20,8 +20,10 @@ export const SOURCES: SourceDef[] = [
     use: "active", reach: "browser", fallback: "jsDelivr mirror of the same files", note: "Derived from the game's public export. Each file is tried on GitHub first and on the jsDelivr mirror second." },
   { id: "wfcd-drops", name: "WFCD drop data", kind: "community", confidence: "B", hosts: ["drops.warframestat.us"], provides: "Drop tables: relic rewards, enemies, missions, bounties, vendors",
     use: "active", reach: "browser", fallback: "de-drops", note: "Mirror of the official drop tables, refreshed daily." },
-  { id: "wfcd-patchlogs", name: "WFCD warframe-patchlogs (GitHub, jsDelivr mirror)", kind: "community", confidence: "B", hosts: [], provides: "Patch notes: updates and hotfixes with links to the official forum posts",
+  { id: "wfcd-patchlogs", name: "WFCD warframe-patchlogs (GitHub, jsDelivr mirror)", kind: "community", confidence: "B", hosts: [], recIds: ["patchlogs"], provides: "Patch notes: updates and hotfixes with links to the official forum posts",
     use: "active", reach: "browser", fallback: "jsDelivr mirror of the same file", note: "Each entry links to the original Digital Extremes post. The host is shared with the item catalogs, so its health row is the dataset named patchlogs." },
+  { id: "wiki", name: "Warframe wiki (MediaWiki API)", kind: "community", confidence: "C", hosts: [], provides: "Portraits of vendors and characters when no bundled image exists",
+    use: "active", reach: "unverified", note: "Asked only for characters without a bundled image and remembered for a week. Not tested from the build environment, so a failure simply leaves the silhouette. Bundled images in src/assets/npc always win." },
   { id: "wfcd-cdn", name: "WarframeStat image CDN", kind: "community", confidence: "B", hosts: ["cdn.warframestat.us"], provides: "Item and relic images",
     use: "active", reach: "browser", note: "Images are not downloaded by the data loader, so they have no health row. A missing image shows a neutral placeholder." },
   { id: "warframe-market", name: "warframe.market (through our Supabase function)", kind: "community", confidence: "C", hosts: [], provides: "Platinum prices, checked on demand per item",

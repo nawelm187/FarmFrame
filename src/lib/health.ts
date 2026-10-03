@@ -33,3 +33,5 @@ export function datasetHealth(rec: Rec | undefined, st: LoadStat | undefined, no
 const RANK: Health[] = ["DOWN", "BLOCKED", "RATE_LIMITED", "SCHEMA_DRIFT", "STALE", "DEGRADED", "HEALTHY", "UNKNOWN"];
 /** Worst health wins; UNKNOWN only when nothing was measured. */
 export const worst = (hs: Health[]): Health => RANK.find(h => hs.includes(h)) ?? "UNKNOWN";
+/** CSS class (one of the existing tag colors) for a health state. */
+export const healthTag = (h: Health) => (h === "HEALTHY" ? "FRESH" : h === "UNKNOWN" ? "UNAVAILABLE" : h === "DEGRADED" || h === "STALE" || h === "SCHEMA_DRIFT" ? "STALE" : "ERROR");

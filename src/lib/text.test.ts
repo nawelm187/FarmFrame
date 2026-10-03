@@ -15,3 +15,6 @@ it("turns damage tags into markers and keeps blanks visible as blanks", () => {
   expect(t.filter(x => x.k === "unk")).toHaveLength(1);
   expect(t.filter(x => x.k === "t").map(x => x.v).join("")).toContain("% more ");
 });
+it("turns a literal backslash-n from the source into a real line break", () => {
+  expect(clean("When Damaged:\\n+10% Resistance")).toBe("When Damaged:\n+10% Resistance");
+});

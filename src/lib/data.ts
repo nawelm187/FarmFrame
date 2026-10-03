@@ -1,10 +1,14 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { cget, cset } from "./idb";
+import { countOf, nextStat, type LoadStat } from "./health";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
 export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
 export const API = "https://api.warframestat.us/pc/";
 export const WS_WINDOW = 150_000;
 const reqs = new Map<string, { url: string; window: number; src: string; alt?: string }>(), recs = new Map<string, Rec>(), loading = new Set<string>(), subs = new Set<() => void>();
+const stats = new Map<string, LoadStat>();
+/** Measured request outcomes per dataset (latency, HTTP status, record count, failure streak). Feeds the health table. */
+export const allStats = () => stats;
 let ver = 0;
 const emit = () => { ver++; subs.forEach(f => f()); };
 const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
@@ -15,17 +19,19 @@ export async function load(id: string, url: string, window: number, src: string,
   reqs.set(id, { url, window, src, alt }); loading.add(id); emit();
   const c = new AbortController(), t = setTimeout(() => c.abort(), 45_000);
   let cached: { data: unknown; at: number; url: string } | undefined;
-  const persist = window >= 3_600_000;
+  const persist = window >= 3_600_000, t0 = Date.now(); let http: number | null = null;
   try {
     if (persist && !r?.data) { cached = await cget(`v2:${id}`); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src }); return; } }
-    const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
+    const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); http = res.status; if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
     const at = Date.now();
     recs.set(id, { id, data, at, err: null, url: used, window, src });
+    stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: countOf(data) === 0 ? ["empty response"] : [] }));
     if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
+    stats.set(id, nextStat(stats.get(id), { ok: false, at: Date.now(), ms: Date.now() - t0, http, data: null, drift: [] }));
     recs.set(id, { id, data: r?.data ?? cached?.data ?? null, at: r?.at ?? cached?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
   } finally { clearTimeout(t); loading.delete(id); emit(); }
 }
