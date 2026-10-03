@@ -11,7 +11,7 @@ export default function Palette({ onClose }: { onClose: () => void }) {
   const cats: Cat[] = q.trim().length >= 3 ? ["warframe", "weapon", "companion", "archwing", "mod"] : ["warframe", "weapon", "companion", "archwing"];
   const loaded = useCatalogs(cats);
   const kindOf = (c: Cat, cg: string) => (c === "warframe" || c === "companion" || c === "archwing" ? c : c === "weapon" && ["primary", "secondary", "melee"].includes(cg.toLowerCase()) ? cg.toLowerCase() : undefined);
-  const ents = cats.flatMap(c => (loaded[c]?.items ?? []).map(e => ({ name: e.name, cat: c, slug: e.slug, label: CATS[c].label.replace(/s$/, ""), kind: kindOf(c, e.category) })));
+  const ents = cats.flatMap(c => (loaded[c]?.items ?? []).map(e => ({ name: e.name, cat: c, slug: e.slug, label: CATS[c].label.replace(/s$/, ""), kind: kindOf(c, e.category), parts: e.components.map(k => k.name) })));
   const hits = search(q, parseRelics(rec?.data), ents);
   const go = (h?: Hit) => { if (h) { nav(h.to); onClose(); } };
   const key = (e: KeyboardEvent) => {

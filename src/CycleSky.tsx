@@ -14,7 +14,9 @@ export default function CycleSky({ k, state, expiry, now }: { k: string; state: 
     {moon && STARS.map(([a, b], i) => <circle key={i} cx={a} cy={b} r=".7" fill="#E4E2DC" opacity=".7" />)}
     <g style={{ transform: `translate(${x}px, ${y}px)`, transition: "transform 1s linear" }}>
       {sun ? <><circle r="5" fill="#E0B861" />{Array.from({ length: 8 }, (_, i) => <line key={i} y1="-8" y2="-10.5" stroke="#E0B861" strokeWidth="1.2" transform={`rotate(${i * 45})`} />)}</>
-        : <path d="M1 -5 A5 5 0 1 0 1 5 A3.6 3.6 0 1 1 1 -5Z" fill="#DDE3EA" />}
+        : <><circle r="9" fill="#DDE3EA" opacity=".08" /><circle r="5.2" fill="#DDE3EA" opacity=".16" />
+          {/* crescent: an outer half circle (r 5) and a flatter inner arc (r 6.5) between the same two horns */}
+          <path d="M1 -5 A5 5 0 0 0 1 5 A6.5 6.5 0 0 1 1 -5Z" fill="#EEF2F6" /></>}
     </g>
     <path d="M0 48V43Q60 33 120 43V48Z" fill="#0B0D0F" />
   </svg>);
