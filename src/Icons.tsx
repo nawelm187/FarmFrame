@@ -44,14 +44,18 @@ export const TierIcon = ({ tier, size = 22 }: { tier: string; size?: number }) =
     </svg>
   );
 };
-const POL: Record<string, string> = {
-  madurai: "M4 4l8 16 8-16", vazarin: "M6 4v16h6a8 8 0 0 0 0-16z", naramon: "M5 5l14 14M19 5L5 19", zenurik: "M12 3l8 5v8l-8 5-8-5V8z",
-  unairu: "M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", penjaga: "M4 20l8-16 8 16z", any: "M12 3v18M3 12h18M6 6l12 12M18 6L6 18",
+const pfiles = import.meta.glob("./assets/polarity/*.{png,webp,svg}", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
+const polArt: Record<string, string> = {};
+for (const [p, u] of Object.entries(pfiles)) polArt[(p.split("/").pop() ?? "").replace(/\.[a-z]+$/i, "").toLowerCase()] = u;
+const POL_ALIAS: Record<string, string> = { omni: "any", universal: "any" };
+export const polKey = (pol: string) => { const k = pol.toLowerCase().trim(); return POL_ALIAS[k] ?? k; };
+/** Polarity icon. Uses the official image when it exists in src/assets/polarity (file name = polarity name, e.g. madurai.png).
+ *  Without the file it shows a plain labeled marker instead of a made-up symbol. */
+export const PolIcon = ({ pol, size = 16 }: { pol: string | null; size?: number }) => {
+  if (!pol) return null; const k = polKey(pol), src = polArt[k], label = pol.charAt(0).toUpperCase() + pol.slice(1).toLowerCase() + " polarity";
+  return src ? <img className="polic" src={src} alt={label} title={label} width={size} height={size} decoding="async" />
+    : <span className="polic nopol" role="img" aria-label={label} title={label + " (icon file not added yet)"} style={{ width: size, height: size, fontSize: Math.max(7, size * 0.38) }}>{k.slice(0, 3)}</span>;
 };
-/** Simple polarity glyphs (original shapes, not the game's artwork). */
-export const PolIcon = ({ pol, size = 16 }: { pol: string | null; size?: number }) => pol && POL[pol.toLowerCase()] ? (
-  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" role="img" aria-label={pol + " polarity"}><path d={POL[pol.toLowerCase()]} /></svg>
-) : null;
 export const Star = ({ on }: { on: boolean }) => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="miter" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>
 );

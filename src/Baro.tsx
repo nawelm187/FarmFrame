@@ -4,6 +4,7 @@ import { baroMatches, isExp, traderState, type Trader } from "./lib/planner";
 import { useNeeded } from "./lib/useNeeded";
 import { Credits } from "./Money";
 import Npc from "./Npc";
+import VendorStock from "./VendorStock";
 import { Countdown, Panel, Unavailable } from "./pages/parts";
 const isTrader = (d: unknown): d is Trader => isExp(d);
 /** Baro Ki'Teer (Void Trader): here or coming, where, until when, his full stock with prices, and which items advance what you still need. */
@@ -26,7 +27,6 @@ export default function Baro({ full = false }: { full?: boolean }) {
     <div><Countdown exp={data.expiry} pre="leaves in " /></div>
     {hit.length ? <p><b>Stock you need:</b> {hit.map((i, k) => <span key={i.item}>{k > 0 && ", "}{i.item}{i.ducats != null && <> ({i.ducats} ducats, {i.credits != null ? <Credits n={i.credits} /> : "? credits"})</>}</span>)}</p>
       : <p className="muted">Nothing in his stock matches what you still need (matched by item name).</p>}
-    {inv.length > 0 ? <details open={full}><summary>What he is selling ({inv.length})</summary><ul className="sub">{inv.map((i, k) => { const n = needed.has(String(i.item).toLowerCase());
-      return <li key={k} className={n ? "gold" : undefined}>{i.item ?? "Unknown item"}{n && " ★ you need this"}{(i.ducats != null || i.credits != null) && <span className="muted"> · {i.ducats != null ? `${i.ducats} ducats` : "? ducats"}{i.credits != null && <>, <Credits n={i.credits} /></>}</span>}</li>; })}</ul></details>
+    {inv.length > 0 ? <details open={full}><summary>What he is selling ({inv.length})</summary><VendorStock items={inv.map(i => ({ name: String(i.item ?? "Unknown item"), ducats: i.ducats ?? undefined, credits: i.credits ?? undefined }))} needed={needed} /></details>
       : <p className="muted">The source lists no stock yet.</p>}</Panel>;
 }
