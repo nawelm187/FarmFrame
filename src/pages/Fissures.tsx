@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import RelicArt from "../RelicArt";
 import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
+import { retry } from "../lib/data";
 import { Badge, Countdown, Prov, Unavailable } from "./parts";
 interface Fis { id: string; node: string; missionType: string; enemy: string; tier: string; tierNum: number; isStorm: boolean; isHard: boolean; expiry: string }
 const isFis = (d: unknown): d is Fis[] => Array.isArray(d) && d.every(x => x && typeof x.tier === "string" && typeof x.expiry === "string");
@@ -11,6 +12,7 @@ export default function Fissures() {
   const [tier, setTier] = useState(""), [sp, setSp] = useState(false), [kind, setKind] = useState("all");
   const rows = useMemo(() => (data ?? []).filter(f => ts(f.expiry) > Date.now() && (!tier || f.tier === tier) && (!sp || f.isHard)
     && (kind === "all" || (kind === "storm") === f.isStorm)).sort((a, b) => a.tierNum - b.tierNum || ts(a.expiry) - ts(b.expiry)), [data, tier, sp, kind]);
+  const live = (data ?? []).filter(f => ts(f.expiry) > Date.now()).length;
   if (!data) return <><h1>Void Fissures</h1><Unavailable title="Void Fissures" status={status} why="No verified data." rec={rec} /></>;
   return (
     <>
@@ -30,7 +32,7 @@ export default function Fissures() {
             <Countdown exp={f.expiry} />
           </li>
         ))}
-        {!rows.length && <li className="muted">No fissures match.</li>}
+        {!rows.length && <li className="muted">{live === 0 ? <>No active fissure in the data. {rec?.err ? <>The source is serving old data. </> : null}<button className="btn" onClick={() => retry("fissures")}>Check again</button></> : "No fissures match these filters."}</li>}
       </ul>
       <Prov rec={rec} />
     </>

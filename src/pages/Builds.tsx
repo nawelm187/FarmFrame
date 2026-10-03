@@ -1,3 +1,4 @@
+import { PolIcon } from "../Icons";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { evaluate, KIND_LABEL, modFits, newBuild, readBuilds, requirements, writeBuilds, type ArcSlot, type Build, type Kind, type Slot } from "../lib/build";
@@ -72,7 +73,7 @@ export function BuildEditor() {
     {MARKET_ENABLED && frameEnt?.isPrime && <SetPrice key={frameEnt.slug} e={frameEnt} />}
     <label className="chk muted">Mod capacity <b>{ev.total} / {ev.capacity}</b><progress max={ev.capacity} value={Math.min(ev.total, ev.capacity)} /></label>
     <div className="bar"><input aria-label="Add mod" list="modnames" placeholder="Add a mod by name" value={q} onChange={e => onAdd(e.target.value)} /><datalist id="modnames">{fit.map(m => <option key={m.slug} value={m.name} />)}</datalist></div>
-    <ul className="list comp">{ev.rows.map(r => (<li key={r.i}><span>Slot {r.i + 1} <span className="muted">{r.pol ?? "no polarity"}</span> · {r.m ? <b>{r.m.name}</b> : <span className="muted">Empty</span>}{r.d != null && <span className="muted"> · drain {r.d}</span>}</span>
+    <ul className="list comp">{ev.rows.map(r => (<li key={r.i}><span>Slot {r.i + 1} {r.pol ? <><PolIcon pol={r.pol} size={18} /> <span className="muted">{r.pol}</span></> : <span className="muted">no polarity</span>} · {r.m ? <b>{r.m.name}</b> : <span className="muted">Empty</span>}{r.d != null && <span className="muted"> · drain {r.d}</span>}</span>
       <span><select aria-label={`Slot ${r.i + 1} polarity`} value={b.slots[r.i].pol ?? ""} onChange={e => setSlot(r.i, { ...b.slots[r.i], pol: e.target.value || undefined })}><option value="">Native</option>{POLS.map(x => <option key={x} value={x}>{x === "any" ? "omni (any)" : x}</option>)}</select> {b.slots[r.i].mod && <><label className="muted"><input type="checkbox" checked={!!b.slots[r.i].owned} onChange={e => setSlot(r.i, { ...b.slots[r.i], owned: e.target.checked })} /> Owned </label><label className="muted">Rank <input type="number" min={0} max={r.m?.maxRank ?? 30} value={b.slots[r.i].rank} style={{ width: "4rem" }} onChange={e => setSlot(r.i, { ...b.slots[r.i], rank: Math.max(0, +e.target.value || 0) })} /></label> <button className="btn" onClick={() => setSlot(r.i, { ...b.slots[r.i], mod: null, rank: 0, owned: false })}>Remove</button></>}</span></li>))}</ul>
     {kind === "warframe" && <><h2>Arcanes</h2>
     {!arcs ? <p className="muted">Arcane data {ar.status === "LOADING" ? "is loading" : "is unavailable"}.</p> : <><datalist id="arcnames">{arcs.map(a => <option key={a.slug} value={a.name} />)}</datalist>

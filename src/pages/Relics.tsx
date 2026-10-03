@@ -1,6 +1,7 @@
 import { useDeferredValue, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
+import RelicCard, { VaultBadge } from "../RelicCard";
 import { useMany, useWorld } from "../lib/data";
 import { parseRelics, relicsByItem, type Relic } from "../lib/drops";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
@@ -8,6 +9,22 @@ import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
 import { ts } from "../lib/format";
 import { Plat } from "../Money";
 import { Prov, Unavailable } from "./parts";
+const TIERS = ["Lith", "Meso", "Neo", "Axi", "Requiem"], PAGE = 24;
+/** The relic list shown when nothing is searched: filter by era and by vault status, cards show every reward. */
+function Browse({ relics, sp, setSp }: { relics: Relic[]; sp: URLSearchParams; setSp: (n: URLSearchParams, o?: { replace?: boolean }) => void }) {
+  const [vr] = useMany([{ id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), vault = parseVault(vr.rec?.data);
+  const [more, setMore] = useState(1), tier = sp.get("tier") ?? "", show = sp.get("vault") ?? "available";
+  const set = (k: string, v: string) => { const n = new URLSearchParams(sp); if (v) n.set(k, v); else n.delete(k); setSp(n, { replace: true }); setMore(1); };
+  const list = relics.filter(r => (!tier || r.tier === tier) && (show === "all" || (show === "vaulted" ? vault?.get(r.name) === true : vault?.get(r.name) !== true)))
+    .sort((a, b) => TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier) || a.name.localeCompare(b.name, undefined, { numeric: true }));
+  return (<>
+    <div className="tierbar" role="group" aria-label="Filter by era">{TIERS.map(t => { const n = relics.filter(r => r.tier === t).length; return n ? <button key={t} className="tierbtn" aria-pressed={tier === t} onClick={() => set("tier", tier === t ? "" : t)}><RelicArt tier={t} size={34} /><span>{t}</span><b>{n}</b></button> : null; })}</div>
+    <div className="bar"><select aria-label="Vault status" value={show} onChange={e => set("vault", e.target.value === "available" ? "" : e.target.value)}><option value="available">Available (not vaulted)</option><option value="vaulted">Vaulted only</option><option value="all">All relics</option></select>
+      <span className="muted">{list.length} relics{!vault ? " · vault status is still loading, so vaulted relics may be included" : ""}</span></div>
+    {!list.length ? <p className="muted">No relics match these filters.</p> : <div className="relgrid">{list.slice(0, PAGE * more).map(r => <RelicCard key={r.name} r={r} />)}</div>}
+    {list.length > PAGE * more && <button className="btn" onClick={() => setMore(more + 1)}>Show more ({list.length - PAGE * more} left)</button>}
+  </>);
+}
 const STATES = ["Intact", "Exceptional", "Flawless", "Radiant"];
 const isArr = (d: unknown): d is { tier: string; expiry: string }[] => Array.isArray(d);
 type Vals = Record<string, number | null> | "loading" | "error" | null;
@@ -38,12 +55,6 @@ function RelicValue({ r }: { r: Relic }) {
       <p className="muted">Worth per relic = drop chance × the item's live market median. Rewards with no market price count as 0. Market value, not a farming recommendation.</p></>}
   </div>);
 }
-function VaultBadge({ name }: { name: string }) {
-  const [{ rec, status }] = useMany([{ id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]);
-  const v = parseVault(rec?.data)?.get(name);
-  const label = v === undefined ? (status === "LOADING" ? "Vault status loading" : "Vault status unknown") : v ? "Vaulted" : "Available";
-  return <span className={"tag " + (v === undefined ? "UNAVAILABLE" : v ? "STALE" : "FRESH")} title="Community dataset, may lag behind the game">{label}</span>;
-}
 export default function Relics() {
   const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", dq = useDeferredValue(q), l = dq.trim().toLowerCase();
   const [{ rec, status }] = useMany([{ id: "relics", file: "relics.json" }]);
@@ -56,7 +67,7 @@ export default function Relics() {
   return (<><h1>Relics</h1>
     <p className="lead">Search by relic (e.g. "Lith A1") or by reward item. Chances by refinement come straight from the drop tables. Vault status comes from a separate community dataset and shows as unknown when it is missing.</p>
     <div className="bar"><input aria-label="Relic or item name" placeholder="Relic or item name" value={q} onChange={e => setSp({ q: e.target.value }, { replace: true })} /></div>
-    {!l && <p className="muted">Type a relic or item name.</p>}
+    {!l && <Browse relics={relics} sp={sp} setSp={setSp} />}
     {l && !hit.length && <p className="muted">No relic matches "{q}".</p>}
     {grouped.length > 0 && <><h2>Relics by item</h2>{grouped.map(([item, list]) => (<section className="panel" key={item} style={{ marginBottom: ".6rem" }}><h3><Link to={`/item/${encodeURIComponent(item)}`}>{item}</Link></h3>
       <div className="chips">{list.map(x => <button key={x.relic.name} className="relicchip" onClick={() => setSp({ q: x.relic.name }, { replace: true })}><RelicArt tier={x.relic.tier} name={x.relic.name} size={26} /><span>{x.relic.name}</span><span className="muted">{x.rarity}</span><VaultBadge name={x.relic.name} /></button>)}</div></section>))}
