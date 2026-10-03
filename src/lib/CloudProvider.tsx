@@ -2,7 +2,7 @@ import type { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { applySnap, fingerprint, isEmpty, same, snapshot, type Snap } from "./cloud";
 export type SyncState = "off" | "checking" | "conflict" | "synced" | "error";
-interface Ctx { email: string | null; ready: boolean; sync: SyncState; err: string | null; signIn: (e: string, p: string) => Promise<string | null>; signUp: (e: string, p: string) => Promise<string | null>; signOut: () => Promise<void>; resolve: (c: "cloud" | "device") => Promise<void>; retry: () => void }
+interface Ctx { email: string | null; ready: boolean; sync: SyncState; err: string | null; signIn: (e: string, p: string) => Promise<string | null>; signUp: (e: string, p: string) => Promise<string | null>; signInLink: (e: string) => Promise<string | null>; signOut: () => Promise<void>; resolve: (c: "cloud" | "device") => Promise<void>; retry: () => void }
 const C = createContext<Ctx | null>(null);
 export const useCloud = () => { const c = useContext(C); if (!c) throw new Error("CloudProvider missing"); return c; };
 const sb = async () => (await import("./supabase")).supabase;
@@ -56,6 +56,8 @@ export function CloudProvider({ children }: { children: ReactNode }) {
     email: session?.user.email ?? null, ready, sync, err, retry: () => setTick(t => t + 1),
     signIn: async (email, password) => { const { error } = await (await sb()).auth.signInWithPassword({ email, password }); return error ? error.message : null; },
     signUp: async (email, password) => { const { data, error } = await (await sb()).auth.signUp({ email, password }); return error ? error.message : data.session ? null : "Check your email to confirm your account, then sign in."; },
+    // Passwordless sign-in: Supabase emails a one-time link. Works for new and existing accounts.
+    signInLink: async email => { const { error } = await (await sb()).auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } }); return error ? error.message : "Check your email: we sent you a sign-in link."; },
     signOut: async () => { await (await sb()).auth.signOut(); },
     resolve: async c => {
       if (!uid) return;
