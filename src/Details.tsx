@@ -36,7 +36,7 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
   const info: Row[] = [], store: Row[] = [];
   num(info, raw, "masteryReq", "Mastery rank", x => String(x)); txt(info, raw, "type", "Type"); txt(info, raw, "category", "Category");
   const dis = n(raw.disposition); if (dis) info.push(["Riven disposition", `${dis} of 5`]);
-  if (e.slots?.length) info.push(["Slot polarities", e.slots.filter(Boolean).join(", ") || "none"]);
+  if (e.slots?.length) info.push(["Native polarities", e.slots.filter(Boolean).join(", ") || "none"]);
   const aura = Array.isArray(raw.aura) ? raw.aura.filter((x): x is string => typeof x === "string").join(", ") : s(raw.aura); if (aura) info.push(["Aura polarity", aura]);
   const intro = isR(raw.introduced) ? [s(raw.introduced.name), s(raw.introduced.date)].filter(Boolean).join(" · ") : null; if (intro) info.push(["Introduced", intro]);
   txt(info, raw, "releaseDate", "Release date"); txt(info, raw, "vaultDate", "Vault date");

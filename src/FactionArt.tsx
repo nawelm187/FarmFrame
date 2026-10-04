@@ -5,5 +5,5 @@ const FAC: Record<string, string> = { Grineer: "#C0524A", Corpus: "#5F86A8", Inf
 /** Faction emblem from src/assets/factions (grineer.png, corpus.png, infested.png...). Without the file, a small coloured diamond. */
 export default function FactionArt({ f, size = 20 }: { f?: string; size?: number }) {
   const u = art[(f ?? "").toLowerCase()];
-  return u ? <img className="itemart" src={u} alt="" width={size} height={size} style={{ marginRight: ".35rem" }} /> : <span className="fac" style={{ background: FAC[f ?? ""] ?? "var(--t3)" }} aria-hidden="true" />;
+  return u ? <img className={"itemart" + ((f ?? "").toLowerCase() === "infested" ? " tint-white" : "")} src={u} alt="" width={size} height={size} style={{ marginRight: ".35rem" }} /> : <span className="fac" style={{ background: FAC[f ?? ""] ?? "var(--t3)" }} aria-hidden="true" />;
 }

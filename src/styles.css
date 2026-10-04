@@ -164,3 +164,5 @@ h1 .pageart{margin-right:.6rem}
 .polpick{display:inline-flex;flex-wrap:wrap;gap:.25rem;vertical-align:middle}.polpick .relicchip{padding:.15rem .35rem}.slotsel{outline:1px solid var(--lt)}
 .pickcard{background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;position:relative}.pickcard.used{opacity:.55}.picker .chips{margin:.3rem 0}
 .hubart{display:inline-flex;align-items:center;justify-content:center;min-width:1.2rem}.hubart .pageart{margin:0}
+.polnat{display:inline-flex;align-items:center;gap:.2rem;margin-right:.5rem}
+.tint-white{filter:brightness(0) invert(1);background:none}
