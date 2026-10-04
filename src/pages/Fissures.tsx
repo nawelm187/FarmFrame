@@ -1,6 +1,8 @@
 import FactionArt from "../FactionArt";
 import PageArt from "../PageArt";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useExact } from "../lib/useExact";
 import RelicArt from "../RelicArt";
 import { useWorld } from "../lib/data";
 import { ts } from "../lib/format";
@@ -10,7 +12,7 @@ interface Fis { id: string; node: string; missionType: string; enemy: string; ti
 const isFis = (d: unknown): d is Fis[] => Array.isArray(d) && d.every(x => x && typeof x.tier === "string" && typeof x.expiry === "string");
 const TIERS = ["Lith", "Meso", "Neo", "Axi", "Requiem", "Omnia"];
 export default function Fissures() {
-  const { data, status, rec } = useWorld("fissures", isFis);
+  const { data, status, rec } = useWorld("fissures", isFis), ex = useExact(), planTier = new Map(ex.tiers.map(t => [t.tier, t.relics.length]));
   const [tier, setTier] = useState(""), [sp, setSp] = useState(false), [kind, setKind] = useState("all"), [fac, setFac] = useState("");
   const rows = useMemo(() => (data ?? []).filter(f => ts(f.expiry) > Date.now() && (!tier || f.tier === tier) && (!sp || f.isHard) && (!fac || f.enemy === fac)
     && (kind === "all" || (kind === "storm") === f.isStorm)).sort((a, b) => a.tierNum - b.tierNum || ts(a.expiry) - ts(b.expiry)), [data, tier, sp, kind, fac]);
@@ -32,7 +34,7 @@ export default function Fissures() {
           <li key={f.id}>
             <span className="tier"><RelicArt tier={f.tier} size={34} />{f.tier}</span>
             <span className="what"><b>{f.missionType}</b> · {f.node}<span className="muted"> <FactionArt f={f.enemy} size={16} />{f.enemy}{f.isHard ? " · " : ""}{f.isHard && <span className="gold">Steel Path</span>}{f.isStorm ? " · Storm" : ""}</span></span>
-            <Countdown exp={f.expiry} />
+            {(planTier.get(f.tier) ?? 0) > 0 && <Link className="tag STALE" to="/farm-plan" title="Relics of this tier that advance your goals">★ {planTier.get(f.tier)} relic{planTier.get(f.tier) === 1 ? "" : "s"} for your plan</Link>}<Countdown exp={f.expiry} />
           </li>
         ))}
         {!rows.length && <li className="muted">{live === 0 ? <>No active fissure in the data. {rec?.err ? <>The source is serving old data. </> : null}<button className="btn" onClick={() => retry("fissures")}>Check again</button></> : "No fissures match these filters."}</li>}

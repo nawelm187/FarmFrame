@@ -23,7 +23,7 @@ export default function Sources() {
       <div className="wrap"><table><thead><tr><th>Source</th><th>Trust</th><th>Status</th><th>Health now</th><th>Provides</th></tr></thead><tbody>
         {SOURCES.map(s => <tr key={s.id}><td><b>{s.name}</b><div className="muted">{s.fallback ? `Fallback: ${s.fallback}` : "No fallback yet"}</div></td>
           <td title={CONFIDENCE[s.confidence]}>{s.confidence} <span className="muted">{CONFIDENCE[s.confidence]}</span></td>
-          <td>{s.use === "active" ? "In use" : "Planned"}</td><td>{s.use === "active" ? <><H h={PROBE_IDS.includes(s.id) ? probeHealth(probes.get(s.id)) : health(s.hosts, s.recIds)} />{probes.get(s.id) && <div className="muted">{probes.get(s.id)!.note}{probes.get(s.id)!.ms ? ` · ${probes.get(s.id)!.ms} ms` : ""}{probes.get(s.id)!.http != null ? ` · HTTP ${probes.get(s.id)!.http}` : ""}</div>}</> : "—"}</td>
+          <td>{s.use === "active" ? "In use" : "Planned"}</td><td>{s.id.startsWith("manual") ? <span className="tag STALE">MANUAL</span> : s.use === "active" ? <><H h={PROBE_IDS.includes(s.id) ? probeHealth(probes.get(s.id)) : health(s.hosts, s.recIds)} />{probes.get(s.id) && <div className="muted">{probes.get(s.id)!.note}{probes.get(s.id)!.ms ? ` · ${probes.get(s.id)!.ms} ms` : ""}{probes.get(s.id)!.http != null ? ` · HTTP ${probes.get(s.id)!.http}` : ""}</div>}</> : "—"}</td>
           <td>{s.provides}<div className="muted">{s.note}</div></td></tr>)}</tbody></table></div>
       {(() => { const vr = recs.find(([id]) => id === "relicsVault")?.[1], t = parseRelicImages(vr?.data)?.byTier.get("Axi"); return vr ? <p className="muted">Relic images: {t ? `sample ${imgUrl(t)}` : "no imageName found in the relic data"}</p> : null; })()}
       <h2>Datasets loaded in this session</h2>

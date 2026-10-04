@@ -15,5 +15,5 @@ export default function RailjackWeapons({ q }: { q: string }) {
         {e.stats.length > 0 && <dl className="dgrid">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{+v.toFixed(2)}</dd></div>)}</dl>}
         <div className="muted">{drops.length ? "Where to get it: " + drops.slice(0, 6).map(d => `${String(d.location ?? "")}${d.type ? " (" + String(d.type) + ")" : ""}`).join("; ") : "No acquisition data in this source (crafted in the Dry Dock or bought; not listed)."}</div>
       </details>); })}
-    <p className="muted">Ship components such as reactor, engines, plating, shield array, Plexus and the Dry Dock crafting costs are not in the data sources FarmFrame uses yet, so they are not listed instead of being guessed.</p></>);
+    <p className="muted">Weapon data comes from a community copy of the game files. Ship components are in the section above.</p></>);
 }

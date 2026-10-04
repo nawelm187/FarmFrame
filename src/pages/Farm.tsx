@@ -1,3 +1,4 @@
+import { Pic } from "../ItemArt";
 import { Link, useParams } from "react-router-dom";
 import { useMany } from "../lib/data";
 import { FIND, collect, query } from "../lib/drops";
@@ -11,7 +12,7 @@ export default function Farm() {
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
   if (!ok) return <><h1>{item}</h1><Unavailable title="Drop tables" status={res[0].status} why="No verified drop data loaded yet. See Data Sources." /></>;
   const list = rank(query(rows, item), stackIndex(rows, needed), item);
-  return (<><h1>Farming: {item}</h1>
+  return (<><h1><Pic name={item} size={44} /> Farming: {item}</h1>
     <p className="lead">Where it drops, ordered by drop chance, with your other goals taken into account. Not a universal "best farm".</p>
     <p className="muted"><b>Verified fact:</b> chance and source, from the official drop tables. <b>Calculated estimate:</b> rolls per drop (100 ÷ chance). Run speed, enemy density and modifiers are not in this data, so they are not part of the ranking.</p>
     {gaps.length > 0 && <p className="muted">Not included: {gaps.join("; ")}</p>}

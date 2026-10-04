@@ -1,3 +1,4 @@
+import ItemArt from "../ItemArt";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCatalog } from "../lib/useCatalog";
@@ -52,7 +53,7 @@ export default function Entity({ cat }: { cat: Cat }) {
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
+      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
         <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && partTradable(e, k) !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

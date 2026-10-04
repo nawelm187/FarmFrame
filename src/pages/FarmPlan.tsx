@@ -1,3 +1,4 @@
+import { Pic } from "../ItemArt";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import RelicArt from "../RelicArt";
@@ -31,9 +32,9 @@ function Extras() {
   if (!tracked.length && !reqs.length) return null;
   return (<>
     {tracked.length > 0 && <><h2>Tracked items you still need</h2><p className="muted">From your Tracking list. Sources come from the official drop tables.</p>
-      <ul className="list comp">{tracked.map((t, i) => <li key={i}><span><b>{t.n}</b> <span className="muted">· have {t.o} of {t.t}, missing {t.t - t.o}</span><Where rows={rows} ok={ok > 0} name={t.n} /></span><Link to="/tracking">Edit</Link></li>)}</ul></>}
+      <ul className="list comp">{tracked.map((t, i) => <li key={i}><span><Pic name={t.n} size={30} /> <b>{t.n}</b> <span className="muted">· have {t.o} of {t.t}, missing {t.t - t.o}</span><Where rows={rows} ok={ok > 0} name={t.n} /></span><Link to="/tracking">Edit</Link></li>)}</ul></>}
     {reqs.length > 0 && <><h2>Build requirements not obtained</h2><p className="muted">Mods, arcanes and Forma that your builds need and you have not marked as owned.</p>
-      <ul className="list comp">{reqs.map(r => <li key={r.id}><span><b>{r.name}</b> <span className="muted">· {r.kind} for {r.buildName}{r.need > 1 ? ` · have ${r.have} of ${r.need}` : ""}</span>
+      <ul className="list comp">{reqs.map(r => <li key={r.id}><span><Pic name={r.name} size={30} /> <b>{r.name}</b> <span className="muted">· {r.kind} for {r.buildName}{r.need > 1 ? ` · have ${r.have} of ${r.need}` : ""}</span>
         {r.kind === "forma" || r.kind === "omni" ? <div className="muted">Forma Blueprints come from the Foundry, Nightwave or the in-game store; check the item page for the current source.</div> : <Where rows={rows} ok={ok > 0} name={r.name} extra={r.src} />}</span>{r.slug && r.kind === "mod" ? <Link to={`/mod/${r.slug}`}>Mod</Link> : <Link to="/roadmap">Roadmap</Link>}</li>)}</ul></>}
   </>);
 }
@@ -64,7 +65,7 @@ export default function FarmPlan() {
     {ex.info.length > 0 && <p className="muted">{ex.info.map(i => `${i.goal.name}: ${i.parts ? `${i.have}/${i.total} parts` : "no parts listed in the data"}`).join(" · ")}</p>}
     {ex.lost.length > 0 && <p className="tag STALE" role="alert">Not found in the current data: {ex.lost.map(g => g.name).join(", ")}. The item may have been renamed. Remove and add it again from its page.</p>}
     {!ex.goals.length ? <p className="muted">No goals. Your tracked items and build requirements are below.</p> : !todo.length ? <p className="gold">{ex.pending ? "Loading your goals…" : ex.lost.length ? "Nothing to show for the goals that could be found." : "All goal parts collected."}</p> : <ul className="list comp">{todo.map(p => { const n = nextAction(p, ex.fis.data, mine, !!ex.relics);
-      return <li key={p.goal.id + p.part.name}><span><b>{label(p)}</b>{p.left > 1 ? ` ×${p.left}` : ""}<div className="muted">{n.text}</div></span>{n.to && <Link to={n.to}>{n.kind === "open" ? "Plan" : "Find"}</Link>}</li>; })}</ul>}
+      return <li key={p.goal.id + p.part.name}><span><Pic name={label(p)} size={34} /> <b>{label(p)}</b>{p.left > 1 ? ` ×${p.left}` : ""}<div className="muted">{n.text}</div></span>{n.to && <Link to={n.to}>{n.kind === "open" ? "Plan" : "Find"}</Link>}</li>; })}</ul>}
     <Extras />
     {ex.tiers.length > 0 && <><h2>Relics by tier</h2>{ex.tiers.map(t => <TierBlock key={t.tier} t={t} mine={mine} set={set} />)}</>}
     {todo.some(p => !p.relics.length && p.relicTiers.length > 0) && ex.relics && <p className="muted">Some parts list a relic tier in the item data but no exact relic was found in the relic tables by name: {todo.filter(p => !p.relics.length && p.relicTiers.length).map(label).join(", ")}.</p>}
