@@ -2,6 +2,8 @@ import PageArt from "../PageArt";
 import { useMemo, useState } from "react";
 import RelicArt from "../RelicArt";
 import { useWorld } from "../lib/data";
+import { SUPABASE_URL } from "../lib/config";
+const WS_FALLBACK = `${SUPABASE_URL}/functions/v1/worldstate`;
 import { ts } from "../lib/format";
 import { retry } from "../lib/data";
 import { Badge, Countdown, Prov, Unavailable } from "./parts";
@@ -9,7 +11,7 @@ interface Fis { id: string; node: string; missionType: string; enemy: string; ti
 const isFis = (d: unknown): d is Fis[] => Array.isArray(d) && d.every(x => x && typeof x.tier === "string" && typeof x.expiry === "string");
 const TIERS = ["Lith", "Meso", "Neo", "Axi", "Requiem", "Omnia"];
 export default function Fissures() {
-  const { data, status, rec } = useWorld("fissures", isFis);
+  const { data, status, rec } = useWorld("fissures", isFis, WS_FALLBACK);
   const [tier, setTier] = useState(""), [sp, setSp] = useState(false), [kind, setKind] = useState("all");
   const rows = useMemo(() => (data ?? []).filter(f => ts(f.expiry) > Date.now() && (!tier || f.tier === tier) && (!sp || f.isHard)
     && (kind === "all" || (kind === "storm") === f.isStorm)).sort((a, b) => a.tierNum - b.tierNum || ts(a.expiry) - ts(b.expiry)), [data, tier, sp, kind]);
