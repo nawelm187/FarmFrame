@@ -34,9 +34,9 @@ export function evaluate(b: Build, frame: Entity | undefined, mods: Map<string, 
   const kind: Kind = b.kind ?? "warframe";
   const capacity = b.reactor ? 60 : 30;
   if (b.frame && !frame) issues.push({ level: "warn", text: "Selected item is not in the loaded data." });
-  if (frame && !frame.slots) issues.push({ level: "warn", text: "This source has no slot polarities for this item, so no polarity bonuses are applied." });
+  if (frame && !frame.slots) issues.push({ level: "warn", text: "This source lists no native polarities for this item, so every slot polarity you set is counted as a Forma." });
   const rows = b.slots.map((s, i) => {
-    const pol = s.pol || frame?.slots?.[i] || null, m = s.mod ? mods.get(s.mod) : undefined;
+    const pol = s.pol || null, m = s.mod ? mods.get(s.mod) : undefined;
     if (!s.mod) return { i, pol, m: undefined, d: null as number | null };
     if (!m) { issues.push({ level: "warn", text: `Slot ${i + 1}: mod not found in loaded data.` }); return { i, pol, m, d: null }; }
     if (!modFits(kind, m)) issues.push({ level: "error", text: `${m.name} is not a ${KIND_LABEL[kind]} mod (listed as "${m.type || m.compat}").` });
@@ -56,7 +56,10 @@ export const endoFor = (rarity: string, rank: number): number | null => { const 
 export function requirements(b: Build, frame: Entity | undefined, mods: Map<string, Entity>, arc: Map<string, Entity> = new Map()) {
   const arcanes = [0, 1].map(i => b.arcanes?.[i]).filter((s): s is ArcSlot => !!s?.mod).map(s => ({ slug: s.mod!, name: arc.get(s.mod!)?.name ?? s.mod!, owned: !!s.owned }));
   const list = b.slots.filter(s => s.mod).map(s => { const m = mods.get(s.mod!); return { slug: s.mod!, name: m?.name ?? s.mod!, rank: s.rank, owned: !!s.owned, endo: m ? endoFor(m.rarity, s.rank) : null }; });
-  const nat = frame?.slots, forma = nat ? b.slots.filter((s, i) => s.pol && s.pol !== "any" && s.pol !== nat[i]).length : 0, omni = nat ? b.slots.filter((s, i) => s.pol === "any" && nat[i] !== "any").length : 0;
+  // The data lists WHICH polarities the item has natively, not which slot they sit on, so they are a pool: every polarity you set on a slot uses one native of that kind first, and each one beyond that costs a Forma.
+  const pool = new Map<string, number>(); for (const p of frame?.slots ?? []) if (p) pool.set(p, (pool.get(p) ?? 0) + 1);
+  const want = new Map<string, number>(); for (const sl of b.slots) if (sl.pol && sl.pol !== "any") want.set(sl.pol, (want.get(sl.pol) ?? 0) + 1);
+  const forma = [...want].reduce((a, [p, n]) => a + Math.max(0, n - (pool.get(p) ?? 0)), 0), omni = b.slots.filter(sl => sl.pol === "any").length;
   return { arcanes, missingArcanes: arcanes.filter(a => !a.owned), arcDup: arcanes.length === 2 && arcanes[0].slug === arcanes[1].slug, forma, omni, frame: b.frame ? { name: frame?.name ?? b.frame, slug: b.frame, have: !!b.haveFrame } : null, mods: list, missingMods: list.filter(x => !x.owned),
     endoTotal: list.reduce((a, x) => a + (x.endo ?? 0), 0), endoKnown: list.every(x => x.endo != null) };
 }

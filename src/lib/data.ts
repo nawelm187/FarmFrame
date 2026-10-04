@@ -28,9 +28,11 @@ export async function load(id: string, url: string, window: number, src: string,
     // A caching layer in front of the API can answer with an old copy. If every entry has already ended, ask once more with a unique address.
     let old = false;
     if (allExpired(data)) { try { const fresh = await get(bust(used)); if (allExpired(fresh)) old = true; else data = fresh; } catch { old = true; } }
+    // Still old: use the second source (for fissures, our own function reading Digital Extremes' world state) when it has live entries.
+    if (old && alt && used !== alt) { try { const second = await get(alt); if (Array.isArray(second) && second.length && !allExpired(second)) { data = second; used = alt; old = false; } } catch { /* keep the old copy and say so */ } }
     const at = Date.now();
     recs.set(id, { id, data, at, err: old ? "The source is serving old data (every entry has already ended)" : null, url: used, window, src });
-    stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: countOf(data) === 0 ? ["empty response"] : [] }));
+    stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: !Array.isArray(data) && countOf(data) === 0 ? ["empty response"] : [] }));
     if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
@@ -47,12 +49,12 @@ export function statusOf(r: Rec | undefined, isLoading: boolean, now = Date.now(
   return r.at !== null && now - r.at > r.window ? "STALE" : "FRESH";
 }
 /** Loads a live dataset, refreshes every 60s, exposes status + provenance. Never fabricates data. */
-export function useWorld<T>(key: string, guard: (d: unknown) => d is T) {
+export function useWorld<T>(key: string, guard: (d: unknown) => d is T, alt?: string) {
   useSyncExternalStore(subscribe, () => ver);
   useEffect(() => {
-    const go = () => void load(key, API + key, WS_WINDOW, "WarframeStat API (community, unofficial)");
+    const go = () => void load(key, API + key, WS_WINDOW, "WarframeStat API (community, unofficial)", 30_000, alt);
     go(); const i = setInterval(go, 60_000); return () => clearInterval(i);
-  }, [key]);
+  }, [key, alt]);
   const r = recs.get(key);
   return { data: r && guard(r.data) ? r.data : null, status: statusOf(r, loading.has(key)), rec: r };
 }
