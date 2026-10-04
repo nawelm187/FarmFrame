@@ -40,18 +40,26 @@ export function readChange(line: string, section = ""): Change | null {
   const good: Good = dir === "up" ? (stat.lowerBetter ? "nerf" : "buff") : stat.lowerBetter ? "buff" : "nerf";
   return { subject: subjectOf(text, section), stat: stat.label, from, to, unit: unit === "x" || unit === "%" || unit === "m" || unit === "s" ? unit : "", good, text: short(text) };
 }
+const VERB = /\b(now|no longer|removed|reworked|changed|adjusted|improved|extended|shortened|doubled|halved|swapped|replaced|instead|can now|will now|moved|reduced|decreased|increased|lowered|raised|added)\b/i;
+/** Looser reading for lines that change something without naming a known stat ("Narin's ability now also slows enemies"). Direction comes from the wording; unclear direction stays a plain change. */
+export function readLoose(line: string, section = ""): Change | null {
+  const text = strip(line); if (text.length < 20 || /^(?:fixed|fixes)\b/i.test(text) || /^\*/.test(line.trim()) || !VERB.test(text)) return null;
+  const ft = text.match(FROMTO), from = ft ? num(ft[1]) : null, to = ft ? num(ft[3]) : null, u = UP.test(text), d = DOWN.test(text);
+  const dir = from != null && to != null && from !== to ? (to > from ? "up" : "down") : u && !d ? "up" : d && !u ? "down" : null;
+  return { subject: subjectOf(text, section), stat: "", from, to, unit: ft ? (ft[4] ?? ft[2] ?? "") : "", good: dir === "up" ? "buff" : dir === "down" ? "nerf" : "change", text: short(text, 220) };
+}
 export function summarize(p: Patch): Summary {
   const changes: Change[] = []; let section = "";
   for (const raw of (p.changes + "\n" + p.additions).split(/\r?\n/)) {
     if (!raw.trim()) continue;
     if (isHeading(raw)) { section = strip(raw).replace(/:$/, ""); continue; }
-    const c = readChange(raw, section); if (c) changes.push(c);
+    const c = readChange(raw, section) ?? readLoose(raw, section); if (c) changes.push(c);
   }
   const additions: string[] = []; let head = "";
   for (const raw of p.additions.split(/\r?\n/)) { if (!raw.trim()) continue; if (isHeading(raw)) { head = strip(raw).replace(/:$/, ""); continue; }
-    const t = strip(raw); if (t.length > 12 && additions.length < 4 && !readChange(raw)) additions.push(short(head ? `${head}: ${t}` : t, 130)); }
+    const t = strip(raw); if (t.length > 12 && additions.length < 10 && !readChange(raw)) additions.push(short(head ? `${head}: ${t}` : t, 130)); }
   const fixes = p.fixes.split(/\r?\n/).filter(l => /^\s*(?:[-*•·]+|\d+[.)])\s+\S/.test(l)).length || (p.fixes.trim() ? 1 : 0);
-  return { changes: dedupe(changes), additions, fixes };
+  return { changes: dedupe(changes).slice(0, 120), additions, fixes };
 }
 const dedupe = (cs: Change[]) => { const seen = new Set<string>(); return cs.filter(c => { const k = c.text.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); };
 /** Counts of buffs and nerfs, for the one-line headline of an entry. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Patch } from "./patchlogs";
-import { readChange, summarize, tally, touches } from "./patchsummary";
+import { readChange, readLoose, summarize, tally, touches } from "./patchsummary";
 const P = (o: Partial<Patch>): Patch => ({ name: "x", url: null, date: 0, type: "Update", img: null, additions: "", changes: "", fixes: "", ...o });
 describe("readChange", () => {
   it("reads from-to values and tells a buff from a nerf", () => {
@@ -26,11 +26,16 @@ describe("summarize", () => {
   const p = P({ additions: "Introducing Narin\n- A new warframe with four abilities\n- New cosmetics", changes: "### Banshee\n- Sonic Boom: Reduced damage from 400 to 300\n- Silence: Increased duration by 20%\n### Misc\n- Changed the hair shader", fixes: "- Fixed a crash\n- Fixed a typo\n" });
   it("keeps stat changes, a few additions and counts fixes", () => {
     const s = summarize(p);
-    expect(s.changes.length).toBe(2); expect(s.changes[0].subject).toBe("Sonic Boom"); expect(s.changes[1].stat).toBe("Duration");
-    expect(tally(s.changes)).toEqual({ buff: 1, nerf: 1, change: 0 }); expect(s.fixes).toBe(2); expect(s.additions.length).toBeGreaterThan(0);
+    expect(s.changes.length).toBe(3); expect(s.changes[0].subject).toBe("Sonic Boom"); expect(s.changes[1].stat).toBe("Duration");
+    expect(tally(s.changes)).toEqual({ buff: 1, nerf: 1, change: 1 }); expect(s.fixes).toBe(2); expect(s.additions.length).toBeGreaterThan(0);
   });
   it("marks changes that touch what the player owns", () => {
     const s = summarize(p); expect(touches(s.changes[0], new Set(["sonic boom"]))).toBe("sonic boom"); expect(touches(s.changes[0], new Set(["rhino"]))).toBeNull();
   });
   it("handles empty notes", () => { expect(summarize(P({}))).toEqual({ changes: [], additions: [], fixes: 0 }); });
+});
+it("reads loose changes and keeps direction", () => {
+  expect(readLoose("Narin's Neote now also slows enemies hit.", "Narin")?.good).toBe("change");
+  expect(readLoose("Reduced the duration of Frostbite to 8s.", "Narin")?.good).toBe("nerf");
+  expect(readLoose("Fixed a crash.", "")).toBeNull();
 });
