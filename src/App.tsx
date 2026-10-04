@@ -25,6 +25,7 @@ import ReportIssue from "./ReportIssue";
 const Palette = lazy(() => import("./Palette"));
 const Rotations = lazy(() => import("./pages/Rotations"));
 const Enemies = lazy(() => import("./pages/Enemies"));
+const Resources = lazy(() => import("./pages/Resources"));
 const Parts = lazy(() => import("./pages/PartSearch"));
 const Patches = lazy(() => import("./pages/Patches"));
 const Part = lazy(() => import("./pages/Part"));
@@ -54,7 +55,7 @@ export default function App() {
         <Suspense fallback={<Skeleton />}><Routes>
           <Route path="/" element={<Home />} /><Route path="/fissures" element={<Fissures />} /><Route path="/invasions" element={<Invasions />} />
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
-          <Route path="/enemies" element={<Enemies />} /><Route path="/parts" element={<Parts />} /><Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
+          <Route path="/enemies" element={<Enemies />} /><Route path="/resources" element={<Resources />} /><Route path="/parts" element={<Parts />} /><Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
             <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
           <Route path="/farm/:item" element={<Farm />} /><Route path="/rotations" element={<Rotations />} /><Route path="/patches" element={<Patches />} /><Route path="/item/:name" element={<Part />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
         </Routes></Suspense>
