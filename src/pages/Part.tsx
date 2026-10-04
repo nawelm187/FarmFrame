@@ -75,9 +75,10 @@ function PartView({ r }: { r: PartRef }) {
     {relics && !opts.length && !other.length && !fromTables.length && <p className="muted">No source for this exact item in the loaded data. <Link to={`/finder?q=${encodeURIComponent(r.title)}`}>Search the drop tables</Link></p>}
     <h2>What it is worth</h2>
     <div className="grid">
-      {MARKET_ENABLED && <PartMarket label={`${r.title}: price`} names={names} tradable={tr} />}
+      {MARKET_ENABLED && e.isPrime && <PartMarket label={`${r.title}: price`} names={names} tradable={tr} />}
       {MARKET_ENABLED && setTradable(e) && <SetPrice e={e} />}
     </div>
+    {!e.isPrime && <p className="muted">Only Prime parts are traded between players, so this one has no market price.</p>}
     {c.ducats != null && <p className="muted">Selling it to Baro Ki'Teer's ducat exchange gives {c.ducats} ducats. Platinum price and ducat value are different things; a part can be worth a lot of one and little of the other.</p>}
     {sib.length > 0 && <><h2>Other parts of {e.name}</h2><ul className="chips">{sib.map(x => <li key={x.name}><Link className="relicchip" to={`/item/${encodeURIComponent(x.name === "Blueprint" ? `${e.name} Blueprint` : `${e.name} ${x.name} Blueprint`)}`}>{x.name}{x.count > 1 ? ` ×${x.count}` : ""}</Link></li>)}</ul></>}
   </article>);

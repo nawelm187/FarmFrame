@@ -1,3 +1,4 @@
+import PageArt from "../PageArt";
 import type { ReactNode } from "react";
 import type { Rec, Status } from "../lib/data";
 import { fmt, ts } from "../lib/format";
@@ -12,10 +13,10 @@ export const Prov = ({ rec }: { rec?: Rec }) => (
 );
 export const Skeleton = () => <div aria-hidden="true"><div className="sk" style={{ width: "70%" }} /><div className="sk" style={{ width: "45%" }} /></div>;
 export const Unavailable = ({ title, status, why, rec, note }: { title: string; status: Status; why: string; rec?: Rec; note?: string }) => (
-  <section className="panel" aria-busy={status === "LOADING"}><div className="row"><h3>{title}</h3><Badge s={status} /></div>
+  <section className="panel" aria-busy={status === "LOADING"}><div className="row"><h3><PageArt name={title} />{title}</h3><Badge s={status} /></div>
     {status === "LOADING" ? <><Skeleton />{note && <p className="muted">{note}</p>}</> : <p className="muted">{why}</p>}
     <Prov rec={rec} />{rec && status !== "LOADING" && status !== "FRESH" && <button className="btn" onClick={() => retry(rec.id)}>Retry</button>}</section>
 );
 export const Panel = ({ title, status, rec, children }: { title: string; status: Status | "CALCULATED"; rec?: Rec; children: ReactNode }) => (
-  <section className="panel"><div className="row"><h3>{title}</h3><Badge s={status} /></div>{children}<Prov rec={rec} /></section>
+  <section className="panel"><div className="row"><h3><PageArt name={title} />{title}</h3><Badge s={status} /></div>{children}<Prov rec={rec} /></section>
 );

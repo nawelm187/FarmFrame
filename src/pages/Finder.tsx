@@ -2,10 +2,12 @@ import { useDeferredValue } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useMany } from "../lib/data";
 import { FIND, collect, parseRelics, query } from "../lib/drops";
+import ItemArt, { useImages } from "../ItemArt";
 import RelicCard from "../RelicCard";
 import { Unavailable } from "./parts";
 const items = [...FIND.map(f => ({ id: f.id, file: f.file })), { id: "relics", file: "relics.json" }];
 export default function Finder() {
+  const img = useImages();
   const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", dq = useDeferredValue(q), l = dq.trim().toLowerCase();
   const res = useMany(items);
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
@@ -22,7 +24,7 @@ export default function Finder() {
     {rl.length > 0 && <><h2>Relics containing "{q.trim()}"</h2><p className="muted">Each card shows everything the relic can give. The reward you searched for is highlighted.</p><div className="relgrid">{rl.map(r => <RelicCard key={r.name} r={r} mark={l} />)}</div></>}
     {m.length > 0 && <h2>Other places it drops</h2>}
     {m.length > 0 && <div className="wrap"><table><thead><tr><th>Item</th><th>Source</th><th>Location</th><th>Rot.</th><th>Chance</th><th>Rarity</th><th>Detail</th></tr></thead><tbody>
-      {m.map((r, i) => <tr key={i}><td><Link to={`/item/${encodeURIComponent(r.item)}`}>{r.item}</Link></td><td>{r.src}</td><td>{r.where}{r.mode && r.mode !== r.src ? <span className="muted"> {r.mode}</span> : null}</td><td>{r.rot || "—"}</td><td>{r.ch == null ? "—" : r.ch + "%"}</td><td>{r.rar}</td><td className="muted">{r.note}</td></tr>)}</tbody></table></div>}
+      {m.map((r, i) => <tr key={i}><td><ItemArt file={img(r.item)} size={26} /> <Link to={`/item/${encodeURIComponent(r.item)}`}>{r.item}</Link></td><td>{r.src}</td><td>{r.where}{r.mode && r.mode !== r.src ? <span className="muted"> {r.mode}</span> : null}</td><td>{r.rot || "—"}</td><td>{r.ch == null ? "—" : r.ch + "%"}</td><td>{r.rar}</td><td className="muted">{r.note}</td></tr>)}</tbody></table></div>}
     {m.length > 0 && <p className="muted">Mission chances are per reward roll in that rotation, not per run. Enemy chances combine the enemy's drop chance with the table chance.</p>}
 </>);
 }

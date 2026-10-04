@@ -1,3 +1,4 @@
+import PageArt from "../PageArt";
 import { useMemo, useState } from "react";
 import RelicArt from "../RelicArt";
 import { useWorld } from "../lib/data";
@@ -13,10 +14,10 @@ export default function Fissures() {
   const rows = useMemo(() => (data ?? []).filter(f => ts(f.expiry) > Date.now() && (!tier || f.tier === tier) && (!sp || f.isHard)
     && (kind === "all" || (kind === "storm") === f.isStorm)).sort((a, b) => a.tierNum - b.tierNum || ts(a.expiry) - ts(b.expiry)), [data, tier, sp, kind]);
   const live = (data ?? []).filter(f => ts(f.expiry) > Date.now()).length;
-  if (!data) return <><h1>Void Fissures</h1><Unavailable title="Void Fissures" status={status} why="No verified data." rec={rec} /></>;
+  if (!data) return <><h1><PageArt name="Void Fissures" size={36} />Void Fissures</h1><Unavailable title="Void Fissures" status={status} why="No verified data." rec={rec} /></>;
   return (
     <>
-      <h1>Void Fissures</h1>
+      <h1><PageArt name="Void Fissures" size={36} />Void Fissures</h1>
       <div className="tierbar" role="group" aria-label="Filter by relic tier">{TIERS.map(t => { const n = data.filter(x => x.tier === t && ts(x.expiry) > Date.now()).length; return n || tier === t ? <button key={t} className="tierbtn" aria-pressed={tier === t} onClick={() => setTier(tier === t ? "" : t)}><RelicArt tier={t} size={34} /><span>{t}</span><b>{n}</b></button> : null; })}</div>
       <div className="bar">
         <select aria-label="Tier" value={tier} onChange={e => setTier(e.target.value)}><option value="">All tiers</option>{TIERS.map(t => <option key={t}>{t}</option>)}</select>

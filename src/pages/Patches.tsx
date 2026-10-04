@@ -11,6 +11,8 @@ import { useCatalogs } from "../lib/useCatalog";
 import { Panel, Skeleton, Unavailable } from "./parts";
 const SHOW = 12;
 const ARROW: Record<Change["good"], [string, string]> = { buff: ["▲", "FRESH"], nerf: ["▼", "ERROR"], change: ["●", "UNAVAILABLE"] };
+const groups = (cs: Change[], mine: Set<string>) => { const m = new Map<string, Change[]>(); for (const c of cs) m.set(c.subject, [...(m.get(c.subject) ?? []), c]);
+  return [...m].map(([subject, items]) => ({ subject, items })).sort((a, b) => Number(b.items.some(c => touches(c, mine))) - Number(a.items.some(c => touches(c, mine))) || b.items.length - a.items.length); };
 const fmt = (c: Change) => (c.from != null && c.to != null ? `${c.from}${c.unit} → ${c.to}${c.unit}` : "");
 function Entry({ p, open, mine, link }: { p: Patch; open?: boolean; mine: Set<string>; link: (name: string) => string | null }) {
   const s = useMemo(() => summarize(p), [p]), t = tally(s.changes), hits = s.changes.filter(c => touches(c, mine)).length;
@@ -18,8 +20,10 @@ function Entry({ p, open, mine, link }: { p: Patch; open?: boolean; mine: Set<st
     <summary><b>{p.name}</b> <span className="tag">{p.type}</span> <span className="muted">{new Date(p.date).toLocaleDateString()}</span>
       {t.buff > 0 && <span className="tag FRESH"> ▲ {t.buff}</span>}{t.nerf > 0 && <span className="tag ERROR"> ▼ {t.nerf}</span>}{t.change > 0 && <span className="tag UNAVAILABLE"> ● {t.change}</span>}
       {hits > 0 && <span className="tag STALE"> ★ touches your builds or goals</span>}</summary>
-    {s.changes.length > 0 ? <ul className="chg">{[...s.changes].sort((a, b) => Number(!!touches(b, mine)) - Number(!!touches(a, mine))).map((c, i) => { const [a, tag] = ARROW[c.good], to = link(c.subject), me = touches(c, mine);
-      return <li key={i} title={c.text}><span className={"tag " + tag}>{a} {c.good}</span> <b>{to ? <Link to={to}>{c.subject}</Link> : c.subject}</b> <span className="muted">{c.stat}</span> {fmt(c) && <b>{fmt(c)}</b>}{me && <span className="gold"> ★ {me}</span>}<div className="muted chgtxt">{c.text}</div></li>; })}</ul>
+    {s.changes.length > 0 ? <div>{groups(s.changes, mine).map(g => <section key={g.subject} className="chgroup"><h4>{link(g.subject) ? <Link to={link(g.subject)!}>{g.subject}</Link> : g.subject} <span className="muted">{g.items.length}</span></h4>
+      <ul className="chg">{g.items.slice(0, 8).map((c, i) => { const [a, tag] = ARROW[c.good], me = touches(c, mine);
+        return <li key={i} title={c.text}><span className={"tag " + tag}>{a} {c.good}</span> {c.stat && <span className="muted">{c.stat} </span>}{fmt(c) && <b>{fmt(c)} </b>}{me && <span className="gold"> ★ {me}</span>}<div className="muted chgtxt">{c.text}</div></li>; })}</ul>
+      {g.items.length > 8 && <details><summary className="muted">{g.items.length - 8} more</summary><ul className="chg">{g.items.slice(8).map((c, i) => <li key={i}><span className={"tag " + ARROW[c.good][1]}>{ARROW[c.good][0]} {c.good}</span> <span className="muted chgtxt">{c.text}</span></li>)}</ul></details>}</section>)}</div>
       : <p className="muted">No stat changes found in these notes.</p>}
     {s.additions.length > 0 && <><h4>New</h4><ul className="sub">{s.additions.map((a, i) => <li key={i}>{a}</li>)}</ul></>}
     {s.fixes > 0 && <p className="muted">{s.fixes} bug fix{s.fixes === 1 ? "" : "es"} (not listed here).</p>}

@@ -1,3 +1,4 @@
+import PageArt from "../PageArt";
 import Baro from "../Baro";
 import Npc from "../Npc";
 import { useRefreshAt, useWorld } from "../lib/data";
@@ -90,7 +91,7 @@ const Fixed = ({ name, role, where }: { name: string; role: string; where: strin
 );
 export default function Rotations() {
   const reset = iso(nextWeeklyReset());
-  return (<><h1>Rotations</h1>
+  return (<><h1><PageArt name="Rotations" size={36} />Rotations</h1>
     <p className="lead">Shops and rewards that rotate. Weekly vendors and the Circuit reset every Monday at 00:00 UTC.</p>
     <p className="muted"><b>Next weekly reset:</b> <Countdown exp={reset} /> <span>(calculated from the fixed weekly schedule)</span></p>
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>

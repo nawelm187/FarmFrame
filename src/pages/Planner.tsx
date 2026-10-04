@@ -1,3 +1,4 @@
+import PageArt from "../PageArt";
 import { Link } from "react-router-dom";
 import { useRefreshAt, useWorld } from "../lib/data";
 import { value } from "../lib/farmNow";
@@ -37,7 +38,7 @@ export default function Planner() {
   const { goals, opps, fis, inv } = useFarmNow(), trader = useWorld("voidTrader", isTrader), needed = useNeeded();
   const baro = trader.data ? baroMatches(trader.data, needed) : [];
   const empty = !opps.length && !baro.length;
-  return (<><h1>Planner</h1>
+  return (<><h1><PageArt name="Planner" size={36} />Planner</h1>
     <p className="lead">Current activities, with what matters to your own goals first.</p>
     <h2>Relevant to you</h2>
     {!goals ? <p className="muted">No goals yet. Add one from a Warframe or weapon page and this section will show what advances it. <Link to="/warframes">Browse Warframes</Link></p>

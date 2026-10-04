@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../lib/useCatalog";
 import { CATS, imgUrl, type Cat } from "../lib/catalog";
 import ModCard from "../ModCard";
+import RailjackWeapons from "./RailjackWeapons";
 import { Badge, Prov, Unavailable } from "./parts";
 export default function Explore({ cat }: { cat: Cat }) {
   const c = CATS[cat], [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", [more, setMore] = useState(1), dq = useDeferredValue(q);
@@ -15,5 +16,5 @@ export default function Explore({ cat }: { cat: Cat }) {
       <li key={e.slug}><span className="thumb">{e.image && <img src={imgUrl(e.image)} alt="" loading="lazy" decoding="async" width={48} height={48} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</span>
         <Link to={`/${cat}/${e.slug}`}>{e.name}</Link><span className="muted">{e.type}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">Prime</span>}</span></li>))}
       {!m.length && <li className="muted">No {c.label.toLowerCase()} match "{q}".</li>}</ul>}
-    {m.length > shown.length && <button className="btn" onClick={() => setMore(more + 1)}>Show more ({m.length - shown.length} left)</button>}<Prov rec={rec} /></>);
+    {m.length > shown.length && <button className="btn" onClick={() => setMore(more + 1)}>Show more ({m.length - shown.length} left)</button>}{cat === "railjack" && <RailjackWeapons q={dq} />}<Prov rec={rec} /></>);
 }

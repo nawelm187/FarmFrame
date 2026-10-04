@@ -9,6 +9,7 @@ import { acquisition, fromBuild, readReqs, writeReqs } from "../lib/reqs";
 import { useCatalogs } from "../lib/useCatalog";
 import { useMany } from "../lib/data";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
+import ModPicker from "../ModPicker";
 import BuildAI from "../BuildAI";
 import { Plat } from "../Money";
 import SetPrice from "../SetPrice";
@@ -16,7 +17,7 @@ import { Unavailable } from "./parts";
 const ARC_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arcanes.json";
 const ARC_ALT = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/Arcanes.json";
 const ARC_SRC = "WFCD warframe-items on GitHub (community, unofficial)";
-const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "any"];
+const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "umbra", "any"];
 export function BuildList() {
   const [bs, setBs] = useState(readBuilds), nav = useNavigate(), [sp] = useSearchParams(), made = useRef(false);
   // Deep link from search ("build Rhino" -> /builds?new=warframe:rhino): create the build once and open it.
@@ -30,7 +31,7 @@ export function BuildList() {
     {!bs.length ? <p className="muted">No builds yet. Create one to check mod capacity and see what you still need to farm.</p> : <ul className="list comp">{bs.map(b => (<li key={b.id}><span><Link to={`/build/${b.id}`}>{b.name}</Link> <span className="muted">{KIND_LABEL[b.kind ?? "warframe"]}</span></span><button className="btn" onClick={() => commit(bs.filter(x => x.id !== b.id))}>Delete</button></li>))}</ul>}</>);
 }
 export function BuildEditor() {
-  const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [sent, setSent] = useState(false), [road, setRoad] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
+  const { id } = useParams(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [active, setActive] = useState<number | null>(null), [sent, setSent] = useState(false), [road, setRoad] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
   const b = bs.find(x => x.id === id), kind: Kind = b?.kind ?? "warframe";
   const catKey: Cat = kind === "warframe" ? "warframe" : kind === "companion" ? "companion" : kind === "archwing" ? "archwing" : "weapon";
   const both = useCatalogs([catKey, "mod"]), itemsC = both[catKey]!, modC = both.mod!;
@@ -66,6 +67,7 @@ export function BuildEditor() {
     totals: st.stats.map(s => ({ stat: s.label, bonusPercent: +s.pct.toFixed(1), from: s.parts })), notCalculated: st.unparsed, validation: ev.issues,
     forma: rq.forma, omniForma: rq.omni, arcanes: rq.arcanes.map(a => a.name), missingMods: rq.missingMods.map(m => m.name),
   };
+  const pick = (m: Entity) => { const i = active != null && !b.slots[active].mod ? active : active != null ? active : b.slots.findIndex(s => !s.mod); if (i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setActive(null); } };
   const onAdd = (v: string) => { setQ(v); const m = byName.get(v.trim().toLowerCase()), i = b.slots.findIndex(s => !s.mod); if (m && i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setQ(""); } };
   return (<><h1><input aria-label="Build name" value={b.name} onChange={e => save({ ...b, name: e.target.value })} style={{ fontSize: "1.2rem" }} /></h1>
     <div className="bar"><select aria-label="Build type" value={kind} onChange={e => save({ ...b, kind: e.target.value as Kind, frame: "", haveFrame: false, slots: newBuild().slots, arcanes: undefined })}>{(Object.keys(KIND_LABEL) as Kind[]).map(k => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</select><select aria-label="Item" value={b.frame} onChange={e => save({ ...b, frame: e.target.value })}><option value="">Choose {KIND_LABEL[kind].toLowerCase()}</option>{frames.map(f => <option key={f.slug} value={f.slug}>{f.name}</option>)}</select>
@@ -73,8 +75,9 @@ export function BuildEditor() {
     {MARKET_ENABLED && frameEnt?.isPrime && <SetPrice key={frameEnt.slug} e={frameEnt} />}
     <label className="chk muted">Mod capacity <b>{ev.total} / {ev.capacity}</b><progress max={ev.capacity} value={Math.min(ev.total, ev.capacity)} /></label>
     <div className="bar"><input aria-label="Add mod" list="modnames" placeholder="Add a mod by name" value={q} onChange={e => onAdd(e.target.value)} /><datalist id="modnames">{fit.map(m => <option key={m.slug} value={m.name} />)}</datalist></div>
-    <ul className="list comp">{ev.rows.map(r => (<li key={r.i}><span>Slot {r.i + 1} {r.pol ? <><PolIcon pol={r.pol} size={18} /> <span className="muted">{r.pol}</span></> : <span className="muted">no polarity</span>} · {r.m ? <b>{r.m.name}</b> : <span className="muted">Empty</span>}{r.d != null && <span className="muted"> · drain {r.d}</span>}</span>
-      <span><select aria-label={`Slot ${r.i + 1} polarity`} value={b.slots[r.i].pol ?? ""} onChange={e => setSlot(r.i, { ...b.slots[r.i], pol: e.target.value || undefined })}><option value="">Native</option>{POLS.map(x => <option key={x} value={x}>{x === "any" ? "omni (any)" : x}</option>)}</select> {b.slots[r.i].mod && <><label className="muted"><input type="checkbox" checked={!!b.slots[r.i].owned} onChange={e => setSlot(r.i, { ...b.slots[r.i], owned: e.target.checked })} /> Owned </label><label className="muted">Rank <input type="number" min={0} max={r.m?.maxRank ?? 30} value={b.slots[r.i].rank} style={{ width: "4rem" }} onChange={e => setSlot(r.i, { ...b.slots[r.i], rank: Math.max(0, +e.target.value || 0) })} /></label> <button className="btn" onClick={() => setSlot(r.i, { ...b.slots[r.i], mod: null, rank: 0, owned: false })}>Remove</button></>}</span></li>))}</ul>
+    <ul className="list comp">{ev.rows.map(r => (<li key={r.i} className={active === r.i ? "slotsel" : undefined}><span><button className="btn" aria-pressed={active === r.i} onClick={() => setActive(active === r.i ? null : r.i)}>{active === r.i ? "Choosing…" : "Select"}</button> Slot {r.i + 1} {r.pol ? <><PolIcon pol={r.pol} size={18} /> <span className="muted">{r.pol}</span></> : <span className="muted">no polarity</span>} · {r.m ? <b>{r.m.name}</b> : <span className="muted">Empty</span>}{r.d != null && <span className="muted"> · drain {r.d}</span>}</span>
+      <span><span className="polpick" role="group" aria-label={`Slot ${r.i + 1} polarity`}><button className={"relicchip" + (!b.slots[r.i].pol ? " own" : "")} title="Native polarity" onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: undefined })}>Native</button>{POLS.map(x => <button key={x} className={"relicchip" + (b.slots[r.i].pol === x ? " own" : "")} title={x === "any" ? "Omni (any)" : x} aria-pressed={b.slots[r.i].pol === x} onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: x })}><PolIcon pol={x} size={18} /></button>)}</span> {b.slots[r.i].mod && <><label className="muted"><input type="checkbox" checked={!!b.slots[r.i].owned} onChange={e => setSlot(r.i, { ...b.slots[r.i], owned: e.target.checked })} /> Owned </label><label className="muted">Rank <input type="number" min={0} max={r.m?.maxRank ?? 30} value={b.slots[r.i].rank} style={{ width: "4rem" }} onChange={e => setSlot(r.i, { ...b.slots[r.i], rank: Math.max(0, +e.target.value || 0) })} /></label> <button className="btn" onClick={() => setSlot(r.i, { ...b.slots[r.i], mod: null, rank: 0, owned: false })}>Remove</button></>}</span></li>))}</ul>
+    <ModPicker mods={fit} onPick={pick} taken={new Set(b.slots.map(x => x.mod).filter((x): x is string => !!x))} target={active != null ? `slot ${active + 1}` : "the first empty slot"} />
     {kind === "warframe" && <><h2>Arcanes</h2>
     {!arcs ? <p className="muted">Arcane data {ar.status === "LOADING" ? "is loading" : "is unavailable"}.</p> : <><datalist id="arcnames">{arcs.map(a => <option key={a.slug} value={a.name} />)}</datalist>
       <ul className="list comp">{[0, 1].map(i => { const s = arcSlot(i), a = s.mod ? arcBy.get(s.mod) : undefined; return (<li key={i}><span>Arcane slot {i + 1} · {a ? <b>{a.name}</b> : s.mod ? <span className="muted">not in loaded data</span> : <span className="muted">Empty</span>}</span>

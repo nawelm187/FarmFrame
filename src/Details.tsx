@@ -41,7 +41,7 @@ export default function Details({ e, cat }: { e: Entity; cat: Cat }) {
   const intro = isR(raw.introduced) ? [s(raw.introduced.name), s(raw.introduced.date)].filter(Boolean).join(" · ") : null; if (intro) info.push(["Introduced", intro]);
   txt(info, raw, "releaseDate", "Release date"); txt(info, raw, "vaultDate", "Vault date");
   num(info, raw, "buildPrice", "Foundry cost", x => <Credits n={x} />); num(info, raw, "buildTime", "Build time", time); num(store, raw, "skipBuildTimePrice", "Rush cost", x => <Plat n={x} />); num(store, raw, "marketCost", "Store price", x => <Plat n={x} />);
-  const tl = tradeLine(e); if (tl) info.push(["Trading between players", <span className={"tr-" + tl.tone}>{tl.label}</span>]);
+  const tl = tradeLine(e); if (tl && tl.tone !== "no") info.push(["Trading between players", <span className={"tr-" + tl.tone}>{tl.label}</span>]);
   if (info.length) secs.push({ title: "Information", rows: info });
   const abilities = Array.isArray(raw.abilities) ? raw.abilities.filter(isR).map(a => ({ name: s(a.name), description: s(a.description) })).filter(a => a.name) : [], passive = s(raw.passiveDescription);
   if (!secs.length && !abilities.length && !passive) return null;

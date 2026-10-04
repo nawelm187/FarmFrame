@@ -1,6 +1,8 @@
+import PageArt from "../PageArt";
 import { useDeferredValue, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
+import ItemArt, { useImages } from "../ItemArt";
 import RelicCard, { VaultBadge } from "../RelicCard";
 import { useMany, useWorld } from "../lib/data";
 import { parseRelics, relicsByItem, type Relic } from "../lib/drops";
@@ -30,6 +32,7 @@ const isArr = (d: unknown): d is { tier: string; expiry: string }[] => Array.isA
 type Vals = Record<string, number | null> | "loading" | "error" | null;
 const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
 function RelicValue({ r }: { r: Relic }) {
+  const img = useImages();
   const [vals, setVals] = useState<Vals>(null), [sel, setSel] = useState("Intact");
   const names = [...new Set(Object.values(r.st).flat().map(x => x.itemName))];
   const run = async () => {
@@ -49,22 +52,23 @@ function RelicValue({ r }: { r: Relic }) {
       <div className="chips" role="tablist" aria-label="Refinement">{states.map(s => <button key={s} role="tab" aria-selected={s === cur} className={s === cur ? "on" : ""} onClick={() => setSel(s)}>{s} · <Plat n={total(vals, s)} size={14} /></button>)}</div>
       <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th><th className="num">Drop chance</th><th className="num">Market price</th><th className="num">Worth per relic</th></tr></thead>
         <tbody>{rows(cur).map(x => { const p = vals[x.itemName], w = value(vals, x); return (<tr key={x.itemName + x.rarity}>
-          <td><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td><span className={"rar " + x.rarity}>{x.rarity}</span></td><td className="num">{x.chance}%</td>
+          <td><ItemArt file={img(x.itemName)} size={28} /> <Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td><span className={"rar " + x.rarity}>{x.rarity}</span></td><td className="num">{x.chance}%</td>
           <td className="num">{p != null ? <Plat n={p} /> : <span className="muted">no price</span>}</td><td className="num">{w != null ? <Plat n={w} /> : "—"}</td></tr>); })}</tbody>
         <tfoot><tr><th colSpan={4}>Expected value per relic ({cur})</th><th className="num"><Plat n={total(vals, cur)} /></th></tr></tfoot></table></div>
       <p className="muted">Worth per relic = drop chance × the item's live market median. Rewards with no market price count as 0. Market value, not a farming recommendation.</p></>}
   </div>);
 }
 export default function Relics() {
+  const img = useImages();
   const [sp, setSp] = useSearchParams(), q = sp.get("q") ?? "", dq = useDeferredValue(q), l = dq.trim().toLowerCase();
   const [{ rec, status }] = useMany([{ id: "relics", file: "relics.json" }]);
   const fis = useWorld("fissures", isArr).data;
   const relics = parseRelics(rec?.data);
-  if (!relics) return <><h1>Relics</h1><Unavailable title="Relic data" status={status} why={status === "LOADING" ? "Loading relic tables…" : "No verified data."} rec={rec} /></>;
+  if (!relics) return <><h1><PageArt name="Relics" size={36} />Relics</h1><Unavailable title="Relic data" status={status} why={status === "LOADING" ? "Loading relic tables…" : "No verified data."} rec={rec} /></>;
   const grouped = l.length >= 3 ? relicsByItem(relics, l) : [];
   const all = l ? relics.filter(r => r.name.toLowerCase().includes(l) || (r.st.Intact ?? []).some(x => x.itemName.toLowerCase().includes(l))) : [];
   const hit = grouped.length && all.length > 3 && !all.some(r => r.name.toLowerCase() === l) ? all.slice(0, 3) : all.slice(0, 25);
-  return (<><h1>Relics</h1>
+  return (<><h1><PageArt name="Relics" size={36} />Relics</h1>
     <p className="lead">Search by relic (e.g. "Lith A1") or by reward item. Chances by refinement come straight from the drop tables. Vault status comes from a separate community dataset and shows as unknown when it is missing.</p>
     <div className="bar"><input aria-label="Relic or item name" placeholder="Relic or item name" value={q} onChange={e => setSp({ q: e.target.value }, { replace: true })} /></div>
     {!l && <Browse relics={relics} sp={sp} setSp={setSp} />}
@@ -77,6 +81,6 @@ export default function Relics() {
       return (<section className="panel" key={r.name} style={{ marginBottom: ".6rem" }}>
         <div className="row"><h3><RelicArt tier={r.tier} name={r.name} size={40} /> {r.name} <VaultBadge name={r.name} /></h3><span className="muted">{n == null ? "Fissure data unavailable" : `${n} active ${r.tier} fissures`}</span></div>
         <div className="wrap"><table><thead><tr><th>Reward</th><th>Rarity</th>{STATES.map(s => <th key={s}>{s}</th>)}</tr></thead><tbody>
-          {base.map(x => <tr key={x.itemName + x.rarity}><td><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td>{x.rarity}</td>{STATES.map(s => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity); return <td key={s}>{y ? y.chance + "%" : "—"}</td>; })}</tr>)}</tbody></table></div>{MARKET_ENABLED && <RelicValue r={r} />}</section>); })}
+          {base.map(x => <tr key={x.itemName + x.rarity}><td><ItemArt file={img(x.itemName)} size={28} /> <Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link></td><td>{x.rarity}</td>{STATES.map(s => { const y = (r.st[s] ?? []).find(z => z.itemName === x.itemName && z.rarity === x.rarity); return <td key={s}>{y ? y.chance + "%" : "—"}</td>; })}</tr>)}</tbody></table></div>{MARKET_ENABLED && <RelicValue r={r} />}</section>); })}
     <Prov rec={rec} /></>);
 }

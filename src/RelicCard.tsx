@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ItemArt, { useImages } from "./ItemArt";
 import RelicArt from "./RelicArt";
 import { useMany } from "./lib/data";
 import type { Relic } from "./lib/drops";
@@ -16,12 +17,13 @@ export const isMark = (item: string, mark?: string) => { const m = (mark ?? "").
 export default function RelicCard({ r, mark }: { r: Relic; mark?: string }) {
   const intact = r.st.Intact ?? Object.values(r.st)[0] ?? [], rad = r.st.Radiant ?? [];
   const rows = [...intact].sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3) || a.itemName.localeCompare(b.itemName));
+  const img = useImages();
   const found = rows.some(x => isMark(x.itemName, mark));
   return (<article className={"relcard" + (found ? " has" : "")}>
     <header><RelicArt tier={r.tier} name={r.name} size={44} /><div><Link to={`/relics?q=${encodeURIComponent(r.name)}`}><b>{r.name}</b></Link><div><VaultBadge name={r.name} /></div></div></header>
     <ul>{rows.map(x => { const hit = isMark(x.itemName, mark), ra = rad.find(y => y.itemName === x.itemName && y.rarity === x.rarity);
       return (<li key={x.itemName + x.rarity} className={hit ? "hit" : undefined}><span className={"rar " + x.rarity} title={x.rarity}>◆</span>
-        <span><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link>{hit && <b className="found"> ★ This is what you searched for</b>}
+        <ItemArt file={img(x.itemName)} size={32} /><span><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link>{hit && <b className="found"> ★ This is what you searched for</b>}
           <span className="muted"> {x.chance}%{ra && ra.chance !== x.chance ? ` → ${ra.chance}% Radiant` : ""}</span></span></li>); })}</ul>
     <footer><Link to={`/farm/${encodeURIComponent(r.name + " Relic")}`}>How to get it</Link></footer>
   </article>);
