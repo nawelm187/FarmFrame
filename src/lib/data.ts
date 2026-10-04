@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { cget, cset } from "./idb";
+import { SUPABASE_URL } from "./config";
 import { allExpired, bust, countOf, nextStat, type LoadStat } from "./health";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
 export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
@@ -49,7 +50,9 @@ export function statusOf(r: Rec | undefined, isLoading: boolean, now = Date.now(
   return r.at !== null && now - r.at > r.window ? "STALE" : "FRESH";
 }
 /** Loads a live dataset, refreshes every 60s, exposes status + provenance. Never fabricates data. */
-export function useWorld<T>(key: string, guard: (d: unknown) => d is T, alt?: string) {
+/** Second source per dataset, used when the first one fails or serves only old entries. */
+const FALLBACK: Record<string, string> = { fissures: `${SUPABASE_URL}/functions/v1/worldstate` };
+export function useWorld<T>(key: string, guard: (d: unknown) => d is T, alt: string | undefined = FALLBACK[key]) {
   useSyncExternalStore(subscribe, () => ver);
   useEffect(() => {
     const go = () => void load(key, API + key, WS_WINDOW, "WarframeStat API (community, unofficial)", 30_000, alt);
