@@ -16,3 +16,7 @@ it("relic, need and build intents", () => {
   expect(search("build rhino mod", null, ents)[0].to).toBe("/builds");
   expect(search("builds", null)[0].label).toBe("Builds");
 });
+import { search as s2 } from "./search";
+it("pages include resources, enemies and parts", () => {
+  expect(s2("enemies", null).some(h => h.to === "/enemies")).toBe(true); expect(s2("parts", null).some(h => h.to === "/parts")).toBe(true);
+});

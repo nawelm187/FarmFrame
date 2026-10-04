@@ -26,6 +26,8 @@ export const SOURCES: SourceDef[] = [
     use: "active", reach: "unverified", note: "Asked only for characters without a bundled image and remembered for a week. A failure simply leaves the silhouette. Bundled images in src/assets/npc always win." },
   { id: "wfcd-cdn", name: "WarframeStat image CDN", kind: "community", confidence: "B", hosts: ["cdn.warframestat.us"], provides: "Item and relic images",
     use: "active", reach: "browser", note: "Checked by loading one sample image. A missing image shows a neutral placeholder." },
+  { id: "manual-railjack", name: "Railjack components (written by hand)", kind: "community", confidence: "D", hosts: [], provides: "Railjack ship components: what each does, houses, tiers and how to get them",
+    use: "active", reach: "browser", note: "No data API lists these. The text in src/data/railjack.ts is copied by hand from a dated guide and can go out of date. It is shown with a Manual source label." },
   { id: "warframe-market", name: "warframe.market (through our Supabase function)", kind: "community", confidence: "C", hosts: [], provides: "Platinum prices, checked on demand per item",
     use: "active", reach: "via-our-function", note: "Browsers cannot call it directly, so the request goes through supabase/functions/market. Prices are player-set market values, never fixed game values." },
   { id: "supabase", name: "Supabase (your account)", kind: "app", confidence: "E", hosts: [], provides: "Account, goals, builds and progress sync",
