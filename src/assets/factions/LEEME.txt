@@ -1,0 +1,2 @@
+Faction emblems: grineer, corpus, infested, orokin, sentient, narmer, murmur (.png .webp .jpg .svg). Lowercase file name.
+Without a file a coloured diamond is shown.

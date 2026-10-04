@@ -1,0 +1,2 @@
+Optional own pictures of enemies. File name = enemy name in lowercase with dashes (aerial-commander.png).
+Without a file, the Enemies page uses the picture from the WarframeStat image CDN; if that fails, a blank square.
