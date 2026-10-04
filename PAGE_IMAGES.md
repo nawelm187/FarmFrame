@@ -70,4 +70,14 @@ Put each image in the folder shown. Any of .png, .webp, .jpg, .svg works; the na
 Only needed to replace the picture that comes with the data. Name = enemy name with dashes, for example `aerial-commander.png`, `002-er.png`, `akkalak-turret.png`.
 
 ## Reserved (not used yet)
-`src/assets/items/` and `src/assets/railjack/`: for your own item and Railjack pictures. Item pictures inside relics, vendors, parts and the Finder come from the item data.
+`src/assets/railjack/`: for your own Railjack pictures.
+
+## Items (`src/assets/items/`)
+Used before item names in relics, vendors, parts and the Finder. Name = item name with dashes. These take priority over the pictures that come with the data.
+| File name | Where it shows |
+|---|---|
+| `forma.png` | Every Forma Blueprint, including "2X Forma Blueprint" and any Forma not listed below |
+| `umbra-forma.png` | Umbra Forma Blueprint (optional; falls back to forma.png) |
+| `aura-forma.png` | Aura Forma Blueprint (optional) |
+| `stance-forma.png` | Stance Forma Blueprint (optional) |
+| `omni-forma.png` | Omni Forma Blueprint (optional) |
