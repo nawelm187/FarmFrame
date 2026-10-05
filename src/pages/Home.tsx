@@ -11,6 +11,8 @@ import { PATCH_ALT, PATCH_SRC, PATCH_URL, PATCH_WINDOW, latestUpdate, parsePatch
 import { useFarmNow } from "../lib/useFarmNow";
 import { VERSION } from "../version";
 import OppList from "./OppList";
+import { AlertsSummary } from "./Alerts";
+import { Pic } from "../ItemArt";
 import { Countdown, Panel, Unavailable } from "./parts";
 interface Cyc { state: string; expiry: string }
 const isCyc = (d: unknown): d is Cyc => !!d && typeof d === "object" && typeof (d as Cyc).state === "string" && typeof (d as Cyc).expiry === "string";
@@ -38,6 +40,13 @@ function FissureCount() {
   if (!data) return <Unavailable title="Void Fissures" status={status} why="No verified data." rec={rec} />;
   return <Panel title="Void Fissures" status={status} rec={rec}><div className="big">{data.filter(f => ts(f.expiry) > Date.now()).length} active</div><Link to="/fissures">Open fissure list</Link></Panel>;
 }
+/** Priority 1 of Home: where each goal stands. Only goals whose parts are listed in the data get a bar; the others are said to have none. */
+function Goals({ f }: { f: ReturnType<typeof useFarmNow> }) {
+  const { info, goals } = f.exact; if (!goals.length) return null;
+  return (<section aria-label="Your goals"><div className="row"><h2>Your goals</h2><Link to="/roadmap">Open Roadmap</Link></div>
+    <ul className="list comp">{info.map(i => <li key={i.goal.id}><span><Pic name={i.goal.name} size={34} /> <Link to={`/${i.goal.cat}/${i.goal.slug}`}><b>{i.goal.name}</b></Link>
+      {i.parts ? <label className="muted"> {i.have} / {i.total} parts · {i.pct}% <progress max={i.total} value={i.have} /></label> : <span className="muted"> · the data lists no parts for this goal</span>}</span></li>)}</ul></section>);
+}
 function FarmRightNow({ f }: { f: ReturnType<typeof useFarmNow> }) {
   const { goals, opps, fis, inv, exact } = f, todo = exact.plans.filter(p => p.part.count > p.have);
   return (<section aria-label="What should I farm right now">
@@ -56,11 +65,12 @@ export default function Home() {
     <p className="lead">Goal, what you are missing, how to get it, and what you can do right now.</p>
     <Onboarding />
     <LatestUpdate />
+    <Goals f={f} />
     <FarmRightNow f={f} />
     <h2>World state</h2>
     <div className="grid">
       <Cycle title="Cetus (Plains)" k="cetusCycle" /><Cycle title="Orb Vallis" k="vallisCycle" />
-      <Cycle title="Cambion Drift" k="cambionCycle" /><Cycle title="Zariman" k="zarimanCycle" /><FissureCount /><Baro />
+      <Cycle title="Cambion Drift" k="cambionCycle" /><Cycle title="Zariman" k="zarimanCycle" /><FissureCount /><AlertsSummary /><Baro />
     </div>
     <h2>Your plan</h2>
     <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/farm-plan">Farm Plan</Link> · <Link to="/planner">Planner</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>

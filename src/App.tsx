@@ -4,6 +4,8 @@ import { Icon, Logo } from "./Icons";
 import { CATS } from "./lib/catalog";
 import { Skeleton } from "./pages/parts";
 const Home = lazy(() => import("./pages/Home"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Alerts = lazy(() => import("./pages/Alerts"));
 const Fissures = lazy(() => import("./pages/Fissures"));
 const Invasions = lazy(() => import("./pages/Invasions"));
 const Relics = lazy(() => import("./pages/Relics"));
@@ -31,7 +33,7 @@ const Patches = lazy(() => import("./pages/Patches"));
 const Part = lazy(() => import("./pages/Part"));
 const GROUPS = [
   { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/lore", "/patches"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/lore", "Lore"], ["/patches", "Patch notes"]] },
-  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/rotations", "/fissures", "/invasions"], items: [["/farm-plan", "Farm Plan"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"]] },
+  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "Farm Plan"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/alerts", "Alerts"]] },
   { label: "Plan", hub: "/plan", pre: ["/plan", "/roadmap", "/builds", "/build", "/tracking"], items: [["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
   { label: "Account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "Data sources"]] },
 ] as const;
@@ -57,7 +59,7 @@ export default function App() {
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
           <Route path="/enemies" element={<Enemies />} /><Route path="/resources" element={<Resources />} /><Route path="/parts" element={<Parts />} /><Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
             <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
-          <Route path="/farm/:item" element={<Farm />} /><Route path="/rotations" element={<Rotations />} /><Route path="/patches" element={<Patches />} /><Route path="/item/:name" element={<Part />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<Home />} />
+          <Route path="/farm/:item" element={<Farm />} /><Route path="/rotations" element={<Rotations />} /><Route path="/alerts" element={<Alerts />} /><Route path="/patches" element={<Patches />} /><Route path="/item/:name" element={<Part />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<NotFound />} />
         </Routes></Suspense>
         <ReportIssue />
       </main>

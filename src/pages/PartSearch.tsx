@@ -21,6 +21,7 @@ export default function Parts() {
   const words = dq.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const list = rows.filter(r => (!kind || r.cat === kind) && (!prime || r.prime) && words.every(w => r.title.toLowerCase().includes(w)));
   if (loading) return <><h1><PageArt name="Parts" size={36} />Parts</h1><Unavailable title="Parts" status={cat.warframe?.status ?? "LOADING"} why="Loading the item catalogs…" rec={cat.warframe?.rec} /></>;
+  if (!rows.length) return <><h1><PageArt name="Parts" size={36} />Parts</h1><Unavailable title="Parts" status="ERROR" why="The item catalogs loaded but list no parts. The source format may have changed. Report it with the button below and try again later." rec={cat.warframe?.rec} /></>;
   return (<><h1><PageArt name="Parts" size={36} />Parts</h1><p className="lead">Find any part or blueprint of a Warframe, weapon, companion or Archwing: what it is, where it drops and, for Prime parts, its market price.</p>
     <div className="bar"><input aria-label="Search parts" placeholder='Try "Ash Prime Systems" or "Akbronco"' value={q} onChange={e => set("q", e.target.value)} /></div>
     <div className="chips" role="group" aria-label="Filter"><button className={"relicchip" + (!kind ? " own" : "")} onClick={() => set("k", "")}>All</button>{KINDS.map(([k, l]) => <button key={k} className={"relicchip" + (kind === k ? " own" : "")} onClick={() => set("k", kind === k ? "" : k)}>{l}</button>)}

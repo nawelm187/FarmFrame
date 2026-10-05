@@ -54,9 +54,9 @@ export function BuildEditor() {
   const rq = requirements(b, frames.find(f => f.slug === b.frame), bySlug, arcBy);
   const acqLine = (e?: Entity) => { const a = acquisition(e); return <div className="muted">{a.length ? "How to get: " + a.join("; ") : "No acquisition data in the item source."}</div>; };
   const addRoad = () => { writeReqs(fromBuild(b, rq, bySlug, arcBy, readReqs())); setRoad(true); };
-  const send = () => { const a = readTracked(); const add = [...rq.missingMods, ...rq.missingArcanes].filter(m => !a.some(t => t.n === m.name)).map(m => ({ n: m.name, o: 0, t: 1 }));
-    if (rq.forma > 0 && !a.some(t => t.n === "Forma Blueprint")) add.push({ n: "Forma Blueprint", o: 0, t: rq.forma });
-    if (rq.omni > 0 && !a.some(t => t.n === "Omni Forma Blueprint")) add.push({ n: "Omni Forma Blueprint", o: 0, t: rq.omni }); writeTracked([...a, ...add]); setSent(true); };
+  const send = () => { const a = readTracked(); const add = [...rq.missingMods, ...rq.missingArcanes].filter(m => !a.some(t => t.n === m.name)).map(m => ({ n: m.name, o: 0, t: 1, from: `Build: ${b.name}` }));
+    if (rq.forma > 0 && !a.some(t => t.n === "Forma Blueprint")) add.push({ n: "Forma Blueprint", o: 0, t: rq.forma, from: `Build: ${b.name}` });
+    if (rq.omni > 0 && !a.some(t => t.n === "Omni Forma Blueprint")) add.push({ n: "Omni Forma Blueprint", o: 0, t: rq.omni, from: `Build: ${b.name}` }); writeTracked([...a, ...add]); setSent(true); };
   const runPrices = async () => {
     setPrices("loading"); const out: Record<string, number | null> = {};
     try { for (const m of rq.missingMods) { if (bySlug.get(m.slug)?.tradable === false) { out[m.slug] = null; continue; } const st = await fetchStat(m.name, undefined, 0); out[m.slug] = st ? st.median : null; await new Promise(r => setTimeout(r, 400)); } setPrices(out); } catch { setPrices("error"); }

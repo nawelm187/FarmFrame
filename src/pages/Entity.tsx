@@ -33,7 +33,7 @@ export default function Entity({ cat }: { cat: Cat }) {
   if (!list) return <Unavailable title={c.label} status={status} why={status === "LOADING" ? "Loading catalog…" : "No verified data."} rec={rec} />;
   if (!e) return <><h1>Not found</h1><p className="muted">"{slug}" is not in the loaded {c.label.toLowerCase()} data. <Link to={`/${c.path}`}>Browse {c.label.toLowerCase()}</Link></p></>;
   const q = encodeURIComponent(e.name);
-  const track = () => { const a = readTracked(); if (!a.some(t => t.n === e.name)) writeTracked([...a, { n: e.name, o: 0, t: 1 }]); setDone(true); };
+  const track = () => { const a = readTracked(); if (!a.some(t => t.n === e.name)) writeTracked([...a, { n: e.name, o: 0, t: 1, from: "Item page" }]); setDone(true); };
   const isFav = readFavs().some(f => f.id === favId(cat, e.slug));
   const flip = () => { writeFavs(toggleFav(readFavs(), { id: favId(cat, e.slug), cat, slug: e.slug, name: e.name })); bump(n => n + 1); };
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };

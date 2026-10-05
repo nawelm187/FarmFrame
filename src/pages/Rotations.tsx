@@ -1,6 +1,7 @@
 import { Pic } from "../ItemArt";
 import PageArt from "../PageArt";
 import Baro from "../Baro";
+import Descendia from "./Descendia";
 import Npc from "../Npc";
 import { useRefreshAt, useWorld } from "../lib/data";
 import { Plat } from "../Money";
@@ -93,10 +94,11 @@ const Fixed = ({ name, role, where }: { name: string; role: string; where: strin
 export default function Rotations() {
   const reset = iso(nextWeeklyReset());
   return (<><h1><PageArt name="Rotations" size={36} />Rotations</h1>
-    <p className="lead">Shops and rewards that rotate. Weekly vendors and the Circuit reset every Monday at 00:00 UTC.</p>
+    <p className="lead">Shops and rewards that rotate. Weekly vendors, the Circuit and The Descendia reset every Monday at 00:00 UTC.</p>
     <p className="muted"><b>Next weekly reset:</b> <Countdown exp={reset} /> <span>(calculated from the fixed weekly schedule)</span></p>
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
     <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
+    <h2>The Descendia</h2><div className="grid"><Descendia /></div>
     <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><Kuva /><Simaris /><Anomaly /></div>
     <h2>Other weekly vendors</h2><div className="grid">
       <Fixed name="Palladino" role="Riven vendor" where="Found at Iron Wake, Earth." />

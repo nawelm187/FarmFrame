@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import { useMany } from "../lib/data";
 import { FIND, collect, query, type Row } from "../lib/drops";
-import { label, nextAction, refinement, RELIC_SOURCE_IDS, relicSources, STATES, type TierPlan } from "../lib/exact";
+import { GROUP_TITLE, groupOf, label, nextAction, refinement, RELIC_SOURCE_IDS, relicSources, STATES, type TierPlan } from "../lib/exact";
 import { readRelics, writeRelics, type MyRelics } from "../lib/myrelics";
 import { readReqs } from "../lib/reqs";
 import { readTracked } from "../lib/track";
@@ -64,8 +64,12 @@ export default function FarmPlan() {
     <h2>Next action per missing part</h2>
     {ex.info.length > 0 && <p className="muted">{ex.info.map(i => `${i.goal.name}: ${i.parts ? `${i.have}/${i.total} parts` : "no parts listed in the data"}`).join(" · ")}</p>}
     {ex.lost.length > 0 && <p className="tag STALE" role="alert">Not found in the current data: {ex.lost.map(g => g.name).join(", ")}. The item may have been renamed. Remove and add it again from its page.</p>}
-    {!ex.goals.length ? <p className="muted">No goals. Your tracked items and build requirements are below.</p> : !todo.length ? <p className="gold">{ex.pending ? "Loading your goals…" : ex.lost.length ? "Nothing to show for the goals that could be found." : ex.info.length && ex.info.every(i => !i.parts) ? "The data lists no parts for these goals, so there is nothing to plan." : ex.info.some(i => !i.parts) ? `All listed parts collected. No parts are listed for ${ex.info.filter(i => !i.parts).map(i => i.goal.name).join(", ")}.` : "All goal parts collected."}</p> : <ul className="list comp">{todo.map(p => { const n = nextAction(p, ex.fis.data, mine, !!ex.relics);
-      return <li key={p.goal.id + p.part.name}><span><Pic name={`${p.entity} ${p.part.name}`} size={34} /> <b>{label(p)}</b>{p.left > 1 ? ` ×${p.left}` : ""}<div className="muted">{n.text}</div></span>{n.to && <Link to={n.to}>{n.kind === "open" ? "Plan" : "Find"}</Link>}</li>; })}</ul>}
+    {!ex.goals.length ? <p className="muted">No goals. Your tracked items and build requirements are below.</p> : !todo.length ? <p className="gold">{ex.pending ? "Loading your goals…" : ex.lost.length ? "Nothing to show for the goals that could be found." : ex.info.length && ex.info.every(i => !i.parts) ? "The data lists no parts for these goals, so there is nothing to plan." : ex.info.some(i => !i.parts) ? `All listed parts collected. No parts are listed for ${ex.info.filter(i => !i.parts).map(i => i.goal.name).join(", ")}.` : "All goal parts collected."}</p> : <>{(["now", "next", "blocked"] as const).map(g => { const rows = todo.map(p => ({ p, n: nextAction(p, ex.fis.data, mine, !!ex.relics) })).filter(x => groupOf(x.n) === g); if (!rows.length) return null;
+      return (<section key={g} aria-label={GROUP_TITLE[g]}><h3>{GROUP_TITLE[g]} <span className="muted">{rows.length}</span></h3><ul className="list comp">{rows.map(({ p, n }) => { const gi = ex.info.find(i => i.goal.id === p.goal.id);
+        return <li key={p.goal.id + p.part.name}><span><Pic name={`${p.entity} ${p.part.name}`} size={34} /> <b>{label(p)}</b>{p.left > 1 ? ` ×${p.left}` : ""}
+          <div className="muted">For {p.goal.name} · have {p.have} of {p.part.count}, missing {p.left}</div>
+          <div className="muted">{n.text}</div>
+          {gi && gi.parts > 0 && <div className="muted">Goal progress: {gi.have}/{gi.total} parts{gi.have < gi.total ? `, ${Math.min(gi.have + 1, gi.total)}/${gi.total} with this one` : ""}</div>}</span>{n.to && <Link to={n.to}>{n.kind === "open" ? "Plan" : "Find"}</Link>}</li>; })}</ul></section>); })}</>}
     <Extras />
     {ex.tiers.length > 0 && <><h2>Relics by tier</h2>{ex.tiers.map(t => <TierBlock key={t.tier} t={t} mine={mine} set={set} />)}</>}
     {todo.some(p => !p.relics.length && p.relicTiers.length > 0) && ex.relics && <p className="muted">Some parts list a relic tier in the item data but no exact relic was found in the relic tables by name: {todo.filter(p => !p.relics.length && p.relicTiers.length).map(label).join(", ")}.</p>}

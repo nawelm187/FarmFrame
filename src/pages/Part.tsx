@@ -45,7 +45,7 @@ function PartView({ r }: { r: PartRef }) {
   const names = [r.title, `${e.name} ${c.name}`], fromTables = ok ? query(rows, r.title).filter(x => names.some(n => n.toLowerCase() === x.item.toLowerCase())).slice(0, 6) : [];
   const dif = difficulty(opts, other.length + fromTables.length), tr = partTradable(e, c), img = c.image ?? e.image, raw = e.raw;
   const price = typeof raw.buildPrice === "number" ? raw.buildPrice : null, time = typeof raw.buildTime === "number" ? raw.buildTime : null;
-  const track = () => { const a = readTracked(); if (!a.some(t => t.n === r.title)) writeTracked([...a, { n: r.title, o: 0, t: c.count }]); setDone(true); };
+  const track = () => { const a = readTracked(); if (!a.some(t => t.n === r.title)) writeTracked([...a, { n: r.title, o: 0, t: c.count, from: `Part of ${e.name}` }]); setDone(true); };
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };
   const sib = e.components.filter(x => x.name !== c.name);
   return (<article className="entity">

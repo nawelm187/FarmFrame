@@ -23,6 +23,7 @@ const P: Record<string, string> = {
 };
 P["/patches"] ??= P["/lore"];
 P["/farm-plan"] ??= P["/planner"] ?? P["/finder"];
+P["/alerts"] ??= P["/invasions"];
 P["/rotations"] ??= P["/planner"] ?? P["/finder"];
 export const Icon = ({ n }: { n: string }) => (
   <svg className="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true"><path d={P[n] ?? P["/"]} /></svg>

@@ -167,3 +167,9 @@ h1 .pageart{margin-right:.6rem}
 .polnat{display:inline-flex;align-items:center;gap:.2rem;margin-right:.5rem}
 .tint-white{filter:brightness(0) invert(1);background:none}
 .advit{display:inline-flex;align-items:center;gap:.25rem;margin-right:.15rem}h1 .itemart{margin-right:.5rem;vertical-align:middle}.list.comp li>span>.itemart,.list.comp li>span>*>.itemart{margin-right:.35rem}
+
+/* The Descendia, alerts */
+.floors{margin:.6rem 0;padding-left:2.2rem}.floors>li{padding:.35rem 0;border-bottom:1px solid var(--b4)}.floors>li::marker{color:var(--acc);font-weight:700}
+.floors .advrow{display:flex;flex-wrap:wrap;gap:.3rem .8rem;margin-top:.25rem;font-size:.92em}.floors details.advit summary{cursor:pointer}
+.btn.on{border-color:var(--acc);color:var(--acc)}
+ul.alerts{list-style:none;padding:0;display:grid;gap:.7rem}.alertcard{background:var(--b1);border-left:3px solid var(--acc);padding:.7rem .8rem}.alertcard .advrow{display:flex;flex-wrap:wrap;gap:.3rem .8rem;margin-top:.3rem}
