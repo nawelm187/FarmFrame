@@ -77,16 +77,21 @@ export function relicSources(rows: Row[], relic: string): Row[] {
   const k = relic.toLowerCase() + " relic";
   return rows.filter(r => r.item.toLowerCase().startsWith(k)).sort((a, b) => (b.ch ?? -1) - (a.ch ?? -1)).slice(0, 4);
 }
-export interface Next { text: string; to?: string; kind: "open" | "get" | "vaulted" | "source" | "none" }
+export interface Next { text: string; to?: string; kind: "open" | "get" | "vaulted" | "source" | "none"; /** True only for "open" when a fissure of the relic's tier is running now. */ now?: boolean }
 /** One concrete next action for a missing part. `owned` = relics the user marked as owned. */
 export function nextAction(p: PartPlan, fis: Fis[] | null, owned: Record<string, number>, relicsLoaded = true, now = Date.now()): Next {
   const live = p.relics.filter(r => r.vaulted !== true);
   const mine = live.find(r => (owned[r.name] ?? 0) > 0);
   if (mine) { const f = fissuresFor(fis, mine.tier, now);
-    return { kind: "open", to: "/farm-plan", text: f.length ? `Open ${mine.name} (${mine.rarity}) in a ${mine.tier} fissure now: ${f[0].missionType} ${f[0].node}${f.length > 1 ? ` and ${f.length - 1} more` : ""}` : `You own ${mine.name} (${mine.rarity}). No ${mine.tier} fissure is active right now.` }; }
+    return { kind: "open", now: f.length > 0, to: "/farm-plan", text: f.length ? `Open ${mine.name} (${mine.rarity}) in a ${mine.tier} fissure now: ${f[0].missionType} ${f[0].node}${f.length > 1 ? ` and ${f.length - 1} more` : ""}` : `You own ${mine.name} (${mine.rarity}). No ${mine.tier} fissure is active right now.` }; }
   if (live.length) { const r = live[0]; return { kind: "get", to: `/farm/${encodeURIComponent(r.name + " Relic")}`, text: `Get ${r.name} (${r.rarity})${live.length > 1 ? ` or ${live.length - 1} other relic${live.length > 2 ? "s" : ""}` : ""}, then open it in a ${r.tier} fissure` }; }
   if (p.relics.length) return { kind: "vaulted", text: `Only in vaulted relics (${p.relics.slice(0, 2).map(r => r.name).join(", ")}). Vaulted relics no longer drop; they come from trading or Varzia.` };
   if (p.relicTiers.length && !relicsLoaded) return { kind: "none", text: "Relic tables are not loaded yet, so the exact relics cannot be listed." };
   if (p.other.length) return { kind: "source", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: `Source: ${p.other.slice(0, 2).map(d => d.location).join("; ")}` };
   return { kind: "none", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: "No acquisition data in the loaded sources. Check the drop tables." };
 }
+
+/** Where a missing part sits in the plan: doable right now, a step away, or blocked (vaulted relic, or no data to act on). */
+export type Group = "now" | "next" | "blocked";
+export const groupOf = (n: Next): Group => (n.kind === "open" && n.now ? "now" : n.kind === "vaulted" || n.kind === "none" ? "blocked" : "next");
+export const GROUP_TITLE: Record<Group, string> = { now: "Available now", next: "Next steps", blocked: "Blocked or no data" };

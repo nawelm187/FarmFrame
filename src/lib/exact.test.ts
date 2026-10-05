@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import type { Component, Entity } from "./catalog";
-import { nextAction, planParts, refinement, relicsForPart, relicSources, tierPlans } from "./exact";
+import { groupOf, nextAction, planParts, refinement, relicsForPart, relicSources, tierPlans } from "./exact";
 import type { Relic, Row } from "./drops";
 const k = (name: string, count = 1, drops: Component["drops"] = []): Component => ({ name, count, drops, children: [] });
 const rel = (name: string, rewards: [string, string, number][], radiant: [string, string, number][] = rewards): Relic => ({ name, tier: name.split(" ")[0], st: { Intact: rewards.map(([itemName, rarity, chance]) => ({ itemName, rarity, chance })), Radiant: radiant.map(([itemName, rarity, chance]) => ({ itemName, rarity, chance })) } });
@@ -51,4 +51,15 @@ import { FIND } from "./drops";
 import { RELIC_SOURCE_IDS } from "./exact";
 it("every relic source table id exists in the drop tables list", () => {
   for (const id of RELIC_SOURCE_IDS) expect(FIND.some(f => f.id === id), id).toBe(true);
+});
+it("groups each missing part: doable now, a step away, or blocked", () => {
+  const plans = planParts([goal], () => rhino, {}, relics, null), now = Date.now(), exp = new Date(now + 600_000).toISOString();
+  const fis = [{ tier: "Lith", node: "Ur", missionType: "Defense", expiry: exp, isHard: false, isStorm: false }];
+  expect(groupOf(nextAction(plans[0], fis, { "Lith G1": 1 }, true, now))).toBe("now");
+  expect(groupOf(nextAction(plans[0], [], { "Lith G1": 1 }, true, now))).toBe("next");
+  expect(nextAction(plans[0], [], { "Lith G1": 1 }, true, now).now).toBe(false);
+  expect(groupOf(nextAction(plans[0], fis, {}, true, now))).toBe("next");
+  expect(groupOf(nextAction(plans[2], fis, {}, true, now))).toBe("next");
+  const v = planParts([goal], () => rhino, {}, relics, new Map([["Axi V1", true], ["Lith S3", true], ["Lith G1", true]]));
+  expect(groupOf(nextAction(v[1], fis, {}, true, now))).toBe("blocked");
 });
