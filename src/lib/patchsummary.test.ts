@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Patch } from "./patchlogs";
-import { readChange, readLoose, summarize, tally, touches } from "./patchsummary";
+import { readChange, readFix, readLoose, summarize, tally, touches } from "./patchsummary";
 const P = (o: Partial<Patch>): Patch => ({ name: "x", url: null, date: 0, type: "Update", img: null, additions: "", changes: "", fixes: "", ...o });
 describe("readChange", () => {
   it("reads from-to values and tells a buff from a nerf", () => {
@@ -32,10 +32,27 @@ describe("summarize", () => {
   it("marks changes that touch what the player owns", () => {
     const s = summarize(p); expect(touches(s.changes[0], new Set(["sonic boom"]))).toBe("sonic boom"); expect(touches(s.changes[0], new Set(["rhino"]))).toBeNull();
   });
-  it("handles empty notes", () => { expect(summarize(P({}))).toEqual({ changes: [], additions: [], fixes: 0 }); });
+  it("handles empty notes", () => { expect(summarize(P({}))).toEqual({ changes: [], additions: [], fixes: 0, statFixes: [] }); });
 });
 it("reads loose changes and keeps direction", () => {
   expect(readLoose("Narin's Neote now also slows enemies hit.", "Narin")?.good).toBe("change");
   expect(readLoose("Reduced the duration of Frostbite to 8s.", "Narin")?.good).toBe("nerf");
   expect(readLoose("Fixed a crash.", "")).toBeNull();
+});
+
+describe("readFix", () => {
+  it("keeps fixes that correct a stat", () => {
+    const a = readFix("- Fixed Rhino's Iron Skin armor being lower than intended.")!; expect(a.subject).toBe("Rhino"); expect(a.stat).toBe("Armor");
+    const b = readFix("Fixed the Soma's critical chance showing 30% instead of 35%.")!; expect(b.stat).toBe("Crit chance");
+    expect(readFix("Fixed Nidus: Virulence dealing 50 damage instead of 75.")!.subject).toBe("Nidus");
+  });
+  it("ignores crashes, visuals and fixes with no stat", () => {
+    expect(readFix("Fixed a crash when damage was applied twice")).toBeNull();
+    expect(readFix("Fixed the damage VFX of the Soma not showing 3 times")).toBeNull();
+    expect(readFix("Fixed a typo in the Rhino description")).toBeNull(); expect(readFix("Fixed energy color tints not properly applying to Gemini Skin irises.")).toBeNull(); expect(readFix("Fixes towards the Fend-RX Chest Armor using incorrect capitalization in some menus.")).toBeNull();
+    expect(readFix("Fixed Excalibur appearing in the wrong place")).toBeNull();
+  });
+  it("is collected by summarize", () => {
+    expect(summarize(P({ fixes: "### Warframes\n- Fixed Rhino's Iron Skin armor being lower than intended.\n- Fixed a crash." })).statFixes.length).toBe(1);
+  });
 });

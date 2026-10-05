@@ -33,12 +33,26 @@ const STAT_KEYS: Record<Cat, [string, string][]> = {
   railjack: [["baseDrain", "Base drain"], ["fusionLimit", "Max rank"]],
 };
 const FACT_KEYS: [string, string][] = [["rarity", "Rarity"], ["polarity", "Polarity"], ["compatName", "Compatible with"], ["category", "Category"], ["masteryReq", "Mastery rank"]];
+/** Part names the game uses, in the order they appear at the end of a component's uniqueName. Anything else (resources such as Orokin Cell) is not a part. */
+const PART_RE = /(Barrel|Receiver|Stock|Blade|Handle|Link|Carapace|Cerebrum|Systems|Chassis|Wings|String|Gauntlet|Grip|Guard|Hilt|Head|Disc|Ornament|Holster|Glove|Stars|Rivet|Hook|Engine|Boot|Chain|Heatsink|Motor|Core|Aegis|(?:Lower|Upper)Limb)(?:Component)?$/;
+/** The source stopped sending a name for components (only uniqueName + itemCount), so the part name is read from the end of the uniqueName.
+ *  Returns null when the name is not a known part, so nothing is guessed. */
+export function partName(unique: string): string | null {
+  const seg = unique.split("/").pop() ?? "";
+  if (/Blueprint$/.test(seg)) return "Blueprint";
+  if (/HelmetComponent$/.test(seg)) return "Neuroptics";
+  const m = seg.match(PART_RE); return m ? m[1].replace(/(Lower|Upper)Limb/, "$1 Limb") : null;
+}
 function comps(v: unknown, depth = 0): Component[] {
   if (!Array.isArray(v) || depth > 5) return [];
-  return v.filter(isO).map(c => ({
-    name: s(c.name), count: n(c.itemCount) ?? 1, image: s(c.imageName) || null, ducats: n(c.ducats), tradable: typeof c.tradable === "boolean" ? c.tradable : null,
-    drops: Array.isArray(c.drops) ? c.drops.filter(isO).map(t => ({ location: s(t.location), type: s(t.type) })).filter(t => t.location) : [],
-    children: comps(c.components, depth + 1) })).filter(c => c.name);
+  const out: Component[] = [];
+  for (const c of v.filter(isO)) {
+    const name = s(c.name) || partName(s(c.uniqueName)); if (!name || out.some(o => o.name === name)) continue;
+    out.push({ name, count: n(c.itemCount) ?? 1, image: s(c.imageName) || null, ducats: n(c.ducats), tradable: typeof c.tradable === "boolean" ? c.tradable : null,
+      drops: Array.isArray(c.drops) ? c.drops.filter(isO).map(t => ({ location: s(t.location), type: s(t.type) })).filter(t => t.location) : [],
+      children: comps(c.components, depth + 1) });
+  }
+  return out;
 }
 /** How complete an entry is; used to choose between duplicate entries. */
 const richness = (e: Entity) => (e.image ? 2 : 0) + (e.levelStats?.length ? 2 : 0) + (e.description ? 1 : 0) + (e.tradable !== null ? 1 : 0) + (e.components.length ? 1 : 0) + (Array.isArray(e.raw.drops) && e.raw.drops.length ? 1 : 0);

@@ -3,7 +3,7 @@ import type { Patch } from "./patchlogs";
 // It only reads what the notes say. A line without a recognizable stat and direction is not shown as a change.
 export type Good = "buff" | "nerf" | "change";
 export interface Change { subject: string; stat: string; from: number | null; to: number | null; unit: string; good: Good; text: string }
-export interface Summary { changes: Change[]; additions: string[]; fixes: number }
+export interface Summary { changes: Change[]; additions: string[]; fixes: number; /** Bug fixes that correct a number (damage, armor, cooldown...) of a warframe, weapon, enemy or ability. */ statFixes: Change[] }
 interface StatDef { re: RegExp; label: string; lowerBetter?: boolean }
 // Order matters: the first match names the stat.
 const STATS: StatDef[] = [
@@ -48,6 +48,17 @@ export function readLoose(line: string, section = ""): Change | null {
   const dir = from != null && to != null && from !== to ? (to > from ? "up" : "down") : u && !d ? "up" : d && !u ? "down" : null;
   return { subject: subjectOf(text, section), stat: "", from, to, unit: ft ? (ft[4] ?? ft[2] ?? "") : "", good: dir === "up" ? "buff" : dir === "down" ? "nerf" : "change", text: short(text, 220) };
 }
+const NOISE = /\b(crash(?:es|ing)?|typo|visual|vfx|animations?|sounds?|audio|ui|text|tooltips?|localiz\w*|cosmetic|appearance|clipping|textures?|lighting|hangs?|softlock|host migration|stuck|camera|subtitle|tints?|colou?rs?|capitali[sz]ation|menus?|ephemera|irises|iris|settings?|controllers?|progress(?:ing)?|invulnerable|pop ?ups?|icons?|offset|(?:chest|leg|arm|shoulder) armors?|helmets?|syandanas?)\b/i;
+const WRONG = /\b(instead of|rather than|not (?:being )?(?:applied|working|scaling|scaled|affect\w*|counting)|incorrect(?:ly)?|wrongly|too (?:high|low|much|little)|(?:higher|lower|more|less) than (?:intended|expected|listed|stated)|(?:now )?(?:correctly|properly)|ignor(?:ed|ing)|doubled?|applied twice)\b/i;
+/** Who a fix is about: the first possessive name in the line (\"Rhino's Iron Skin...\" -> Rhino). Section headings in fix lists are unreliable, so they are not used. */
+const fixSubject = (t: string) => { const b = t.replace(/^fix(?:ed|es)\s+/i, ""), c = b.match(/^([A-Z][^:]{1,30}):\s/); if (c) return c[1]; const m = b.match(/([A-Z][\w\-.]*(?:\s+[A-Z0-9][\w\-.]*){0,3})['’]s\b/); return m ? m[1] : "General"; };
+/** A bug fix that corrects a stat. It needs a known stat and either a number or wording that says the value was wrong; crashes, visuals and UI fixes are left out. */
+export function readFix(line: string): Change | null {
+  const text = strip(line); if (text.length < 15 || !/^fix(?:ed|es)\b/i.test(text) || NOISE.test(text)) return null;
+  const stat = STATS.find(x => x.re.test(text)); if (!stat) return null;
+  const ft = text.match(FROMTO), hasNum = /\d/.test(text); if (!hasNum && !WRONG.test(text)) return null;
+  return { subject: fixSubject(text), stat: stat.label, from: ft ? num(ft[1]) : null, to: ft ? num(ft[3]) : null, unit: ft ? (ft[4] ?? ft[2] ?? "") : "", good: "change", text: short(text, 220) };
+}
 export function summarize(p: Patch): Summary {
   const changes: Change[] = []; let section = "";
   for (const raw of (p.changes + "\n" + p.additions).split(/\r?\n/)) {
@@ -59,7 +70,9 @@ export function summarize(p: Patch): Summary {
   for (const raw of p.additions.split(/\r?\n/)) { if (!raw.trim()) continue; if (isHeading(raw)) { head = strip(raw).replace(/:$/, ""); continue; }
     const t = strip(raw); if (t.length > 12 && additions.length < 10 && !readChange(raw)) additions.push(short(head ? `${head}: ${t}` : t, 130)); }
   const fixes = p.fixes.split(/\r?\n/).filter(l => /^\s*(?:[-*•·]+|\d+[.)])\s+\S/.test(l)).length || (p.fixes.trim() ? 1 : 0);
-  return { changes: dedupe(changes).slice(0, 120), additions, fixes };
+  const statFixes: Change[] = [];
+  for (const raw of p.fixes.split(/\r?\n/)) { if (!raw.trim() || isHeading(raw)) continue; const c = readFix(raw); if (c) statFixes.push(c); }
+  return { changes: dedupe(changes).slice(0, 120), additions, fixes, statFixes: dedupe(statFixes).slice(0, 60) };
 }
 const dedupe = (cs: Change[]) => { const seen = new Set<string>(); return cs.filter(c => { const k = c.text.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }); };
 /** Counts of buffs and nerfs, for the one-line headline of an entry. */

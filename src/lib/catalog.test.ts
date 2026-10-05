@@ -1,5 +1,5 @@
-import { expect, it } from "vitest";
-import { parseCatalog, slugify } from "./catalog";
+import { describe, expect, it } from "vitest";
+import { parseCatalog, partName, slugify } from "./catalog";
 it("parses tolerant, drops exact duplicates and keeps slugs unique", () => {
   const r = parseCatalog([{ name: "Styanax Prime", health: 400, shield: "x", components: [{ name: "Chassis", drops: [{ location: "Axi S1", type: "Relic" }] }] }, { name: "Styanax Prime" }, 5, {}], "warframe")!;
   expect(r.map(e => e.slug)).toEqual(["styanax-prime"]);
@@ -25,4 +25,19 @@ it("cleans game markup in descriptions and level stats", () => {
 it("duplicate entries keep the more complete one; same name with a different type stays separate", () => {
   const r = parseCatalog([{ name: "Adaptation", type: "Warframe Mod", rarity: "Rare" }, { name: "Adaptation", type: "Warframe Mod", rarity: "Rare", imageName: "a.png", levelStats: [{ stats: ["x"] }] }, { name: "Adaptation", type: "Stance Mod" }], "mod")!;
   expect(r.length).toBe(2); expect(r.find(e => e.type === "Warframe Mod")!.image).toBe("a.png"); expect(r.map(e => e.slug).sort()).toEqual(["adaptation", "adaptation-2"]);
+});
+
+describe("partName (schema without component names)", () => {
+  it("reads the part from the uniqueName", () => {
+    expect(partName("/Lotus/Types/Recipes/WarframeRecipes/AshPrimeSystemsComponent")).toBe("Systems");
+    expect(partName("/Lotus/Types/Recipes/WarframeRecipes/AshPrimeHelmetComponent")).toBe("Neuroptics");
+    expect(partName("/Lotus/Types/Recipes/WarframeRecipes/AshPrimeBlueprint")).toBe("Blueprint");
+    expect(partName("/Lotus/Types/Recipes/Weapons/WeaponParts/AkstilettoPrimeBarrel")).toBe("Barrel");
+    expect(partName("/Lotus/Weapons/WeaponParts/DaxDuviriAsymmetricalLongBowLowerLimb")).toBe("Lower Limb");
+  });
+  it("does not guess: resources are not parts", () => { expect(partName("/Lotus/Types/Items/MiscItems/OrokinCell")).toBeNull(); expect(partName("/Lotus/Types/Items/MiscItems/Neurode")).toBeNull(); });
+  it("keeps parts of an entry that has only uniqueName and itemCount", () => {
+    const r = parseCatalog([{ name: "Ash Prime", components: [{ uniqueName: "/x/AshPrimeBlueprint", itemCount: 1 }, { uniqueName: "/x/AshPrimeSystemsComponent", itemCount: 1 }, { uniqueName: "/Lotus/Types/Items/MiscItems/OrokinCell", itemCount: 1 }] }], "warframe")!;
+    expect(r[0].components.map(c => c.name)).toEqual(["Blueprint", "Systems"]);
+  });
 });
