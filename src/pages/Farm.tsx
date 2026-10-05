@@ -18,7 +18,7 @@ export default function Farm() {
     {gaps.length > 0 && <p className="muted">Not included: {gaps.join("; ")}</p>}
     {!list.length ? <p className="muted">No drop for "{item}" in the loaded tables. <Link to={`/finder?q=${encodeURIComponent(item)}`}>Search the Finder</Link></p> :
       <div className="wrap"><table><thead><tr><th>Where</th><th>Type</th><th>Rot.</th><th>Chance</th><th>≈ Rolls per drop</th><th>Also advances</th></tr></thead><tbody>
-        {list.map((o, i) => (<tr key={i}><td>{o.row.item !== item && <span className="muted">{o.row.item} · </span>}{o.row.where}
+        {list.map((o, i) => (<tr key={i}><td>{o.row.item !== item && <span className="muted"><Pic name={o.row.item} size={22} /> {o.row.item} · </span>}{o.row.where}
           {o.tags.map(t => <div key={t}><span className="tag STALE">{t}</span></div>)}
           <details><summary>Why?</summary><ul><li>Source: {o.row.src}</li><li>{o.row.ch == null ? "No chance value in the source" : `Drop chance ${o.row.ch}%`}{o.row.note ? ` (${o.row.note})` : ""}</li>
             {o.stacked.length > 0 && <li>Same location also drops things you still need (matched by item name): {o.stacked.join(", ")}</li>}</ul></details></td>

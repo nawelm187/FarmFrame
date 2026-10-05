@@ -14,8 +14,8 @@ export const enemySlug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, "
 const Mods = ({ m, sign }: { m: Layer["takesMore"]; sign: string }) => <>{m.map(x => <span key={x.el} className="dmgchip"><DamageIcon type={x.el} size={16} /> {x.el} {sign}{Math.abs(x.pct)}%</span>)}</>;
 function Card({ e }: { e: Enemy }) {
   const u = mine[enemySlug(e.name)];
-  return (<details className="panel enemy"><summary><span className="row"><ItemArt file={u ? null : e.image} size={44} />{u && <img className="itemart" src={u} alt="" width={44} height={44} />}<b>{e.name}</b> <span className="muted"><FactionArt f={e.faction} size={16} />{e.faction}</span></span>
-    <span className="muted"> {[e.health != null && `Health ${e.health}`, e.shield ? `Shield ${e.shield}` : null, e.armor ? `Armor ${e.armor}` : null].filter(Boolean).join(" · ")}</span></summary>
+  return (<details className="panel enemy"><summary><span className="row">{!u && <ItemArt file={e.image} name={e.name} size={44} />}{u && <img className="itemart" src={u} alt="" width={44} height={44} />}<b>{e.name}</b> <span className="muted"><FactionArt f={e.faction} size={16} />{e.faction}</span></span>
+    <span className="muted stats">{[e.health != null && `Health ${e.health}`, e.shield ? `Shield ${e.shield}` : null, e.armor ? `Armor ${e.armor}` : null].filter(Boolean).join(" · ")}</span></summary>
     {e.description && <p>{e.description}</p>}
     {e.layers.length > 0 ? e.layers.map(l => <div key={l.kind} className="lay"><b>{l.kind}</b>{l.amount != null && <span className="muted"> ({l.amount})</span>}
       <div>{l.takesMore.length > 0 && <><span className="muted">Weak to </span><Mods m={l.takesMore} sign="+" /></>}</div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { wikiImage } from "./lib/wikiImg";
 import { imgUrl } from "./lib/catalog";
 import { imageFor, buildImageIndex } from "./lib/images";
 import { useCatalogs } from "./lib/useCatalog";
@@ -23,10 +24,14 @@ export function useImages() {
   const idx = memo.idx;
   return (name: string) => { const b = bundled(name); return b ? "bundled:" + b : imageFor(idx, name); };
 }
-/** Small picture of an item, with an empty square of the same size while it is missing so rows stay aligned. */
-export default function ItemArt({ file, size = 28 }: { file: string | null; size?: number }) {
-  const [bad, setBad] = useState(false);
-  return file && !bad ? <img className="itemart" src={file.startsWith("bundled:") ? file.slice(8) : imgUrl(file)} alt="" width={size} height={size} loading="lazy" decoding="async" onError={() => setBad(true)} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true" />;
+/** Small picture of an item, with an empty square of the same size while it is missing so rows stay aligned.
+ *  Order: bundled file, then the image CDN, then (when `name` is given) the Warframe wiki, then the neutral square. */
+export default function ItemArt({ file, size = 28, name }: { file: string | null; size?: number; name?: string }) {
+  const [bad, setBad] = useState(false), [wiki, setWiki] = useState<string | null>(null), [wikiBad, setWikiBad] = useState(false), missing = !file || bad;
+  useEffect(() => { setBad(false); setWikiBad(false); }, [file]);
+  useEffect(() => { if (!missing || !name) return; let dead = false; void wikiImage(name).then(u => { if (!dead) setWiki(u); }); return () => { dead = true; }; }, [missing, name]);
+  const src = !missing ? (file.startsWith("bundled:") ? file.slice(8) : imgUrl(file)) : wikiBad ? null : wiki;
+  return src ? <img className="itemart" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy={missing ? "no-referrer" : undefined} onError={() => (missing ? setWikiBad(true) : setBad(true))} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true" />;
 }
 /** Picture of an item by name, looked up in the shared index. Use before an item name anywhere in the app. */
-export function Pic({ name, size = 28 }: { name: string; size?: number }) { const img = useImages(); return <ItemArt file={img(name)} size={size} />; }
+export function Pic({ name, size = 28 }: { name: string; size?: number }) { const img = useImages(); return <ItemArt file={img(name)} name={name} size={size} />; }

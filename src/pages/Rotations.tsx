@@ -1,3 +1,4 @@
+import { Pic } from "../ItemArt";
 import PageArt from "../PageArt";
 import Baro from "../Baro";
 import Npc from "../Npc";
@@ -25,7 +26,7 @@ function Duviri() {
   const v = duviriView(data);
   if (!v) return <Unavailable title="Duviri" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
   return (<Panel title="Duviri" status={status} rec={rec}>{v.state && <p><b>Mood:</b> {v.state}{v.expiry && <> · <Countdown exp={v.expiry} pre="changes in " /></>}</p>}
-    {v.choices.length ? v.choices.map(c => <div key={c.category}><div className="muted">The Circuit, {c.category}:</div><ul className="sub">{c.items.map(i => <li key={i}>{i}</li>)}</ul></div>) : <p className="muted">No Circuit rotation in the data right now.</p>}
+    {v.choices.length ? v.choices.map(c => <div key={c.category}><div className="muted">The Circuit, {c.category}:</div><ul className="sub">{c.items.map(i => <li key={i}><Pic name={i} size={22} /> {i}</li>)}</ul></div>) : <p className="muted">No Circuit rotation in the data right now.</p>}
   </Panel>);
 }
 function Calendar() {
