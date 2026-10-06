@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { wikiImage } from "./lib/wikiImg";
-import { imgUrl } from "./lib/catalog";
+import { imgRetry, imgUrl } from "./lib/catalog";
 import { imageFor, buildImageIndex } from "./lib/images";
 import { useCatalogs } from "./lib/useCatalog";
 const own = import.meta.glob("./assets/items/*.{png,webp,jpg,jpeg,svg}", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
@@ -24,14 +24,25 @@ export function useImages() {
   const idx = memo.idx;
   return (name: string) => { const b = bundled(name); return b ? "bundled:" + b : imageFor(idx, name); };
 }
+/** Names the main catalogs do not cover (rewards, resources, mods, plushies...). The index is a separate chunk, fetched the first time a picture is missing. */
+let extra: Promise<Record<string, string>> | null = null;
+const extraFile = async (name: string): Promise<string | null> => {
+  extra ??= import("./lib/imgindex.json").then(m => m.default as Record<string, string>).catch(() => ({}));
+  const ix = await extra, k = name.toLowerCase().replace(/^\d[\d,]*x\s*/, "").replace(/\s+/g, " ").trim();
+  return ix[k] ?? ix[k.replace(/ blueprint$/, "")] ?? null;
+};
 /** Small picture of an item, with an empty square of the same size while it is missing so rows stay aligned.
- *  Order: bundled file, then the image CDN, then (when `name` is given) the Warframe wiki, then the neutral square. */
+ *  Order: bundled file, catalog file, extra index, the repository copy then the CDN copy, the Warframe wiki, and last a neutral square. */
 export default function ItemArt({ file, size = 28, name }: { file: string | null; size?: number; name?: string }) {
-  const [bad, setBad] = useState(false), [wiki, setWiki] = useState<string | null>(null), [wikiBad, setWikiBad] = useState(false), missing = !file || bad;
-  useEffect(() => { setBad(false); setWikiBad(false); }, [file]);
+  const [found, setFound] = useState<string | null>(null), [bad, setBad] = useState(false), [wiki, setWiki] = useState<string | null>(null), [wikiBad, setWikiBad] = useState(false);
+  const own = file?.startsWith("bundled:") ? file.slice(8) : null, f = own ? null : file ?? found, missing = !own && (!f || bad);
+  useEffect(() => { setBad(false); setWikiBad(false); }, [file, found]);
+  // An exact catalog file is better than the owner's picture that useImages falls back to, so the extra index is asked whenever a name is known.
+  useEffect(() => { if (own || !name) return; let dead = false; void extraFile(name).then(x => { if (!dead) setFound(x); }); return () => { dead = true; }; }, [own, name]);
   useEffect(() => { if (!missing || !name) return; let dead = false; void wikiImage(name).then(u => { if (!dead) setWiki(u); }); return () => { dead = true; }; }, [missing, name]);
-  const src = !missing ? (file.startsWith("bundled:") ? file.slice(8) : imgUrl(file)) : wikiBad ? null : wiki;
-  return src ? <img className="itemart" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy={missing ? "no-referrer" : undefined} onError={() => (missing ? setWikiBad(true) : setBad(true))} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true" />;
+  const exact = found && !own ? found : f, src = own ?? (exact && !bad ? imgUrl(exact) : wikiBad ? null : wiki);
+  return src ? <img className="itemart" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy={own || !exact || bad ? "no-referrer" : undefined}
+    onError={ev => { if (own) return; if (exact && !bad) { if (!imgRetry(ev)) setBad(true); } else setWikiBad(true); }} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true" />;
 }
 /** Picture of an item by name, looked up in the shared index. Use before an item name anywhere in the app. */
 export function Pic({ name, size = 28 }: { name: string; size?: number }) { const img = useImages(); return <ItemArt file={img(name)} name={name} size={size} />; }

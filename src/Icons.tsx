@@ -28,11 +28,14 @@ P["/rotations"] ??= P["/planner"] ?? P["/finder"];
 export const Icon = ({ n }: { n: string }) => (
   <svg className="ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true"><path d={P[n] ?? P["/"]} /></svg>
 );
-export const Logo = () => (
-  <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M16 2 28 9v14l-12 7L4 23V9z" fill="none" stroke="#B89A5B" strokeWidth="1.6" />
-    <path d="M12 22V10h9M12 15.5h6" fill="none" stroke="#E4E2DC" strokeWidth="2.2" strokeLinecap="square" /></svg>
+/** FarmFrame emblem: a cyan ring open at the top, a spike and two wing strokes around a white F. Original artwork. */
+export const Logo = ({ size = 28 }: { size?: number }) => (
+  <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
+    <path d="M16 3.2A12.8 12.8 0 1 1 6 8.2" fill="none" stroke="#00D6D6" strokeWidth="1.7" strokeLinecap="round" /><path d="M26 8.2A12.8 12.8 0 0 0 20.5 4" fill="none" stroke="#00D6D6" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M16 1.5 18 5.2h-4z" fill="#00D6D6" /><path d="M5.5 11.5 9.5 9M26.5 11.5 22.5 9" stroke="#089B9B" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M11.2 23.5V9.2h10.3v3.1h-6.9v2.9h5.7v3h-5.7v5.3z" fill="#E6E6E6" /></svg>
 );
-const TIER: Record<string, [string, number]> = { Lith: ["#A08868", 1], Meso: ["#9EA3A6", 2], Neo: ["#B89A5B", 3], Axi: ["#5FA8A3", 4], Requiem: ["#C0524A", 0], Omnia: ["#E4E2DC", 0] };
+const TIER: Record<string, [string, number]> = { Lith: ["#A08868", 1], Meso: ["#9EA3A6", 2], Neo: ["#B89A5B", 3], Axi: ["#00D6D6", 4], Requiem: ["#C0524A", 0], Omnia: ["#E4E2DC", 0] };
 /** Relic tier emblem: one diamond, tier shown by tick marks (Lith 1 ... Axi 4), a cross for Requiem/Omnia. Original artwork. */
 export const TierIcon = ({ tier, size = 22 }: { tier: string; size?: number }) => {
   const [c, n] = TIER[tier] ?? ["#8E9392", 0];

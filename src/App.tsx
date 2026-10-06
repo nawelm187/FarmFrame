@@ -32,7 +32,7 @@ const Parts = lazy(() => import("./pages/PartSearch"));
 const Patches = lazy(() => import("./pages/Patches"));
 const Part = lazy(() => import("./pages/Part"));
 const GROUPS = [
-  { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/lore", "/patches"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/lore", "Lore"], ["/patches", "Patch notes"]] },
+  { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/parts", "/enemies", "/resources", "/lore", "/patches"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/parts", "Parts"], ["/enemies", "Enemies"], ["/resources", "Resources"], ["/lore", "Lore"], ["/patches", "Patch notes"]] },
   { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "Farm Plan"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/alerts", "Alerts"]] },
   { label: "Plan", hub: "/plan", pre: ["/plan", "/roadmap", "/builds", "/build", "/tracking"], items: [["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
   { label: "Account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "Data sources"]] },
@@ -47,7 +47,7 @@ export default function App() {
   return (
     <div className="app">
       <nav aria-label="Main">
-        <div className="logo"><Logo />FARM<span>FRAME</span></div>
+        <div className="logo"><Logo size={32} /><span className="wm">FARM<span>FRAME</span></span></div>
         <NavLink to="/" end className="tab"><Icon n="/" />Home</NavLink>
         {GROUPS.map(g => (<div key={g.label} className="grp"><Link to={g.hub} className={"tab grphead" + (g.pre.some(p => loc.pathname.startsWith(p)) ? " active" : "")}><Icon n={g.hub} />{g.label}</Link>
           {g.items.map(([to, l]) => <NavLink key={to} to={to} className="sublink">{l}</NavLink>)}</div>))}

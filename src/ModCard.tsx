@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { PolIcon } from "./Icons";
-import { imgUrl, type Entity } from "./lib/catalog";
+import { imgRetry, imgUrl, type Entity } from "./lib/catalog";
 import { clean } from "./lib/text";
 // Frame colors per rarity (light, base, dark), in the spirit of the in-game bronze / silver / gold / white cards. Drawn in CSS, no game assets used.
 const RC: Record<string, [string, string, string]> = {
@@ -21,7 +21,7 @@ export default function ModCard({ e, rank, big }: { e: Entity; rank?: number; bi
   return (<div className={"modcard" + (big ? " big" : "") + (ARCHON.test(e.name) ? " special" : "")} style={{ "--lt": lt, "--mc": bs, "--dk": dk } as CSSProperties}>
     <div className="mface">
       <div className="mart">
-        {e.image && !bad ? <img src={imgUrl(e.image)} alt="" loading="lazy" decoding="async" onError={() => setBad(true)} /> : <span className="noart" aria-hidden="true">{e.name.charAt(0)}</span>}
+        {e.image && !bad ? <img src={imgUrl(e.image)} alt="" loading="lazy" decoding="async" onError={ev => { if (!imgRetry(ev)) setBad(true); }} /> : <span className="noart" aria-hidden="true">{e.name.charAt(0)}</span>}
         {drain != null && <span className="drain" title="Mod capacity cost at this rank"><b>{drain}</b></span>}
         {e.polarity && <span className="mpol" title={e.polarity + " polarity"}><PolIcon pol={e.polarity} size={big ? 20 : 16} /></span>}
       </div>
