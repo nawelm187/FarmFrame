@@ -20,3 +20,10 @@ export function snapshot(): Snap {
 export function applySnap(s: Snap) {
   for (const k of KEYS) { try { if (empty(s[k])) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(s[k])); } catch { /* storage unavailable */ } }
 }
+/** Keeps only the known keys, and only objects or arrays, so a wrong file cannot write junk into the app's storage. */
+export function cleanImport(v: unknown): Record<string, unknown> | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const out: Record<string, unknown> = {};
+  for (const k of KEYS) { const x = (v as Record<string, unknown>)[k]; if (x && typeof x === "object") out[k] = x; }
+  return Object.keys(out).length ? out : null;
+}
