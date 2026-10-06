@@ -2,7 +2,7 @@ import ItemArt from "../ItemArt";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCatalog } from "../lib/useCatalog";
-import { CATS, imgUrl, type Cat, type Component, type Entity as Ent } from "../lib/catalog";
+import { CATS, imgRetry, imgUrl, type Cat, type Component, type Entity as Ent } from "../lib/catalog";
 import RelicArt from "../RelicArt";
 import { useMany } from "../lib/data";
 import { byValue, relicsForPart, relicsOf } from "../lib/exact";
@@ -39,7 +39,7 @@ export default function Entity({ cat }: { cat: Cat }) {
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };
   return (<article className="entity">
     <div className="hero">
-      {cat === "mod" || cat === "railjack" ? <div className="art" style={{ background: "none", WebkitMaskImage: "none", maskImage: "none" }}><ModCard e={e} big /></div> : <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { ev.currentTarget.style.display = "none"; }} />}</div>}
+      {cat === "mod" || cat === "railjack" ? <div className="art" style={{ background: "none", WebkitMaskImage: "none", maskImage: "none" }}><ModCard e={e} big /></div> : <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { if (!imgRetry(ev)) ev.currentTarget.style.display = "none"; }} />}</div>}
       <div><p className="muted">{e.type || c.label}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">PRIME</span>} <Badge s={status} /></p>
         <h1>{e.name}</h1>{e.description && <p className="lead">{e.description}</p>}
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
@@ -53,7 +53,7 @@ export default function Entity({ cat }: { cat: Cat }) {
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>find</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
+      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>Where to farm</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
         <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && partTradable(e, k) !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

@@ -22,9 +22,9 @@ export default function Tracking() {
         <div className="chips" role="group" aria-label="Filter">{([["all", "All"], ["missing", "Missing"], ["done", "Complete"]] as const).map(([k, t]) => <button key={k} className={"btn" + (f === k ? " on" : "")} aria-pressed={f === k} onClick={() => setF(k)}>{t} <span className="muted">{cnt[k]}</span></button>)}</div></div>
       {undo && <p className="muted" role="status">Marked {list[undo.i]?.n} complete. <button className="btn" onClick={() => { commit(list.map((m, j) => (j === undo.i ? { ...m, o: undo.prev } : m))); setUndo(null); }}>Undo</button></p>}
       {!shown.length ? <p className="muted">Nothing matches this filter.</p> : <ul className="list comp">{shown.map(({ t: m, i }) => { const done = m.o >= m.t;
-        return <li key={i}><span><Pic name={m.n} size={30} /> <b>{m.n}</b> {done && <span className="tag FRESH">Complete</span>}
+        return <li key={i} className="trow"><span><Pic name={m.n} size={34} /> <b>{m.n}</b> {done && <span className="tag FRESH">Complete</span>}
           <div className="muted">{m.o} of {m.t}{done ? "" : `, missing ${m.t - m.o}`}{m.from ? ` · ${m.from}` : ""}</div><progress max={m.t} value={Math.min(m.o, m.t)} aria-label={`${m.n} progress`} />
           <div className="chips"><button className="btn" aria-label={`One less ${m.n}`} onClick={() => set(i, Math.max(0, m.o - 1))}>−</button><button className="btn" aria-label={`One more ${m.n}`} onClick={() => set(i, m.o + 1)}>+</button>
             {!done && <button className="btn" onClick={() => { setUndo({ i, prev: m.o }); set(i, m.t); }}>Mark complete</button>}
-            {!done && <Link className="btn" to={`/farm/${encodeURIComponent(m.n)}`}>Farm</Link>}<button className="btn" onClick={() => { commit(list.filter((_, j) => j !== i)); setUndo(null); }}>Remove</button></div></span></li>; })}</ul>}</>}</>);
+            {!done && <Link className="btn" to={`/farm/${encodeURIComponent(m.n)}`}>Where to farm</Link>}<button className="btn" onClick={() => { commit(list.filter((_, j) => j !== i)); setUndo(null); }}>Remove</button></div></span></li>; })}</ul>}</>}</>);
 }

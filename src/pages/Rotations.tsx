@@ -98,7 +98,7 @@ export default function Rotations() {
     <p className="muted"><b>Next weekly reset:</b> <Countdown exp={reset} /> <span>(calculated from the fixed weekly schedule)</span></p>
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
     <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
-    <h2>The Descendia</h2><div className="grid"><Descendia /></div>
+    <h2>The Descendia</h2><Descendia />
     <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><Kuva /><Simaris /><Anomaly /></div>
     <h2>Other weekly vendors</h2><div className="grid">
       <Fixed name="Palladino" role="Riven vendor" where="Found at Iron Wake, Earth." />

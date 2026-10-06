@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { Icon, Logo } from "../Icons";
 import Baro from "../Baro";
 import CycleSky from "../CycleSky";
 import Onboarding from "../Onboarding";
 import { readBuilds } from "../lib/build";
+import { readGoals } from "../lib/goals";
 import { projectCycle } from "../lib/cycles";
 import { useMany, useNow, useRefreshAt, useWorld } from "../lib/data";
 import { ts } from "../lib/format";
@@ -58,11 +60,17 @@ function FarmRightNow({ f }: { f: ReturnType<typeof useFarmNow> }) {
     {goals > 0 && <p className="muted">{todo.length ? `${todo.length} missing part${todo.length > 1 ? "s" : ""} across ${goals} goal${goals > 1 ? "s" : ""}: ${todo.slice(0, 3).map(label).join(", ")}${todo.length > 3 ? "…" : ""}. ` : ""}Based on your goals and live data. It cannot see everything, so treat it as a suggestion.</p>}
   </section>);
 }
+const TILES: [string, string, string][] = [["/builds", "Builds", "Create and analyse builds"], ["/farm-plan", "Farm Plan", "What to farm and where"], ["/relics", "Relics", "Tiers and drop chances"], ["/finder", "Resources", "Where to farm each one"], ["/rotations", "Rotations", "Vendors, Circuit, Descendia"]];
+const openSearch = () => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
 export default function Home() {
-  const b = readBuilds().length, f = useFarmNow();
+  const b = readBuilds().length, f = useFarmNow(), first = readGoals()[0];
   return (<>
-    <h1>FarmFrame</h1>
-    <p className="lead">Goal, what you are missing, how to get it, and what you can do right now.</p>
+    <section className="hero2" aria-label="FarmFrame">
+      <div className="h2txt"><h1>Farm better.<br /><span>Progress faster.</span></h1>
+        <p className="lead">Goal, what you are missing, how to get it, and what you can do right now.</p>
+        <button className="herosearch" onClick={openSearch} aria-label="Search relics, items and pages"><Icon n="/finder" /><span>What do you want to farm today?</span><kbd>Ctrl K</kbd></button></div>
+      <div className="h2art" aria-hidden="true">{first ? <Pic name={first.name} size={190} /> : <Logo size={150} />}</div></section>
+    <div className="qtiles" role="group" aria-label="Quick access">{TILES.map(([to, t, d]) => <Link key={to} className="qtile" to={to}><Icon n={to} /><span><b>{t}</b><small>{d}</small></span></Link>)}</div>
     <Onboarding />
     <LatestUpdate />
     <Goals f={f} />
@@ -72,10 +80,8 @@ export default function Home() {
       <Cycle title="Cetus (Plains)" k="cetusCycle" /><Cycle title="Orb Vallis" k="vallisCycle" />
       <Cycle title="Cambion Drift" k="cambionCycle" /><Cycle title="Zariman" k="zarimanCycle" /><FissureCount /><AlertsSummary /><Baro />
     </div>
-    <h2>Your plan</h2>
-    <p><Link to="/roadmap">Roadmap and checklist</Link> · <Link to="/farm-plan">Farm Plan</Link> · <Link to="/planner">Planner</Link> · <Link to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link> · <Link to="/tracking">Tracking</Link></p>
-    <h2>Tools</h2>
-    <p><Link to="/finder">Resource Finder</Link> · <Link to="/relics">Relics</Link> · <Link to="/invasions">Invasions</Link> · <Link to="/patches">Patch notes</Link> · <Link to="/sources">Data sources</Link></p>
+    <h2>More</h2>
+    <div className="chips"><Link className="btn" to="/roadmap">Roadmap and checklist</Link><Link className="btn" to="/planner">Planner</Link><Link className="btn" to="/tracking">Tracking</Link><Link className="btn" to="/builds">{b ? `${b} saved build${b > 1 ? "s" : ""}` : "Create a build"}</Link><Link className="btn" to="/invasions">Invasions</Link><Link className="btn" to="/patches">Patch notes</Link><Link className="btn" to="/sources">Data sources</Link></div>
     <p className="muted">FarmFrame v{VERSION}</p>
   </>);
 }
