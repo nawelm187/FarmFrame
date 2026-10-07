@@ -28,6 +28,8 @@ export const SOURCES: SourceDef[] = [
     use: "active", reach: "browser", note: "Checked by loading one sample image. A missing image shows a neutral placeholder." },
   { id: "manual-railjack", name: "Railjack components (written by hand)", kind: "community", confidence: "D", hosts: [], provides: "Railjack ship components: what each does, houses, tiers and how to get them",
     use: "active", reach: "browser", note: "No data API lists these. The text in src/data/railjack.ts is copied by hand from a dated guide and can go out of date. It is shown with a Manual source label." },
+  { id: "manual-wiki-vendors", name: "Palladino and Arbitration rewards (written by hand from the Warframe wiki)", kind: "community", confidence: "C", hosts: [], provides: "Palladino's weekly wares and the Arbitration reward rotations A, B and C",
+    use: "active", reach: "browser", note: "No data API lists these tables. src/data/vendors.ts is copied by hand from the wiki pages named there, dated, and checked in a test that each Arbitration rotation adds up to 100%. It can go out of date after an update." },
   { id: "warframe-market", name: "warframe.market (through our Supabase function)", kind: "community", confidence: "C", hosts: [], provides: "Platinum prices, checked on demand per item",
     use: "active", reach: "via-our-function", note: "Browsers cannot call it directly, so the request goes through supabase/functions/market. Prices are player-set market values, never fixed game values." },
   { id: "supabase", name: "Supabase (your account)", kind: "app", confidence: "E", hosts: [], provides: "Account, goals, builds and progress sync",

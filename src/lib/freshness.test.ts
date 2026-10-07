@@ -12,3 +12,7 @@ it("warns only when an input is not fresh", () => {
   const bad = trustLine([{ label: "Fissures", status: "STALE", rec: rec(now - 3_600_000) }, { label: "Relic tables", status: "ERROR" }], now);
   expect(bad.warn).toContain("Fissures and Relic tables may be out of date"); expect(bad.lines[0]).toBe("Fissures: stale, last retrieved 1 h ago"); expect(bad.lines[1]).toBe("Relic tables: error");
 });
+it("warns when a dataset changed format even if it is fresh", () => {
+  const t = trustLine([{ label: "Fissures", status: "FRESH", drift: ['field "tier" is missing in 3 of 3 sampled entries'] }, { label: "Relic tables", status: "FRESH", drift: [] }], now);
+  expect(t.warn).toBe("Fissures changed format, so some results may be missing or wrong.");
+});
