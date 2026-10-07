@@ -8,6 +8,7 @@ import { Plat } from "../Money";
 import VendorStock from "../VendorStock";
 import { anomalyView, arbView, archView, calendarView, dealsView, duviriView, kuvaView, nextWeeklyReset, simarisView, steelView, stockView } from "../lib/rotations";
 import { Countdown, Panel, Unavailable } from "./parts";
+import { ARBITRATION_SOURCE, ARB_NOTES, ARB_ROTATIONS, PALLADINO, PALLADINO_SOURCE } from "../data/vendors";
 const ok = (d: unknown): d is object => !!d && typeof d === "object";
 const at = (d: unknown) => { const e = (Array.isArray(d) ? d[0] : d) as { expiry?: unknown } | null; return typeof e?.expiry === "string" ? Date.parse(e.expiry) : null; };
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -18,8 +19,10 @@ function Teshin() {
   if (!v || (!v.current && !v.rotation.length)) return <Unavailable title="Steel Path Honors" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
   return (<Panel title="Steel Path Honors" status={status} rec={rec}><Npc name="Teshin" role="Steel Path Honors shop" />
     {v.current && <p><b>This week:</b> {v.current.name}{v.current.cost != null && <span className="muted"> · {v.current.cost} Steel Essence</span>}</p>}
+    <details className="stock"><summary className="btn">Stock: weekly rotation and always available</summary>
     {v.rotation.length > 0 && <><div className="muted">Weekly rotation, one step each week:</div><ol className="sub">{v.rotation.map((o, i) => <li key={i} className={o.name === v.current?.name ? "gold" : undefined}>{o.name}{o.cost != null && <span className="muted"> · {o.cost}</span>}{o.name === v.current?.name && " (this week)"}</li>)}</ol></>}
     {v.evergreens.length > 0 && <><div className="muted">Always available (Steel Essence):</div><VendorStock items={v.evergreens.map(o => ({ name: o.name, cost: o.cost ?? undefined }))} /></>}
+    </details>
   </Panel>);
 }
 function Duviri() {
@@ -68,6 +71,21 @@ function Arbitration() {
   if (!v) return <Unavailable title="Arbitration" status={data ? "UNAVAILABLE" : status} why={data ? "No arbitration is scheduled in the data right now (the source sent an empty placeholder)." : "No verified data."} rec={rec} />;
   return (<Panel title="Arbitration" status={status} rec={rec}><b>{v.node}</b><div className="muted">{[v.type, v.enemy].filter(Boolean).join(" · ")}</div>{v.expiry && <div><Countdown exp={v.expiry} pre="rotates in " /></div>}</Panel>);
 }
+const ManualTag = ({ date }: { date: string }) => <span className="tag STALE" title={`Written by hand from the Warframe wiki on ${date}; not a live feed`}>Manual source</span>;
+/** Palladino's stock is fixed (it only resets its purchase limits weekly), so it is copied from the wiki and labeled as manual. */
+function Palladino() {
+  return (<section className="panel"><div className="row"><h3>Palladino</h3><ManualTag date={PALLADINO_SOURCE.date} /></div><Npc name="Palladino" role="Riven vendor" />
+    <p className="muted">Found at Iron Wake, Earth. Purchase limits reset every Monday at 00:00 UTC.</p>
+    <details className="stock"><summary className="btn">Stock and prices</summary><ul className="sub">{PALLADINO.map(w => <li key={w.name}><b>{w.name}</b> <span className="muted">· {w.cost} {w.currency}{w.cost > 1 ? "s" : ""} · {w.limit}</span></li>)}</ul></details>
+    <div className="muted">Source: <a href={PALLADINO_SOURCE.url} target="_blank" rel="noreferrer">{PALLADINO_SOURCE.name}</a>, checked {PALLADINO_SOURCE.date}.</div></section>);
+}
+function ArbRewards() {
+  return (<section className="panel"><div className="row"><h3>Arbitration rewards</h3><ManualTag date={ARBITRATION_SOURCE.date} /></div>
+    <p className="muted">Rotations run A, A, B, B, then C every time after that.</p>
+    {(["A", "B", "C"] as const).map(r => <details className="stock" key={r}><summary className="btn">Rotation {r}</summary><ul className="sub">{ARB_ROTATIONS[r].map(x => <li key={x.name}>{x.name} <span className="muted">· {x.chance}%</span></li>)}</ul></details>)}
+    {ARB_NOTES.map(n => <p className="muted" key={n}>{n}</p>)}
+    <div className="muted">Source: <a href={ARBITRATION_SOURCE.url} target="_blank" rel="noreferrer">{ARBITRATION_SOURCE.name}</a>, checked {ARBITRATION_SOURCE.date}.</div></section>);
+}
 function Kuva() {
   const { data, status, rec } = useWorld("kuva", ok); useRefreshAt("kuva", Array.isArray(data) ? at(data) : null);
   const v = kuvaView(data);
@@ -99,9 +117,9 @@ export default function Rotations() {
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
     <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
     <h2>The Descendia</h2><Descendia />
-    <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><Kuva /><Simaris /><Anomaly /></div>
+    <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><ArbRewards /><Kuva /><Simaris /><Anomaly /></div>
     <h2>Other weekly vendors</h2><div className="grid">
-      <Fixed name="Palladino" role="Riven vendor" where="Found at Iron Wake, Earth." />
-      <Fixed name="Acrithis" role="Duviri vendor" where="Found in Duviri." />
+      <Palladino />
+      <Fixed name="Acrithis" role="Duviri vendor" where="Found in Duviri. Her weekly wares change and no live source lists them. See the current list on the Warframe wiki: https://wiki.warframe.com/w/Acrithis/Current_Offerings" />
     </div></>);
 }

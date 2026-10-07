@@ -4,12 +4,18 @@ import { useMany } from "../lib/data";
 import { FIND, collect, query } from "../lib/drops";
 import { rank, stackIndex } from "../lib/farm";
 import { useNeeded } from "../lib/useNeeded";
+import { useCatalogs } from "../lib/useCatalog";
+import type { Cat, Entity } from "../lib/catalog";
+import SetFarm from "./SetFarm";
 import { Unavailable } from "./parts";
+const BUILT: Cat[] = ["warframe", "weapon", "companion", "archwing"];
 const items = FIND.map(f => ({ id: f.id, file: f.file }));
 export default function Farm() {
   const { item = "" } = useParams();
-  const res = useMany(items), needed = useNeeded();
+  const res = useMany(items), needed = useNeeded(), cats = useCatalogs(BUILT);
+  const built = BUILT.flatMap(c => (cats[c]?.items ?? []).filter(x => x.components.length > 0 && x.name.toLowerCase() === item.trim().toLowerCase()).map(x => ({ c, x: x as Entity })))[0];
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
+  if (built) return <><h1><Pic name={item} size={44} /> Farming: {item}</h1><SetFarm e={built.x} cat={built.c} /></>;
   if (!ok) return <><h1>{item}</h1><Unavailable title="Drop tables" status={res[0].status} why="No verified drop data loaded yet. See Data Sources." /></>;
   const list = rank(query(rows, item), stackIndex(rows, needed), item);
   return (<><h1><Pic name={item} size={44} /> Farming: {item}</h1>

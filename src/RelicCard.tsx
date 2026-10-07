@@ -22,7 +22,7 @@ export default function RelicCard({ r, mark }: { r: Relic; mark?: string }) {
   return (<article className={"relcard" + (found ? " has" : "")}>
     <header><RelicArt tier={r.tier} name={r.name} size={44} /><div><Link to={`/relics?q=${encodeURIComponent(r.name)}`}><b>{r.name}</b></Link><div><VaultBadge name={r.name} /></div></div></header>
     <ul>{rows.map(x => { const hit = isMark(x.itemName, mark), ra = rad.find(y => y.itemName === x.itemName && y.rarity === x.rarity);
-      return (<li key={x.itemName + x.rarity} className={hit ? "hit" : undefined}><span className={"rar " + x.rarity} title={x.rarity}>◆</span>
+      return (<li key={x.itemName + x.rarity} className={hit ? "hit" : undefined}><span className={"rar " + x.rarity} title={x.rarity}>◆ {x.rarity}</span>
         <ItemArt file={img(x.itemName)} size={32} /><span><Link to={`/item/${encodeURIComponent(x.itemName)}`}>{x.itemName}</Link>{hit && <b className="found"> ★ This is what you searched for</b>}
           <span className="muted"> {x.chance}%{ra && ra.chance !== x.chance ? ` → ${ra.chance}% Radiant` : ""}</span></span></li>); })}</ul>
     <footer><Link to={`/farm/${encodeURIComponent(r.name + " Relic")}`}>How to get it</Link></footer>

@@ -8,7 +8,7 @@ import { goalId, readGoals, readOwned, writeGoals, writeOwned } from "../lib/goa
 import { useCatalogs } from "../lib/useCatalog";
 import { useFarmNow } from "../lib/useFarmNow";
 import { Ring } from "../ui";
-import { useMany } from "../lib/data";
+import { allStats, useMany } from "../lib/data";
 import { FIND, collect } from "../lib/drops";
 import { trustLine } from "../lib/freshness";
 import { itemAdvice, sourceWhy } from "../lib/itemAdvice";
@@ -45,7 +45,7 @@ export default function Advisor() {
   const comps = cur ? cat[cur.cat]?.items?.find(e => e.slug === cur.slug)?.components : undefined;
   const got = () => { if (cur && comps && a?.focus) setPart(cur.id, comps, cur.name, a.focus.partName, a.focus.count); };
   const undoGot = () => { if (cur && comps && note) { setPart(cur.id, comps, cur.name, note.part, note.prev); setNote(null); } };
-  const trust = trustLine([{ label: "Fissures", status: ex.fis.status, rec: ex.fis.rec }, { label: "Relic tables", status: ex.relics ? "FRESH" : ex.relicStatus, rec: ex.relicRec }]);
+  const trust = trustLine([{ label: "Fissures", status: ex.fis.status, rec: ex.fis.rec, drift: allStats().get("fissures")?.drift }, { label: "Relic tables", status: ex.relics ? "FRESH" : ex.relicStatus, rec: ex.relicRec, drift: allStats().get("relics")?.drift }]);
   const acts = rankActivities(fn.opps).slice(0, 3);
   return (<section className="gcard advisor" aria-label="What do you want to get?">
     <h2>What do you want to get?</h2>

@@ -311,3 +311,10 @@ main :is(.cat li,.list>li) > a:not([class]):first-child:hover,main .cat li a:not
 .enemy .where1{display:block;color:var(--t1);font-size:.9rem}.enemy .where1 b{color:var(--gold);font-weight:600}.enemy summary .stats{display:block;margin:.1rem 0 0 calc(48px + .6rem)}
 
 .advisor .list .tag{flex:none;margin-left:.6rem;align-self:center}.advisor .bar input{width:100%;max-width:32rem}.advisor .adv>.hud{margin:.6rem 0}
+
+/* Relic reward rarity, as in the game: Common bronze, Uncommon silver, Rare gold */
+.rar.Common{color:#d08a4e;background:rgba(205,127,50,.14);border-color:rgba(205,127,50,.7)}
+.rar.Uncommon{color:#d5dbe2;background:rgba(192,200,208,.14);border-color:rgba(192,200,208,.7)}
+.rar.Rare{color:#ffd24a;background:rgba(255,210,74,.14);border-color:rgba(255,210,74,.8)}
+.relcard li .rar{min-width:5.6rem;text-align:center}
+details.stock>summary{cursor:pointer;display:inline-block;margin:.4rem 0}
