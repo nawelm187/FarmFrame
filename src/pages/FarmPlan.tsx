@@ -23,9 +23,10 @@ function Sources({ relic }: { relic: string }) {
 /** The best verified sources for an item name, from the drop tables. Says so when there are none. */
 function Where({ rows, ok, name, extra = [] }: { rows: Row[]; ok: boolean; name: string; extra?: string[] }) {
   const q = name.trim().toLowerCase(), m = ok ? query(rows, q).filter(r => r.item.toLowerCase() === q || r.item.toLowerCase().startsWith(q + " ")).slice(0, 3) : [];
-  return (<div className="muted">{m.length ? m.map((r, i) => <div key={i}>{r.where}{r.rot ? ` · rotation ${r.rot}` : ""}{r.ch != null ? ` · ${r.ch}%` : ""} <span>({r.src})</span></div>)
-    : extra.length ? <div>From the item data: {extra.join("; ")}</div> : <div>{ok ? "No drop in the loaded tables (it may come from a vendor, crafting or trading)." : "Drop tables are still loading."}</div>}
-    <Link to={`/farm/${encodeURIComponent(name)}`}>Open ranked farming view</Link></div>);
+  return (<div className="where">{m.length
+    ? <ul className="srcs">{m.map((r, i) => <li key={i}><b>{r.where}</b><span className="fchips">{r.rot ? <span className="fchip">Rotation {r.rot}</span> : null}{r.ch != null ? <span className="fchip gold">{r.ch}%</span> : null}<span className="fchip">{r.src}</span></span></li>)}</ul>
+    : extra.length ? <p className="muted">From the item data: {extra.join("; ")}</p> : <p className="muted">{ok ? "No drop in the loaded tables. It may come from a vendor, crafting or trading." : "Drop tables are still loading."}</p>}
+    <Link className="btn" to={`/farm/${encodeURIComponent(name)}`}>See all sources</Link></div>);
 }
 function Extras() {
   const res = useMany(ALL), { rows, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
@@ -33,10 +34,11 @@ function Extras() {
   if (!tracked.length && !reqs.length) return null;
   return (<>
     {tracked.length > 0 && <><h2>Tracked items you still need</h2><p className="muted">From your Tracking list. Sources come from the official drop tables.</p>
-      <ul className="list comp">{tracked.map((t, i) => <li key={i}><span><Pic name={t.n} size={30} /> <b>{t.n}</b> <span className="muted">· have {t.o} of {t.t}, missing {t.t - t.o}</span><Where rows={rows} ok={ok > 0} name={t.n} /></span><Link to="/tracking">Edit in Tracking</Link></li>)}</ul></>}
+      <div className="rowcards">{tracked.map((t, i) => <article className="rowcard" key={i}><Pic name={t.n} size={44} /><div className="rcbody"><div className="rchead"><b>{t.n}</b><span className="fchip">have {t.o} of {t.t}</span><span className="fchip gold">missing {t.t - t.o}</span></div><Where rows={rows} ok={ok > 0} name={t.n} /></div><Link className="btn" to="/tracking">Edit in Tracking</Link></article>)}</div></>}
     {reqs.length > 0 && <><h2>Build requirements not obtained</h2><p className="muted">Mods, arcanes and Forma that your builds need and you have not marked as owned.</p>
-      <ul className="list comp">{reqs.map(r => <li key={r.id}><span><Pic name={r.name} size={30} /> <b>{r.name}</b> <span className="muted">· {r.kind} for {r.buildName}{r.need > 1 ? ` · have ${r.have} of ${r.need}` : ""}</span>
-        {r.kind === "forma" || r.kind === "omni" ? <div className="muted">Forma Blueprints come from the Foundry, Nightwave or the in-game store; check the item page for the current source.</div> : <Where rows={rows} ok={ok > 0} name={r.name} extra={r.src} />}</span>{r.slug && r.kind === "mod" ? <Link to={`/mod/${r.slug}`}>Open mod</Link> : <Link to="/roadmap">Open Roadmap</Link>}</li>)}</ul></>}
+      <div className="rowcards">{reqs.map(r => <article className="rowcard" key={r.id}><Pic name={r.name} size={44} /><div className="rcbody"><div className="rchead"><b>{r.name}</b><span className="fchip">{r.kind}</span><span className="fchip">for {r.buildName}</span>{r.need > 1 && <span className="fchip gold">have {r.have} of {r.need}</span>}</div>
+        {r.kind === "forma" || r.kind === "omni" ? <p className="muted">Forma Blueprints come from the Foundry, Nightwave or the in-game store; check the item page for the current source.</p> : <Where rows={rows} ok={ok > 0} name={r.name} extra={r.src} />}</div>
+        {r.slug && r.kind === "mod" ? <Link className="btn" to={`/mod/${r.slug}`}>Open mod</Link> : <Link className="btn" to="/roadmap">Open Roadmap</Link>}</article>)}</div></>}
   </>);
 }
 function TierBlock({ t, mine, set }: { t: TierPlan; mine: MyRelics; set: (n: string, v: number) => void }) {

@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CATS } from "../lib/catalog";
 import { readFavs, writeFavs, type Fav } from "../lib/fav";
-import { readTracked, trackCounts, trackFilter, writeTracked, type TrackFilter, type Tracked } from "../lib/track";
+import { nextTracked } from "../lib/completion";
+import { readTracked,trackCounts, trackFilter, writeTracked, type TrackFilter, type Tracked } from "../lib/track";
 export default function Tracking() {
   const [list, setList] = useState<Tracked[]>(readTracked), [n, setN] = useState(""), [o, setO] = useState(""), [t, setT] = useState(""), [favs, setFavs] = useState<Fav[]>(readFavs), [f, setF] = useState<TrackFilter>("all"), [q, setQ] = useState(""), [undo, setUndo] = useState<{ i: number; prev: number } | null>(null);
   const commit = (a: Tracked[]) => { setList(a); writeTracked(a); }, cnt = trackCounts(list), shown = trackFilter(list, f, q), set = (i: number, o: number) => commit(list.map((m, j) => (j === i ? { ...m, o } : m)));
@@ -20,7 +21,7 @@ export default function Tracking() {
       <p className="muted">{cnt.done} of {cnt.all} complete{cnt.missing ? `, ${cnt.missing} still missing` : ""}.</p>
       <div className="bar"><input aria-label="Search tracked items" placeholder="Search tracked items" value={q} onChange={e => setQ(e.target.value)} />
         <div className="chips" role="group" aria-label="Filter">{([["all", "All"], ["missing", "Missing"], ["done", "Complete"]] as const).map(([k, t]) => <button key={k} className={"btn" + (f === k ? " on" : "")} aria-pressed={f === k} onClick={() => setF(k)}>{t} <span className="muted">{cnt[k]}</span></button>)}</div></div>
-      {undo && <p className="muted" role="status">Marked {list[undo.i]?.n} complete. <button className="btn" onClick={() => { commit(list.map((m, j) => (j === undo.i ? { ...m, o: undo.prev } : m))); setUndo(null); }}>Undo</button></p>}
+      {undo && <p className="muted" role="status">✓ Marked {list[undo.i]?.n} complete{nextTracked(list, undo.i) ? `. Next missing: ${nextTracked(list, undo.i)}` : ". Nothing else is missing"}. <button className="btn" onClick={() => { commit(list.map((m, j) => (j === undo.i ? { ...m, o: undo.prev } : m))); setUndo(null); }}>Undo</button></p>}
       {!shown.length ? <p className="muted">Nothing matches this filter.</p> : <ul className="list comp">{shown.map(({ t: m, i }) => { const done = m.o >= m.t;
         return <li key={i} className="trow"><span><Pic name={m.n} size={34} /> <b>{m.n}</b> {done && <span className="tag FRESH">Complete</span>}
           <div className="muted">{m.o} of {m.t}{done ? "" : `, missing ${m.t - m.o}`}{m.from ? ` · ${m.from}` : ""}</div><progress max={m.t} value={Math.min(m.o, m.t)} aria-label={`${m.n} progress`} />

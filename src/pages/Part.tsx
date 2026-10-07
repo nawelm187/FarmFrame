@@ -4,6 +4,7 @@ import RelicArt from "../RelicArt";
 import SetPrice from "../SetPrice";
 import { Credits, Plat } from "../Money";
 import { imgRetry, imgUrl, type Cat } from "../lib/catalog";
+import PartArt, { splitPart } from "../PartArt";
 import { useMany } from "../lib/data";
 import { FIND, collect, parseRelics, query } from "../lib/drops";
 import { byValue, relicsForPart, relicsOf } from "../lib/exact";
@@ -50,7 +51,7 @@ function PartView({ r }: { r: PartRef }) {
   const sib = e.components.filter(x => x.name !== c.name);
   return (<article className="entity">
     <div className="hero">
-      <div className="art"><span className="ph" />{img && <img src={imgUrl(img)} alt={r.title} width={320} height={320} onError={ev => { if (!imgRetry(ev)) ev.currentTarget.style.display = "none"; }} />}</div>
+      <div className="art"><span className="ph" />{splitPart(r.title) ? <PartArt part={splitPart(r.title)!.part} prime={/\bprime$/i.test(splitPart(r.title)!.owner)} size={200} /> : img && <img src={imgUrl(img)} alt={r.title} width={320} height={320} onError={ev => { if (!imgRetry(ev)) ev.currentTarget.style.display = "none"; }} />}</div>
       <div><p className="muted">{r.blueprint ? "Blueprint" : "Part"} of <Link to={`/${cat}/${e.slug}`}>{e.name}</Link>{e.isPrime && <> · <span className="gold">PRIME</span></>}{e.vaulted === true && <> · <span className="tag STALE">Vaulted</span></>}</p>
         <h1>{r.title}</h1>
         <p className="lead">{r.blueprint && norm(c.name) !== "blueprint" ? `The blueprint for the ${c.name} component of ${e.name}. ` : norm(c.name) === "blueprint" ? `The main blueprint of ${e.name}. ` : `The ${c.name} component of ${e.name}. `}

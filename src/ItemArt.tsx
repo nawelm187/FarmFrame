@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { wikiImage } from "./lib/wikiImg";
+import PartArt, { splitPart } from "./PartArt";
 import { imgRetry, imgUrl } from "./lib/catalog";
 import { imageFor, buildImageIndex } from "./lib/images";
 import { useCatalogs } from "./lib/useCatalog";
@@ -33,7 +34,7 @@ const extraFile = async (name: string): Promise<string | null> => {
 };
 /** Small picture of an item, with an empty square of the same size while it is missing so rows stay aligned.
  *  Order: bundled file, catalog file, extra index, the repository copy then the CDN copy, the Warframe wiki, and last a neutral square. */
-export default function ItemArt({ file, size = 28, name }: { file: string | null; size?: number; name?: string }) {
+export default function ItemArt({ file, size = 28, name, fallback }: { file: string | null; size?: number; name?: string; fallback?: ReactNode }) {
   const [found, setFound] = useState<string | null>(null), [bad, setBad] = useState(false), [wiki, setWiki] = useState<string | null>(null), [wikiBad, setWikiBad] = useState(false);
   const own = file?.startsWith("bundled:") ? file.slice(8) : null, f = own ? null : file ?? found, missing = !own && (!f || bad);
   useEffect(() => { setBad(false); setWikiBad(false); }, [file, found]);
@@ -42,7 +43,11 @@ export default function ItemArt({ file, size = 28, name }: { file: string | null
   useEffect(() => { if (!missing || !name) return; let dead = false; void wikiImage(name).then(u => { if (!dead) setWiki(u); }); return () => { dead = true; }; }, [missing, name]);
   const exact = found && !own ? found : f, src = own ?? (exact && !bad ? imgUrl(exact) : wikiBad ? null : wiki);
   return src ? <img className="itemart" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy={own || !exact || bad ? "no-referrer" : undefined}
-    onError={ev => { if (own) return; if (exact && !bad) { if (!imgRetry(ev)) setBad(true); } else setWikiBad(true); }} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true" />;
+    onError={ev => { if (own) return; if (exact && !bad) { if (!imgRetry(ev)) setBad(true); } else setWikiBad(true); }} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true">{fallback}</span>;
 }
 /** Picture of an item by name, looked up in the shared index. Use before an item name anywhere in the app. */
-export function Pic({ name, size = 28 }: { name: string; size?: number }) { const img = useImages(); return <ItemArt file={img(name)} name={name} size={size} />; }
+export function Pic({ name, size = 28 }: { name: string; size?: number }) {
+  const img = useImages(), sp = splitPart(name);
+  if (sp) return <PartArt part={sp.part} prime={/\bprime$/i.test(sp.owner)} size={size} />;
+  return <ItemArt file={img(name)} name={name} size={size} />;
+}

@@ -13,6 +13,7 @@ import { PATCH_ALT, PATCH_SRC, PATCH_URL, PATCH_WINDOW, latestUpdate, parsePatch
 import { useFarmNow } from "../lib/useFarmNow";
 import { VERSION } from "../version";
 import OppList from "./OppList";
+import Advisor from "./Advisor";
 import { AlertsSummary } from "./Alerts";
 import { Pic } from "../ItemArt";
 import { Countdown, Panel, Unavailable } from "./parts";
@@ -73,6 +74,7 @@ export default function Home() {
     <div className="qtiles" role="group" aria-label="Quick access">{TILES.map(([to, t, d]) => <Link key={to} className="qtile" to={to}><Icon n={to} /><span><b>{t}</b><small>{d}</small></span></Link>)}</div>
     <Onboarding />
     <LatestUpdate />
+    <Advisor />
     <Goals f={f} />
     <FarmRightNow f={f} />
     <h2>World state</h2>

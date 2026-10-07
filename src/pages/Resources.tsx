@@ -3,13 +3,20 @@ import { Link, useSearchParams } from "react-router-dom";
 import ItemArt, { bundled } from "../ItemArt";
 import PageArt from "../PageArt";
 import { useMany } from "../lib/data";
-import { FILES, parseThings, pct, resAlt, resUrl, RES_SRC, type Thing } from "../lib/resources";
+import { aboutText, FILES, MANUAL, parseThings, pct, resAlt, resUrl, RES_SRC, whereFrom, type Thing } from "../lib/resources";
 import { Badge, Prov, Unavailable } from "./parts";
 const own = (t: Thing) => { const b = bundled(t.name); return b ? "bundled:" + b : t.image; };
 function Card({ t }: { t: Thing }) {
-  return (<details className="panel enemy"><summary><span className="row"><ItemArt file={own(t)} size={48} /><b>{t.name}</b> <span className="muted">{t.type}</span></span><span className="muted"> {t.drops.length ? `${t.drops.length} drop source${t.drops.length === 1 ? "" : "s"}` : "no drop data"}{t.tradable === false ? " · not tradable" : ""}</span></summary>
-    {t.description && <p>{t.description}</p>}
-    {t.drops.length > 0 ? <><h4>Where to farm</h4><ul className="sub">{t.drops.slice(0, 12).map((d, i) => <li key={i}>{d.location} <span className="muted">{[d.type, d.rarity, pct(d.chance) != null ? pct(d.chance) + "%" : ""].filter(Boolean).join(" · ")}</span></li>)}</ul></> : <p className="muted">This source lists no drops for it.</p>}
+  const hint = whereFrom(t.description), about = aboutText(t.description), manual = MANUAL[t.name];
+  const none = !t.drops.length && !hint.length && !manual;
+  return (<details className="panel enemy"><summary><span className="row"><ItemArt file={own(t)} size={48} /><b>{t.name}</b> <span className="muted">{t.type}</span></span>
+    <span className="muted stats">{t.drops.length ? `${t.drops.length} drop source${t.drops.length === 1 ? "" : "s"}` : hint.length || manual ? "Source listed in the item data" : "No source listed"}{t.tradable === false ? " · not tradable" : ""}</span>
+    {about && <span className="muted blurb">{about}</span>}
+    {!t.drops.length && (hint[0] || manual) && <span className="blurb where1"><b>Where:</b> {hint[0] || manual}</span>}</summary>
+    {about && <p>{about}</p>}
+    {t.drops.length > 0 ? <><h4>Where to farm</h4><ul className="sub">{t.drops.slice(0, 12).map((d, i) => <li key={i}>{d.location} <span className="muted">{[d.type, d.rarity, pct(d.chance) != null ? pct(d.chance) + "%" : ""].filter(Boolean).join(" · ")}</span></li>)}</ul></>
+      : hint.length || manual ? <><h4>Where to get it</h4><ul className="sub">{hint.map(h => <li key={h}>{h}</li>)}{manual && <li>{manual} <span className="muted">(added by hand)</span></li>}</ul></>
+      : <p className="muted">{none ? "The data lists no drops and no source for it. Try the drop-table search." : ""}</p>}
     <Link to={`/farm/${encodeURIComponent(t.name)}`}>Search the official drop tables</Link>
   </details>);
 }

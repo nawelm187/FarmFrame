@@ -10,6 +10,9 @@ const LABEL = { off: "Signed out", checking: "Checking your cloud data", conflic
 export default function Profile() {
   const c = useCloud(), [email, setEmail] = useState(""), [pw, setPw] = useState(""), [note, setNote] = useState<string | null>(null), [busy, setBusy] = useState(false), [usePw, setUsePw] = useState(false);
   const go = async (up: boolean) => { setBusy(true); setNote(null); const e = await (up ? c.signUp : c.signIn)(email.trim(), pw); setBusy(false); setNote(e); };
+  const reset = async () => { if (!email.trim()) { setNote("Type your email first."); return; } setBusy(true); setNote(null); setNote(await c.resetPassword(email.trim())); setBusy(false); };
+  const [np, setNp] = useState(""), [pnote, setPnote] = useState<string | null>(null);
+  const savePw = async () => { setBusy(true); const e = await c.setPassword(np); setBusy(false); setPnote(e ?? "Password saved. You can now sign in with your email and password."); if (!e) setNp(""); };
   const link = async () => { setBusy(true); setNote(null); setNote(await c.signInLink(email.trim())); setBusy(false); };
   const b = readBuilds().length, g = readGoals().length, tr = readTracked(), t = tr.length, tc = trackCounts(tr), file = useRef<HTMLInputElement>(null), [msg, setMsg] = useState<string | null>(null);
   const exportData = () => { const u = URL.createObjectURL(new Blob([JSON.stringify(snapshot(), null, 1)], { type: "application/json" })), a = document.createElement("a"); a.href = u; a.download = "farmframe-data.json"; a.click(); URL.revokeObjectURL(u); setMsg("Exported farmframe-data.json."); };
@@ -30,15 +33,20 @@ export default function Profile() {
         <div className="bar">{usePw
           ? <><button className="btn" type="submit" disabled={busy}>Sign in</button><button className="btn" type="button" disabled={busy || pw.length < 6 || !email.trim()} onClick={() => void go(true)}>Create account</button></>
           : <button className="btn primary" type="submit" disabled={busy}>Email me a sign-in link</button>}</div>
-        <p className="muted"><button type="button" className="linkbtn" onClick={() => { setUsePw(!usePw); setNote(null); }}>{usePw ? "Use an email link instead" : "I already have a password"}</button></p>
+        <p className="muted"><button type="button" className="linkbtn" onClick={() => { setUsePw(!usePw); setNote(null); }}>{usePw ? "Use an email link instead" : "I already have a password"}</button>{" "}<button type="button" className="linkbtn" disabled={busy} onClick={() => void reset()}>Set or reset my password</button></p>
         {note && <p className="muted" role="status">{note}</p>}</form>
     ) : (<section className="gcard acctcard">
+      {c.recovery && <p className="gold" role="status">Choose a new password below to finish.</p>}
       <h3>Sync</h3>
       {c.sync === "conflict" && <><p>This device and your account both have saved data, and they differ. Choose which to keep. The other one is overwritten.</p>
         <div className="bar"><button className="btn" onClick={() => void c.resolve("cloud")}>Use my account data</button><button className="btn" onClick={() => void c.resolve("device")}>Keep this device's data</button></div></>}
       {c.sync === "error" && <><p className="muted">{c.err}</p><p className="muted">If it says the table does not exist, run the SQL in <code>supabase/schema.sql</code> in the Supabase SQL editor.</p><button className="btn" onClick={c.retry}>Retry sync</button></>}
       {c.sync === "synced" && <p className="muted">Changes are saved to your account automatically within a few seconds.</p>}
-      <p className="muted">Only you can read or change your data (row level security).</p><button className="btn" onClick={() => void c.signOut()}>Sign out</button></section>)}
+      <p className="muted">Only you can read or change your data (row level security).</p>
+      <h3>Password</h3><p className="muted">Signed in with an email link? Set a password so you can also sign in with it.</p>
+      <div className="bar"><input aria-label="New password" type="password" autoComplete="new-password" placeholder="New password (6+ characters)" value={np} onChange={e => setNp(e.target.value)} minLength={6} /><button className="btn" disabled={busy || np.length < 6} onClick={() => void savePw()}>Save password</button></div>
+      {pnote && <p className="muted" role="status">{pnote}</p>}
+      <button className="btn" onClick={() => void c.signOut()}>Sign out</button></section>)}
     <section className="gcard acctcard"><h3>Your data</h3><p className="muted">Download a copy of your goals, builds and progress, or restore one. Works with or without an account.</p>
       <div className="bar"><button className="btn" onClick={exportData}>Export data</button><button className="btn" onClick={() => file.current?.click()}>Import data</button>
         <input ref={file} type="file" accept="application/json,.json" hidden aria-label="Import data file" onChange={e => { void importData(e.target.files?.[0]); e.target.value = ""; }} /></div>
