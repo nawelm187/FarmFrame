@@ -50,4 +50,8 @@ const TABLE: Record<Mode, [number[], Reward[]][]> = {
 };
 /** Infernum 21 always drops one of these as well, with no weekly limit (so Roathe can be fought again for parts). */
 export const ROATHE_PARTS = "A Uriel part (Neuroptics, Chassis or Systems) or a Vinquibus blueprint or part";
+/** The reward sets of a difficulty, each with the floors that share it. */
+export const rewardGroups = (mode: Mode): { floors: number[]; rewards: Reward[] }[] => TABLE[mode].map(([floors, rewards]) => ({ floors, rewards })).sort((a, b) => a.floors[0] - b.floors[0]);
 export const rewardsFor = (mode: Mode, floor: number): Reward[] => TABLE[mode].find(([f]) => f.includes(floor))?.[1] ?? [];
+/** Rewards in a group (including every possibility of a "one of" pool) that match something the user still needs (`needed`: lowercase names). Exact name match only. */
+export const usefulIn = (rewards: Reward[], needed: Set<string>): string[] => [...new Set(rewards.flatMap(r => [r.name, ...(r.pool ?? [])]).filter(n => needed.has(n.toLowerCase())))];

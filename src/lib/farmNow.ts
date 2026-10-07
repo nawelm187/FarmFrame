@@ -1,3 +1,4 @@
+import { aTier } from "./text";
 export interface Fis { tier: string; node: string; missionType: string; expiry: string; isHard: boolean; isStorm: boolean }
 export interface Side { faction?: string; reward?: { countedItems?: { count: number; type: string }[]; items?: string[] } }
 export interface Inv { node: string; completed: boolean; attacker?: Side; defender?: Side }
@@ -6,7 +7,7 @@ export interface Link { tier: string; relic: string; rarity: string; part: strin
 export interface OppRelic { relic: string; rarity: string; parts: string[]; vaulted: boolean | null; owned: number }
 export interface OppGoal { name: string; have: number; total: number }
 export interface Opp { key: string; kind: "fissure" | "invasion"; tier?: string; title: string; advances: string[]; why: string[]; relics?: OppRelic[]; goals?: OppGoal[]; exact?: boolean }
-const names = (s?: Side) => [...(s?.reward?.countedItems?.map(i => i.type) ?? []), ...(s?.reward?.items ?? [])];
+export const names = (s?: Side) => [...(s?.reward?.countedItems?.map(i => i.type) ?? []), ...(s?.reward?.items ?? [])];
 /** Current opportunities = live world state x what the user still needs. Never claims more than the data supports.
  *  With `exact` (relic tables loaded) fissures are matched to the exact relics holding your missing parts; without it, by relic tier only. */
 export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | null; invasions: Inv[] | null; needed: Set<string>; now: number; exact?: Link[] | null; progress?: Map<string, OppGoal> }): Opp[] {
@@ -29,7 +30,7 @@ export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | nul
     }
     const items = i.tiers.get(t) ?? [];
     out.push({ key: "f" + t, kind: "fissure", tier: t, title: `${t} fissure: ${f[0].node} (${f[0].missionType})`, advances: items,
-      why: [head, `These missing parts list a ${t} relic as a source`, "Matched by relic tier because the exact relic tables are not loaded"] });
+      why: [head, `These missing parts list ${aTier(t)} relic as a source`, "Matched by relic tier because the exact relic tables are not loaded"] });
   }
   (i.invasions ?? []).forEach((v, n) => {
     if (v.completed) return;
@@ -40,3 +41,6 @@ export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | nul
 }
 /** Calculated relevance to the user's own goals (number of objectives advanced), not a universal ranking. */
 export const value = (n: number) => (n >= 3 ? "High" : n === 2 ? "Medium" : "Low");
+
+/** Reward names of an invasion (either side) that match something the user still needs (`needed`: lowercase names). */
+export const usefulInvasion = (v: Inv, needed: Set<string>): string[] => [...new Set([...names(v.attacker), ...names(v.defender)].filter(x => needed.has(x.toLowerCase())))];

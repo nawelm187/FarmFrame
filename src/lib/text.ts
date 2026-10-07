@@ -25,3 +25,6 @@ export function rich(raw: string): Tok[] {
   }
   push(s.slice(at)); return out;
 }
+
+/** "a Lith", "a Meso", "a Neo", "an Axi": the right article for a relic tier. */
+export const aTier = (t: string) => (/^[aeiou]/i.test(t) ? "an " : "a ") + t;

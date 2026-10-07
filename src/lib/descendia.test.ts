@@ -21,3 +21,9 @@ describe("alertsView", () => {
   });
   it("handles empty and malformed data", () => { expect(alertsView([], now)).toEqual([]); expect(alertsView(null, now)).toEqual([]); expect(alertsView([{ id: "x" }], now)).toEqual([]); });
 });
+import { usefulIn } from "./descendia";
+it("finds needed items among rewards and inside 'one of' pools", () => {
+  const g = [{ name: "Riven", pool: ["Zenurik Blueprint", "Forma Blueprint"] }, { name: "Orokin Catalyst" }];
+  expect(usefulIn(g, new Set(["forma blueprint", "orokin catalyst"]))).toEqual(["Forma Blueprint", "Orokin Catalyst"]);
+  expect(usefulIn(g, new Set(["x"]))).toEqual([]);
+});

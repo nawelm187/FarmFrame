@@ -22,3 +22,9 @@ it("with exact relics, only matches fissures of tiers that hold your parts and e
   expect(o[0].exact).toBe(true); expect(o[0].relics?.map(r => r.relic)).toEqual(["Lith G1", "Lith S3"]);
   expect(o[0].goals).toEqual([{ name: "Z", have: 1, total: 4 }]); expect(o[0].why.join("|")).toContain("You own: Lith G1");
 });
+import { usefulInvasion } from "./farmNow";
+it("flags invasion rewards that match what you need, on either side", () => {
+  const v = { node: "Ceres", completed: false, attacker: { reward: { countedItems: [{ count: 3, type: "Plastids" }] } }, defender: { reward: { items: ["Orokin Reactor Blueprint"] } } };
+  expect(usefulInvasion(v, new Set(["orokin reactor blueprint"]))).toEqual(["Orokin Reactor Blueprint"]);
+  expect(usefulInvasion(v, new Set())).toEqual([]);
+});

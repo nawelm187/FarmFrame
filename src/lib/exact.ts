@@ -1,4 +1,5 @@
 import type { Component, Entity } from "./catalog";
+import { aTier } from "./text";
 import { parseRelics, type Relic, type Row } from "./drops";
 import { missing, tiersOf, type Goal, type Owned } from "./goals";
 /** Drop tables that can say where a relic drops. Ids must match FIND in drops.ts ("missions", not "missionRewards"). */
@@ -83,8 +84,8 @@ export function nextAction(p: PartPlan, fis: Fis[] | null, owned: Record<string,
   const live = p.relics.filter(r => r.vaulted !== true);
   const mine = live.find(r => (owned[r.name] ?? 0) > 0);
   if (mine) { const f = fissuresFor(fis, mine.tier, now);
-    return { kind: "open", now: f.length > 0, to: "/farm-plan", text: f.length ? `Open ${mine.name} (${mine.rarity}) in a ${mine.tier} fissure now: ${f[0].missionType} ${f[0].node}${f.length > 1 ? ` and ${f.length - 1} more` : ""}` : `You own ${mine.name} (${mine.rarity}). No ${mine.tier} fissure is active right now.` }; }
-  if (live.length) { const r = live[0]; return { kind: "get", to: `/farm/${encodeURIComponent(r.name + " Relic")}`, text: `Get ${r.name} (${r.rarity})${live.length > 1 ? ` or ${live.length - 1} other relic${live.length > 2 ? "s" : ""}` : ""}, then open it in a ${r.tier} fissure` }; }
+    return { kind: "open", now: f.length > 0, to: "/farm-plan", text: f.length ? `Open ${mine.name} (${mine.rarity}) in ${aTier(mine.tier)} fissure now: ${f[0].missionType} ${f[0].node}${f.length > 1 ? ` and ${f.length - 1} more` : ""}` : `You own ${mine.name} (${mine.rarity}). No ${mine.tier} fissure is active right now.` }; }
+  if (live.length) { const r = live[0]; return { kind: "get", to: `/farm/${encodeURIComponent(r.name + " Relic")}`, text: `Get ${r.name} (${r.rarity})${live.length > 1 ? ` or ${live.length - 1} other relic${live.length > 2 ? "s" : ""}` : ""}, then open it in ${aTier(r.tier)} fissure` }; }
   if (p.relics.length) return { kind: "vaulted", text: `Only in vaulted relics (${p.relics.slice(0, 2).map(r => r.name).join(", ")}). Vaulted relics no longer drop; they come from trading or Varzia.` };
   if (p.relicTiers.length && !relicsLoaded) return { kind: "none", text: "Relic tables are not loaded yet, so the exact relics cannot be listed." };
   if (p.other.length) return { kind: "source", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: `Source: ${p.other.slice(0, 2).map(d => d.location).join("; ")}` };

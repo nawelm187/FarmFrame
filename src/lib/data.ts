@@ -1,3 +1,4 @@
+import { detectDrift } from "./drift";
 import { useEffect, useSyncExternalStore } from "react";
 import { cget, cset } from "./idb";
 import { SUPABASE_URL } from "./config";
@@ -33,7 +34,7 @@ export async function load(id: string, url: string, window: number, src: string,
     if (old && alt && used !== alt) { try { const second = await get(alt); if (Array.isArray(second) && second.length && !allExpired(second)) { data = second; used = alt; old = false; } } catch { /* keep the old copy and say so */ } }
     const at = Date.now();
     recs.set(id, { id, data, at, err: old ? "The source is serving old data (every entry has already ended)" : null, url: used, window, src });
-    stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: !Array.isArray(data) && countOf(data) === 0 ? ["empty response"] : [] }));
+    stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: [...(!Array.isArray(data) && countOf(data) === 0 ? ["empty response"] : []), ...detectDrift(id, data)] }));
     if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);

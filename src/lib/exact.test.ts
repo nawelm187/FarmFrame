@@ -63,3 +63,5 @@ it("groups each missing part: doable now, a step away, or blocked", () => {
   const v = planParts([goal], () => rhino, {}, relics, new Map([["Axi V1", true], ["Lith S3", true], ["Lith G1", true]]));
   expect(groupOf(nextAction(v[1], fis, {}, true, now))).toBe("blocked");
 });
+import { aTier } from "./text";
+it("uses the right article for a relic tier", () => { expect(aTier("Axi")).toBe("an Axi"); expect(aTier("Lith")).toBe("a Lith"); });

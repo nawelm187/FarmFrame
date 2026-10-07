@@ -15,3 +15,5 @@ export function alertsView(d: unknown, now = Date.now()): AlertView[] {
       credits: num(rw.credits), rewards, archwing: m.archwingRequired === true, nightmare: m.nightmare === true };
   }).filter((a): a is AlertView => !!a).sort((a, b) => Date.parse(a.expiry) - Date.parse(b.expiry));
 }
+/** Rewards of an alert that match something the user still needs (`needed`: lowercase names). Matched by exact item name only. */
+export const usefulRewards = (a: AlertView, needed: Set<string>): string[] => [...new Set(a.rewards.map(r => r.name).filter(n => needed.has(n.toLowerCase())))];
