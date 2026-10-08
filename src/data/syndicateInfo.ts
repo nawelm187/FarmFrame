@@ -21,6 +21,10 @@ export const MIN_RANK = -2, MAX_RANK = 5;
 /** Daily standing cap for faction syndicates: 16,000 at Mastery Rank 0, plus 500 per rank. Resets at 0:00 UTC. */
 export const dailyCap = (mr: number) => 16000 + 500 * Math.max(0, Math.floor(mr));
 export const NOTES = ["Standing comes from a Pledge made at the Syndicate terminal in the Orbiter: 15% of the Affinity you earn is converted into Standing.", "You also gain it from daily Syndicate Alerts (Rank 1 unlocks them; they reset at the same time as Sorties) and by turning in Syndicate Medallions."];
+/** Every syndicate the game has, so the page lists them all even when the drop data has no offers for some (22 emblems in src/assets/syndicates). */
+export const ALL_SYNDICATES = ["Steel Meridian", "Arbiters of Hexis", "Cephalon Suda", "The Perrin Sequence", "Red Veil", "New Loka",
+  "Ostron", "The Quills", "Solaris United", "Vox Solaris", "Ventkids", "The Holdfasts", "Entrati", "Necraloid", "Kahl's Garrison", "Cavia", "The Hex", "Nightcap",
+  "Cephalon Simaris", "Conclave", "Operational Supply", "Nightwave"];
 export const groupOfSyndicate = (name: string): Group => {
   const k = keyOf(name);
   if (FACTION[k]) return "faction";
