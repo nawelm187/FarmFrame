@@ -1,3 +1,4 @@
+import RarityMark from "../RarityMark";
 import { Link } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import { Pic } from "../ItemArt";
@@ -23,7 +24,7 @@ export default function SetFarm({ e, cat }: { e: Entity; cat: Cat }) {
     <ul className="list comp">{plans.map(p => { const n = nextAction(p, fis.data, {}, !!relics), live = p.relics.filter(r => r.vaulted !== true).slice(0, 3);
       return (<li key={p.part.name}><span><Pic name={`${e.name} ${p.part.name}`} size={36} /> <b>{label(p)}</b>{p.part.count > 1 && <span className="muted"> ×{p.part.count}</span>}
         <div className="muted">{n.text}</div>
-        {live.length > 0 && <div className="chips" aria-label="Best relics">{live.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><span className={"rar " + r.rarity}>{r.rarity}</span><span className="muted">{STATES.filter(s => r.chance[s] != null).slice(0, 1).map(s => `${r.chance[s]}%`)}</span></Link>)}</div>}
+        {live.length > 0 && <div className="chips" aria-label="Best relics">{live.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} /><span className="muted">{STATES.filter(s => r.chance[s] != null).slice(0, 1).map(s => `${r.chance[s]}%`)}</span></Link>)}</div>}
         {p.relics.length > 0 && !live.length && <div className="muted">Every relic for this part is vaulted. It comes from trading or Varzia.</div>}
         {!p.relics.length && p.other.length > 0 && <div className="muted">Also from: {p.other.slice(0, 3).map(d => d.location).join("; ")}</div>}
         <Link to={`/item/${encodeURIComponent(`${e.name} ${p.part.name}`)}`}>Part page, market price and all sources</Link></span></li>); })}</ul>

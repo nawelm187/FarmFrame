@@ -1,3 +1,4 @@
+import RarityMark from "../RarityMark";
 import ItemArt from "../ItemArt";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -24,7 +25,7 @@ function PartRelics({ e, k }: { e: Ent; k: Component }) {
   const [rr, vr] = useMany([{ id: "relics", file: "relics.json" }, { id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), relics = relicsOf(rr.rec?.data);
   if (!relics) return null;
   const o = relicsForPart(relics, e.name, k, parseVault(vr.rec?.data)).sort(byValue).slice(0, 4);
-  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><span className="muted">{r.rarity}</span>{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}</div> : null;
+  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} />{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}</div> : null;
 }
 const Sub = ({ cs }: { cs: Component[] }) => cs.length ? <ul className="sub">{cs.map(k => <li key={k.name}>{k.name}{k.count > 1 ? ` ×${k.count}` : ""}<Sub cs={k.children} /></li>)}</ul> : null;
 export default function Entity({ cat }: { cat: Cat }) {

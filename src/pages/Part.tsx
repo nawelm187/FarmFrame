@@ -1,3 +1,4 @@
+import RarityMark from "../RarityMark";
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
@@ -68,7 +69,7 @@ function PartView({ r }: { r: PartRef }) {
     <p><span className={"tag " + LEVEL[dif.level]}>{dif.level}</span> {dif.why}</p><p className="muted">Calculated estimate from drop rarity and vault status, not an official rating.</p>
     <h2>Where to get it</h2>
     {!relics && <p className="muted">Relic tables are {rr.status === "LOADING" ? "loading…" : "unavailable right now."}</p>}
-    {opts.length > 0 && <ul className="list comp">{opts.map(o => (<li key={o.name}><span><RelicArt tier={o.tier} name={o.name} size={28} /> <Link to={`/relics?q=${encodeURIComponent(o.name)}`}><b>{o.name}</b></Link> <span className={"rar " + o.rarity}>{o.rarity}</span>{o.vaulted === true && <span className="tag STALE"> Vaulted</span>}{o.vaulted === false && <span className="tag FRESH"> Available</span>}
+    {opts.length > 0 && <ul className="list comp">{opts.map(o => (<li key={o.name}><span><RelicArt tier={o.tier} name={o.name} size={28} /> <Link to={`/relics?q=${encodeURIComponent(o.name)}`}><b>{o.name}</b></Link> <RarityMark r={o.rarity} />{o.vaulted === true && <span className="tag STALE"> Vaulted</span>}{o.vaulted === false && <span className="tag FRESH"> Available</span>}
       <div className="muted">Chance by refinement: {["Intact", "Exceptional", "Flawless", "Radiant"].filter(s => o.chance[s] != null).map(s => `${s} ${o.chance[s]}%`).join(" · ")}</div></span>
       <Link to={`/farm/${encodeURIComponent(o.name + " Relic")}`}>How to get this relic</Link></li>))}</ul>}
     {other.length > 0 && <><h3>Other sources in the item data</h3><ul className="sub">{other.map((d, i) => <li key={i}>{d.location}{d.type ? ` (${d.type})` : ""}</li>)}</ul></>}

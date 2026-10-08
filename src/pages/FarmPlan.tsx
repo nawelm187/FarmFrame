@@ -1,3 +1,4 @@
+import RarityMark from "../RarityMark";
 import { Pic } from "../ItemArt";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -47,7 +48,7 @@ function TierBlock({ t, mine, set }: { t: TierPlan; mine: MyRelics; set: (n: str
     <div className="ghead"><RelicArt tier={t.tier} size={56} /><div className="grow"><h3>{t.tier} relics</h3>
       <div className="muted">{t.fissures.length ? `${t.fissures.length} active fissure${t.fissures.length > 1 ? "s" : ""}` : "No fissure of this tier is active"}</div>{t.fissures.length > 0 && <div className="muted">{t.fissures.slice(0, 4).map(f => `${f.missionType} ${f.node}${f.isHard ? " (Steel Path)" : ""}${f.isStorm ? " (Storm)" : ""}`).join(" · ")}</div>}</div></div>
     <ul className="list comp">{t.relics.map(({ opt, parts }) => { const rf = refinement(opt), o = mine[opt.name] ?? 0;
-      return (<li key={opt.name}><span><RelicArt tier={t.tier} name={opt.name} size={26} /> <b>{opt.name}</b> <span className={"rar " + opt.rarity}>{opt.rarity}</span>{opt.vaulted === true && <span className="tag STALE" title="Vaulted relics no longer drop"> Vaulted</span>}
+      return (<li key={opt.name}><span><RelicArt tier={t.tier} name={opt.name} size={26} /> <b>{opt.name}</b> <RarityMark r={opt.rarity} />{opt.vaulted === true && <span className="tag STALE" title="Vaulted relics no longer drop"> Vaulted</span>}
         <div className="muted">Advances: {parts.map(label).join(", ")}</div>
         <div className="muted">Chance for the part: {STATES.filter(s => opt.chance[s] != null).map(s => `${s} ${opt.chance[s]}%`).join(" · ")}</div>
         {rf && <div className="muted">{rf.better ? `Refining to ${rf.best} raises it from ${rf.from}% to ${rf.to}%.` : `Refining to ${rf.best} does not raise the chance for this part (${rf.from}% to ${rf.to}%). Intact is enough.`}</div>}
@@ -77,7 +78,7 @@ export default function FarmPlan() {
           <span className="tx"><span className={"kicker" + (g === "now" ? " now" : "")}>For {p.goal.name}</span><b>{label(p)}{p.left > 1 ? ` ×${p.left}` : ""}</b>
             <span className="muted">Have {p.have} of {p.part.count}, missing {p.left}</span>
             <span className="muted">{n.text}</span>
-            {top && g !== "blocked" && <Link className="relicchip" to={`/relics?q=${encodeURIComponent(top.name)}`}><RelicArt tier={top.tier} name={top.name} size={20} /><span>{top.name}</span><span className="muted">{top.rarity}</span></Link>}
+            {top && g !== "blocked" && <Link className="relicchip" to={`/relics?q=${encodeURIComponent(top.name)}`}><RelicArt tier={top.tier} name={top.name} size={20} /><span>{top.name}</span><RarityMark r={top.rarity} /></Link>}
             {gi && gi.parts > 0 && <span className="muted">Goal: {gi.have}/{gi.total} parts{gi.have < gi.total ? ` → ${Math.min(gi.have + 1, gi.total)}/${gi.total}` : ""}</span>}
             {n.to && <Link to={n.to}>{n.kind === "open" ? "Open plan" : "Find sources"}</Link>}</span></div>; })}</div></section>); })}</>}
     <Extras />

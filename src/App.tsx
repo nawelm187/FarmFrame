@@ -17,6 +17,7 @@ const Roadmap = lazy(() => import("./pages/Roadmap"));
 const Farm = lazy(() => import("./pages/Farm"));
 const FarmPlan = lazy(() => import("./pages/FarmPlan"));
 const Planner = lazy(() => import("./pages/Planner"));
+const Syndicates = lazy(() => import("./pages/Syndicates"));
 const Lore = lazy(() => import("./pages/Lore"));
 const Hub = lazy(() => import("./pages/Hub"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -31,10 +32,14 @@ const Resources = lazy(() => import("./pages/Resources"));
 const Parts = lazy(() => import("./pages/PartSearch"));
 const Patches = lazy(() => import("./pages/Patches"));
 const Part = lazy(() => import("./pages/Part"));
+const Mastery = lazy(() => import("./pages/Mastery"));
+const KDrives = lazy(() => import("./pages/KDrives"));
+const Guides = lazy(() => import("./pages/Guides"));
+const Helminth = lazy(() => import("./pages/Helminth"));
 const GROUPS = [
-  { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/parts", "/enemies", "/resources", "/lore", "/patches"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/parts", "Parts"], ["/enemies", "Enemies"], ["/resources", "Resources"], ["/lore", "Lore"], ["/patches", "Patch notes"]] },
-  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "Farm Plan"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/alerts", "Alerts"]] },
-  { label: "Plan", hub: "/plan", pre: ["/plan", "/roadmap", "/builds", "/build", "/tracking"], items: [["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
+  { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/parts", "/enemies", "/resources", "/lore", "/patches", "/kdrives", "/guides", "/helminth"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/parts", "Parts"], ["/enemies", "Enemies"], ["/resources", "Resources"], ["/lore", "Lore"], ["/patches", "Patch notes"], ["/kdrives", "K-Drives"], ["/guides", "Starter guides"], ["/helminth", "Helminth"]] },
+  { label: "Farm", hub: "/farm", pre: ["/farm", "/finder", "/planner", "/syndicates", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "Farm Plan"], ["/syndicates", "Syndicates"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/alerts", "Alerts"]] },
+  { label: "Plan", hub: "/plan", pre: ["/plan", "/mastery", "/roadmap", "/builds", "/build", "/tracking"], items: [["/mastery", "Mastery Rank"], ["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
   { label: "Account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "Data sources"]] },
 ] as const;
 export default function App() {
@@ -59,7 +64,7 @@ export default function App() {
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />
           <Route path="/enemies" element={<Enemies />} /><Route path="/resources" element={<Resources />} /><Route path="/parts" element={<Parts />} /><Route path="/sources" element={<Sources />} />{(["warframe", "weapon", "mod", "companion", "archwing", "railjack"] as const).map(c => [
             <Route key={c + "l"} path={`/${CATS[c].path}`} element={<Explore cat={c} />} />, <Route key={c} path={`/${c}/:slug`} element={<Entity cat={c} />} />])}
-          <Route path="/farm/:item" element={<Farm />} /><Route path="/rotations" element={<Rotations />} /><Route path="/alerts" element={<Alerts />} /><Route path="/patches" element={<Patches />} /><Route path="/item/:name" element={<Part />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<NotFound />} />
+          <Route path="/farm/:item" element={<Farm />} /><Route path="/syndicates" element={<Syndicates />} /><Route path="/mastery" element={<Mastery />} /><Route path="/kdrives" element={<KDrives />} /><Route path="/guides" element={<Guides />} /><Route path="/helminth" element={<Helminth />} /><Route path="/rotations" element={<Rotations />} /><Route path="/alerts" element={<Alerts />} /><Route path="/patches" element={<Patches />} /><Route path="/item/:name" element={<Part />} /><Route path="/builds" element={<BuildList />} /><Route path="/build/:id" element={<BuildEditor />} /><Route path="/profile" element={<Profile />} /><Route path="/explore" element={<Hub />} /><Route path="/farm" element={<Hub />} /><Route path="/plan" element={<Hub />} /><Route path="/lore" element={<Lore />} /><Route path="/planner" element={<Planner />} /><Route path="/farm-plan" element={<FarmPlan />} /><Route path="/roadmap" element={<Roadmap />} /><Route path="*" element={<NotFound />} />
         </Routes></Suspense>
         <ReportIssue />
       </main>

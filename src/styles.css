@@ -318,3 +318,6 @@ main :is(.cat li,.list>li) > a:not([class]):first-child:hover,main .cat li a:not
 .rar.Rare{color:#ffd24a;background:rgba(255,210,74,.14);border-color:rgba(255,210,74,.8)}
 .relcard li .rar{min-width:5.6rem;text-align:center}
 details.stock>summary{cursor:pointer;display:inline-block;margin:.4rem 0}
+/* Rarity is shown by color only (bronze / silver / gold), like the game. */
+.rar[role="img"]{min-width:0;font-size:1.05em;padding:0 .35rem;background:none;border:0;line-height:1}
+.relcard li .rar[role="img"]{min-width:1.6rem}

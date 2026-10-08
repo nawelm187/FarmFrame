@@ -1,3 +1,4 @@
+import { partKey } from "./lib/partImg";
 /** Original line icons for the kinds of part a blueprint is made of, so a Chassis does not borrow its Warframe's picture. */
 const P: Record<string, string> = {
   Chassis: "M8 4h8l3 4-2 3v9H7v-9L5 8z", Neuroptics: "M6 13a6 6 0 0 1 12 0v5l-3 2H9l-3-2zM9 13h6", Systems: "M7 7h10v10H7zM10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4",
@@ -15,8 +16,12 @@ export function splitPart(name: string): { owner: string; part: string } | null 
   const m = name.match(/^(.*?)\s*(Lower Limb|Upper Limb|Chassis|Neuroptics|Systems|Barrel|Receiver|Stock|Blade|Handle|Link|Carapace|Cerebrum|Gauntlet|Glove|Grip|Guard|Hilt|Head|String|Disc|Engine|Ornament|Holster|Stars|Rivet|Hook|Boot|Chain|Heatsink|Motor|Core|Aegis)$/);
   return m && m[1] ? { owner: m[1], part: m[2] } : null;
 }
+const FILES = import.meta.glob("./assets/parts/*.webp", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
+const URLS = new Map(Object.entries(FILES).map(([k, v]) => [k.replace(/^.*\//, "").replace(/\.webp$/, ""), v]));
 export default function PartArt({ part, prime = false, size = 36 }: { part: string; prime?: boolean; size?: number }) {
-  const c = prime ? "#C9A961" : "#00D6D6";
+  const c = prime ? "#C9A961" : "#00D6D6", u = URLS.get(partKey(part, prime));
+  // The real icon when there is one; the drawn line icon otherwise (for example for a part with no picture yet), so nothing is left blank.
+  if (u) return <img className="partart" src={u} width={size} height={size} alt={part} loading="lazy" style={{ objectFit: "contain" }} />;
   return (<svg className="partart" viewBox="0 0 24 24" width={size} height={size} role="img" aria-label={part} style={{ color: c }}>
     <rect x="0.5" y="0.5" width="23" height="23" rx="5" fill="rgba(15,20,25,.85)" stroke={c} strokeOpacity=".35" />
     <path d={P[part] ?? DEFAULT} transform="translate(3.6 3.6) scale(.7)" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>);

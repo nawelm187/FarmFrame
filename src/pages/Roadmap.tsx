@@ -1,3 +1,4 @@
+import RarityMark from "../RarityMark";
 import { Pic } from "../ItemArt";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -74,7 +75,7 @@ export default function Roadmap() {
         {!e || !p ? <Skeleton /> : <div className="pgrid">{e.components.map(c => { const pl = ex.plans.find(x => x.goal.id === g.id && x.part.name === c.name), have = (o[c.name] ?? 0) >= c.count;
           return (<div className={"ptile" + (have ? " have" : "")} key={c.name}>
             <div className="top"><Pic name={c.name === "Blueprint" ? `${e.name} Blueprint` : `${e.name} ${c.name}`} size={44} /><span className="nm">{c.name}{c.count > 1 ? ` ×${c.count}` : ""}</span><span className={"tag " + (have ? "FRESH" : "ERROR")}>{have ? "Have" : "Missing"}</span></div>
-            {pl && !have && <div className="chips">{pl.relics.filter(r => r.vaulted !== true).slice(0, 3).map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><span className="muted">{r.rarity}</span></Link>)}
+            {pl && !have && <div className="chips">{pl.relics.filter(r => r.vaulted !== true).slice(0, 3).map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} /></Link>)}
               {!pl.relics.length && pl.other.length > 0 && <span className="muted">{pl.other.slice(0, 2).map(d => d.location).join("; ")}</span>}</div>}
             <div className="foot"><span className="muted">Owned</span><Stepper value={o[c.name] ?? 0} max={c.count} label={`${g.name} ${c.name}`} onChange={v => setO(g.id, c.name, v)} /></div></div>); })}</div>}
       </section>); })}

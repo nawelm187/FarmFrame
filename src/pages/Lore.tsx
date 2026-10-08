@@ -1,3 +1,4 @@
+import { placeKey } from "../lib/partImg";
 import { useDeferredValue, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import FactionArt from "../FactionArt";
@@ -16,7 +17,11 @@ const COMICS: { t: string; d: string; links: [string, string][] }[] = [
 const TINT: Record<string, [string, string]> = { Grineer: ["#e8895a", "#5a2a1b"], Corpus: ["#6fb4ff", "#12324f"], Infested: ["#9be86a", "#1f4a16"], Orokin: ["#f1d27a", "#4b3a12"], Other: ["#b69cff", "#2c1f5a"] };
 const hash = (n: string) => [...n].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 /** Original planet badge: a shaded orb tinted by faction, with bands that differ per place (and a ring for Saturn). No network needed. */
+const PLANET_FILES = import.meta.glob("../assets/planets/*.webp", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
+const PLANET_URLS = new Map(Object.entries(PLANET_FILES).map(([k, v]) => [k.replace(/^.*\//, "").replace(/\.webp$/, ""), v]));
 function PlanetArt({ name, faction, size = 56 }: { name: string; faction: string; size?: number }) {
+  const url = PLANET_URLS.get(placeKey(name));
+  if (url) return <img className="planet" src={url} width={size} height={size} alt={name} loading="lazy" style={{ objectFit: "contain" }} />;
   const [hi, lo] = TINT[faction] ?? TINT.Other, h = hash(name), id = "pl" + h, b1 = 18 + (h % 20), b2 = 34 + ((h >> 3) % 18), tilt = (h % 40) - 20;
   return (<svg className="planet" viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={name}>
     <defs><radialGradient id={id} cx="35%" cy="30%" r="80%"><stop offset="0" stopColor={hi} /><stop offset="1" stopColor={lo} /></radialGradient><clipPath id={id + "c"}><circle cx="32" cy="32" r="20" /></clipPath></defs>
