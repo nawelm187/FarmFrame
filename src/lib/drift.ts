@@ -1,7 +1,7 @@
 /** Structural check of a downloaded dataset. A source that quietly renames or drops a field makes pages empty without any error, so each known dataset lists the fields the app reads. */
 type O = Record<string, unknown>;
 const isO = (v: unknown): v is O => !!v && typeof v === "object" && !Array.isArray(v);
-const SHAPES: Record<string, string[]> = { fissures: ["tier", "node", "expiry", "missionType"], invasions: ["node", "completed"], alerts: ["expiry", "mission"] };
+const SHAPES: Record<string, string[]> = { fissures: ["tier", "node", "expiry", "missionType"], invasions: ["node", "completed"], alerts: ["expiry", "mission"], syndicateMissions: ["syndicate", "expiry"] };
 /** Fields the item catalogs (ids "f:<file>") must carry in nearly every entry. */
 const CATALOG = ["name", "uniqueName"];
 const SAMPLE = 30, MIN = 0.8;

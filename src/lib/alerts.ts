@@ -17,3 +17,13 @@ export function alertsView(d: unknown, now = Date.now()): AlertView[] {
 }
 /** Rewards of an alert that match something the user still needs (`needed`: lowercase names). Matched by exact item name only. */
 export const usefulRewards = (a: AlertView, needed: Set<string>): string[] => [...new Set(a.rewards.map(r => r.name).filter(n => needed.has(n.toLowerCase())))];
+export interface SyndicateAlert { id: string; syndicate: string; nodes: string[]; expiry: string }
+/** Daily Syndicate Alerts (missions on map nodes, unlocked at rank 1 of that syndicate). Entries without nodes (open-world bounty boards) or already ended are dropped. */
+export function syndicateAlerts(d: unknown, now = Date.now()): SyndicateAlert[] {
+  if (!Array.isArray(d)) return [];
+  return d.filter(isO).map((a, i): SyndicateAlert | null => {
+    const syndicate = str(a.syndicate), expiry = str(a.expiry), nodes = (Array.isArray(a.nodes) ? a.nodes : []).filter((x): x is string => typeof x === "string" && !!x);
+    if (!syndicate || !expiry || !nodes.length || Date.parse(expiry) <= now) return null;
+    return { id: str(a.id) ?? String(i), syndicate, nodes, expiry };
+  }).filter((a): a is SyndicateAlert => !!a).sort((a, b) => a.syndicate.localeCompare(b.syndicate));
+}
