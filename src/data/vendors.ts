@@ -28,3 +28,11 @@ export const ARB_ROTATIONS: Record<"A" | "B" | "C", ArbReward[]> = {
 export const ARB_NOTES = ["Every completed mission also gives 50,000 Credits.", "Arbitration Shield Drones have a 6% chance to drop Vitus Essence."];
 /** Chances of one rotation should add up to 100: a quick check that the hand-copied table is complete. */
 export const rotationTotal = (r: ArbReward[]) => Math.round(r.reduce((a, x) => a + x.chance, 0) * 10) / 10;
+
+/** Acrithis (Duviri): the wiki's list of her current weekly wares. Copied by hand; it is only valid for the week it was read in. */
+export const ACRITHIS_SOURCE: Src = { name: "Warframe Wiki, Acrithis/Current Offerings", url: "https://wiki.warframe.com/w/Acrithis/Current_Offerings", date: "2026-10-07" };
+export const ACRITHIS = { asOf: "2026-10-07", wares: ["Rifle Riven Mod", "Companion Weapon Riven Mod", "Forma", "5000 Kuva", "Orokin Reactor"] };
+/** Monday 00:00 UTC of the week that contains `iso` (YYYY-MM-DD). Weekly vendors reset then. */
+export const weekStartUtc = (iso: string) => { const d = new Date(iso + "T00:00:00Z"), back = (d.getUTCDay() + 6) % 7; return d.getTime() - back * 86_400_000; };
+/** True once the week the list was read in has ended, so the page can say the wares may have changed. */
+export const acrithisOutdated = (now: number, asOf = ACRITHIS.asOf) => now >= weekStartUtc(asOf) + 7 * 86_400_000;
