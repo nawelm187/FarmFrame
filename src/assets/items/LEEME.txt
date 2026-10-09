@@ -1,1 +1,1 @@
-Your own pictures for items. forma.png is used for every Forma Blueprint. See PAGE_IMAGES.md.
+Your own pictures for items. forma.png is used for every Forma Blueprint. See docs/PAGE_IMAGES.md.
