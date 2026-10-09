@@ -16,6 +16,8 @@ import OppList from "./OppList";
 import Advisor from "./Advisor";
 import { AlertsSummary } from "./Alerts";
 import { Pic } from "../ItemArt";
+import GoalCards from "../GoalCards";
+import PageArt from "../PageArt";
 import { Countdown, Panel, Unavailable } from "./parts";
 interface Cyc { state: string; expiry: string }
 const isCyc = (d: unknown): d is Cyc => !!d && typeof d === "object" && typeof (d as Cyc).state === "string" && typeof (d as Cyc).expiry === "string";
@@ -41,19 +43,18 @@ function LatestUpdate() {
 function FissureCount() {
   const { data, status, rec } = useWorld("fissures", isFis);
   if (!data) return <Unavailable title="Void Fissures" status={status} why="No verified data." rec={rec} />;
-  return <Panel title="Void Fissures" status={status} rec={rec}><div className="big">{data.filter(f => ts(f.expiry) > Date.now()).length} active</div><Link to="/fissures">Open fissure list</Link></Panel>;
+  return <Panel title="Void Fissures" status={status} rec={rec}><div className="big"><PageArt name="Void Fissures" size={40} /> {data.filter(f => ts(f.expiry) > Date.now()).length} active</div><Link to="/fissures">Open fissure list</Link></Panel>;
 }
 /** Priority 1 of Home: where each goal stands. Only goals whose parts are listed in the data get a bar; the others are said to have none. */
 function Goals({ f }: { f: ReturnType<typeof useFarmNow> }) {
   const { info, goals } = f.exact; if (!goals.length) return null;
-  return (<section aria-label="Your goals"><div className="row"><h2>Your goals</h2><Link to="/roadmap">Open Roadmap</Link></div>
-    <ul className="list comp">{info.map(i => <li key={i.goal.id}><span><Pic name={i.goal.name} size={34} /> <Link to={`/${i.goal.cat}/${i.goal.slug}`}><b>{i.goal.name}</b></Link>
-      {i.parts ? <label className="muted"> {i.have} / {i.total} parts · {i.pct}% <progress max={i.total} value={i.have} /></label> : <span className="muted"> · the data lists no parts for this goal</span>}</span></li>)}</ul></section>);
+  return (<section aria-label="Your goals"><div className="row"><h2>Your goals</h2><Link className="btn sm" to="/roadmap">Open Roadmap</Link></div>
+    <GoalCards info={info} /></section>);
 }
 function FarmRightNow({ f }: { f: ReturnType<typeof useFarmNow> }) {
   const { goals, opps, fis, inv, exact } = f, todo = exact.plans.filter(p => p.part.count > p.have);
   return (<section aria-label="What should I farm right now">
-    <div className="row"><h2>What should I farm right now?</h2>{goals > 0 && <Link to="/farm-plan">Open Farm Plan</Link>}</div>
+    <div className="row"><h2>What should I farm right now?</h2>{goals > 0 && <Link className="btn sm" to="/farm-plan">Open Farm Plan</Link>}</div>
     {!goals ? <p className="muted">No goals yet. Add one from a Warframe or weapon page and this list will show what advances it right now. <Link to="/warframes">Browse Warframes</Link></p>
       : !fis.data && !inv.data ? <p className="muted">Live fissure and invasion data is unavailable ({fis.status.toLowerCase()}), so current opportunities cannot be computed.</p>
       : !opps.length ? <p className="muted">Nothing active right now advances your goals{exact.relics ? "" : " (exact relic tables are still loading)"}. Check back as fissures and invasions rotate.</p>

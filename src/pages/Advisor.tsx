@@ -8,6 +8,7 @@ import { goalId, readGoals, readOwned, writeGoals, writeOwned } from "../lib/goa
 import { useCatalogs } from "../lib/useCatalog";
 import { useFarmNow } from "../lib/useFarmNow";
 import { Ring } from "../ui";
+import MissingList from "../MissingList";
 import { allStats, useMany } from "../lib/data";
 import { FIND, collect } from "../lib/drops";
 import { trustLine } from "../lib/freshness";
@@ -66,7 +67,7 @@ export default function Advisor() {
           {a.focus.action.to && <Link to={a.focus.action.to}>{a.focus.action.kind === "open" ? "Open Farm Plan" : "Find sources"}</Link>}
           <button className="btn" onClick={got}>I got it</button></span></div>}
         <details open><summary>Why this?</summary><ul>{a.why.map(w => <li key={w}>{w}</li>)}</ul></details>
-        {a.missing.length > 1 && <><h3>Everything still missing</h3><ul className="list">{a.missing.map(m => <li key={m.label}><span>{m.label}{m.left > 1 ? ` ×${m.left}` : ""}</span><span className={"tag" + (m.group === "now" ? " FRESH" : m.group === "blocked" ? " STALE" : "")}>{GROUP_TAG[m.group]}</span></li>)}</ul></>}
+        {a.missing.length > 1 && <><h3>Everything still missing</h3><MissingList items={a.missing} /></>}
         {acts.length > 0 && <><h3>Best activity right now</h3><ul className="list">{acts.map((x, i) => <li key={x.opp.key}><span><b>{x.opp.title}</b>{i === 0 && acts.length > 1 && <span className="tag FRESH"> Best for your plan</span>}<div className="muted">{x.reasons.join(" · ")}</div></span><Link className="btn" to={x.opp.kind === "fissure" ? "/fissures" : "/invasions"}>Open</Link></li>)}</ul></>}
         <p className={trust.warn ? "tag STALE" : "muted"}>{trust.warn ?? `Based on: ${trust.lines.join(" · ")}.`} <Link to="/sources">Data sources</Link></p>
         {a.after ? <p className="muted"><b>After that:</b> {a.after}</p> : <p className="muted"><b>After that:</b> {a.goal} would be complete.</p>}

@@ -394,3 +394,36 @@ main nav{position:static;height:auto;overflow:visible;background:none;border:0;b
 .list.cat li.muted{grid-column:1/-1;display:block;background:none;border:0}
 /* A wide child (a row of tabs, a table) must scroll inside itself, not widen the whole page on a phone */
 main{min-width:0}@media(max-width:700px){.app{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== v0.62 Home goals, missing parts, segmented tabs, reward lists, phone fixes ===== */
+.goalgrid{list-style:none;margin:.4rem 0 1.2rem;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,19rem),1fr));gap:.7rem}
+.goalcard{display:flex;align-items:center;gap:.9rem;padding:.7rem .85rem;background:var(--b2);border:1px solid var(--b4);border-radius:1rem;color:var(--t1);text-decoration:none;transition:border-color .15s,transform .15s}
+.goalcard:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:var(--glow)}
+.gimg{flex:none;width:4.2rem;height:4.2rem;display:grid;place-items:center;border-radius:.9rem;background:radial-gradient(circle at 50% 40%,var(--b3),var(--b1));border:1px solid var(--b4);overflow:hidden}.gimg img{width:100%;height:100%;object-fit:contain}
+.gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:.25rem}.gtx b{font-size:1.02rem;line-height:1.2;overflow-wrap:anywhere}.gtx .mbar{margin:.1rem 0 0}
+.mlist{list-style:none;margin:.3rem 0 1rem;padding:0;display:grid;gap:.45rem}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.7rem;padding:.5rem .7rem;background:var(--b1);border:1px solid var(--b4);border-radius:.8rem}
+.mrow.now{border-color:rgba(0,214,214,.45)}.mrow .mn{min-width:0;overflow-wrap:anywhere;line-height:1.25}.mrow .tag{white-space:nowrap;justify-self:end}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin:.4rem 0 .6rem}.seg .btn{min-width:0;padding:.35rem .4rem}
+.rwlist{list-style:none;margin:.2rem 0 .6rem;padding:0;display:grid;gap:.3rem}.rwlist li{display:flex;justify-content:space-between;gap:.8rem;padding:.35rem .6rem;background:var(--b1);border:1px solid var(--b4);border-radius:.6rem;font-size:.92rem}.rwlist b{font-variant-numeric:tabular-nums;color:var(--gold);white-space:nowrap}
+.row{flex-wrap:wrap}.row>h2,.row>h3{margin:0;min-width:0}.row>a,.row>.btn,.row>button,.row>.tag{flex:none}
+.acard .tx .btn,.advisor .acard .btn{align-self:flex-start;margin-top:.45rem}
+.advisor .list li>.btn,.advisor .list li>button{flex:none;white-space:nowrap}
+@media(max-width:700px){
+ .btn{white-space:normal;text-align:center}.hud{padding:.8rem}.hud h3{font-size:1rem}
+ .acard{padding:.7rem}.acard .tx{width:100%}.acard .tx>a.btn,.acard .tx>.btn{width:100%;align-self:stretch}
+ .list li{grid-template-columns:minmax(0,1fr) auto}.list li>:last-child{grid-column:auto}
+ .advisor .list li{grid-template-columns:minmax(0,1fr)}.advisor .list li>.btn,.advisor .list li>button{justify-self:start}
+ .mrow{grid-template-columns:auto minmax(0,1fr)}.mrow .tag{grid-column:2;justify-self:start}
+ .goalgrid{grid-template-columns:1fr}.gimg{width:3.6rem;height:3.6rem}
+ .qtile{padding:.7rem .8rem}.chips .btn,.chips a.btn{flex:1 1 auto}
+ .toolbar .btn,.bar .btn{flex:1 1 auto}.bar input,.bar select{min-width:0;max-width:100%}
+ .rowcard>.btn,.rcside .btn{width:100%;justify-content:center}
+ .tag{white-space:normal}
+}
+
+/* v0.63 accessibility basics */
+.skip{position:absolute;left:.5rem;top:-3rem;z-index:100;background:var(--acc);color:#001;padding:.5rem .8rem;border-radius:8px;font-weight:600;text-decoration:none}
+.skip:focus{top:.5rem}
+main:focus{outline:none}
+.err-details{margin-top:1rem}.err-details summary{cursor:pointer}

@@ -3,6 +3,7 @@ import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Icon, Logo } from "./Icons";
 import { CATS } from "./lib/catalog";
 import { Skeleton } from "./pages/parts";
+import usePageTitle from "./usePageTitle";
 const Home = lazy(() => import("./pages/Home"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Alerts = lazy(() => import("./pages/Alerts"));
@@ -44,6 +45,7 @@ const GROUPS = [
 ] as const;
 export default function App() {
   const [open, setOpen] = useState(false), loc = useLocation();
+  usePageTitle();
   useEffect(() => { const t = setTimeout(() => { void import("./pages/Explore"); void import("./pages/Entity"); void import("./pages/Relics"); void import("./pages/Builds"); }, 2500); return () => clearTimeout(t); }, []);
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setOpen(true); } };
@@ -51,13 +53,14 @@ export default function App() {
   }, []);
   return (
     <div className="app">
+      <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById("main")?.focus(); }}>Skip to content</a>
       <nav aria-label="Main">
         <div className="logo"><Logo size={32} /><span className="wm">FARM<span>FRAME</span></span></div>
         <NavLink to="/" end className="tab"><Icon n="/" />Home</NavLink>
         {GROUPS.map(g => (<div key={g.label} className="grp"><Link to={g.hub} className={"tab grphead" + (g.pre.some(p => loc.pathname.startsWith(p)) ? " active" : "")}><Icon n={g.hub} />{g.label}</Link>
           {g.items.map(([to, l]) => <NavLink key={to} to={to} className="sublink">{l}</NavLink>)}</div>))}
       </nav>
-      <main>
+      <main id="main" tabIndex={-1}>
         <button className="sbtn" onClick={() => setOpen(true)}>Search relics, items, pages… or ask "where do I farm X" <kbd>Ctrl K</kbd></button>
         <Suspense fallback={<Skeleton />}><Routes>
           <Route path="/" element={<Home />} /><Route path="/fissures" element={<Fissures />} /><Route path="/invasions" element={<Invasions />} />

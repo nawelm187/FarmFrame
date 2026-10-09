@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Pic } from "../ItemArt";
 import PageArt from "../PageArt";
 import Baro from "../Baro";
@@ -8,7 +10,8 @@ import { Plat } from "../Money";
 import VendorStock from "../VendorStock";
 import { anomalyView, arbView, archView, calendarView, dealsView, duviriView, kuvaView, nextWeeklyReset, simarisView, steelView, stockView } from "../lib/rotations";
 import { Countdown, Panel, Unavailable } from "./parts";
-import { ARBITRATION_SOURCE, ARB_NOTES, ARB_ROTATIONS, PALLADINO, PALLADINO_SOURCE } from "../data/vendors";
+import { ACRITHIS, ACRITHIS_SOURCE, ARBITRATION_SOURCE, ARB_NOTES, ARB_ROTATIONS, PALLADINO, PALLADINO_SOURCE, acrithisOutdated } from "../data/vendors";
+const KUVA_DATE = "2026-10-08";
 const ok = (d: unknown): d is object => !!d && typeof d === "object";
 const at = (d: unknown) => { const e = (Array.isArray(d) ? d[0] : d) as { expiry?: unknown } | null; return typeof e?.expiry === "string" ? Date.parse(e.expiry) : null; };
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -80,10 +83,13 @@ function Palladino() {
     <div className="muted">Source: <a href={PALLADINO_SOURCE.url} target="_blank" rel="noreferrer">{PALLADINO_SOURCE.name}</a>, checked {PALLADINO_SOURCE.date}.</div></section>);
 }
 function ArbRewards() {
+  const [r, setR] = useState<"A" | "B" | "C">("A");
   return (<section className="panel"><div className="row"><h3>Arbitration rewards</h3><ManualTag date={ARBITRATION_SOURCE.date} /></div>
     <p className="muted">Rotations run A, A, B, B, then C every time after that.</p>
-    {(["A", "B", "C"] as const).map(r => <details className="stock" key={r}><summary className="btn">Rotation {r}</summary><ul className="sub">{ARB_ROTATIONS[r].map(x => <li key={x.name}>{x.name} <span className="muted">· {x.chance}%</span></li>)}</ul></details>)}
+    <div className="seg" role="group" aria-label="Rotation">{(["A", "B", "C"] as const).map(k => <button key={k} className={"btn" + (r === k ? " on" : "")} aria-pressed={r === k} onClick={() => setR(k)}>Rotation {k}</button>)}</div>
+    <ul className="rwlist">{ARB_ROTATIONS[r].map(x => <li key={x.name}><span>{x.name}</span><b>{x.chance}%</b></li>)}</ul>
     {ARB_NOTES.map(n => <p className="muted" key={n}>{n}</p>)}
+    <p><Link to="/guides?s=arbitrations">How Arbitrations work</Link></p>
     <div className="muted">Source: <a href={ARBITRATION_SOURCE.url} target="_blank" rel="noreferrer">{ARBITRATION_SOURCE.name}</a>, checked {ARBITRATION_SOURCE.date}.</div></section>);
 }
 function Kuva() {
@@ -91,6 +97,11 @@ function Kuva() {
   const v = kuvaView(data);
   if (!v.length) return <Unavailable title="Kuva missions" status={data ? "UNAVAILABLE" : status} why={Array.isArray(data) ? "The source lists no Kuva missions right now." : "No verified data."} rec={rec} />;
   return (<Panel title="Kuva missions" status={status} rec={rec}><ul className="sub">{v.slice(0, 8).map((k, i) => <li key={i}><b>{k.node}</b><span className="muted"> {[k.type, k.enemy].filter(Boolean).join(" · ")}</span></li>)}</ul>{v.length > 8 && <p className="muted">Showing 8 of {v.length}.</p>}</Panel>);
+}
+function KuvaInfo() {
+  return (<section className="panel"><div className="row"><h3>Kuva Siphons</h3><ManualTag date={KUVA_DATE} /></div>
+    <p className="muted">Extra mission reward: Requiem Eterna 50%, Endo ×100 50%. A Kuva Flood always drops a Requiem relic (100%) and gives about double the Kuva. Needs The War Within and Mastery Rank 5.</p>
+    <p><Link to="/guides?s=kuva">How Kuva Siphons work</Link></p></section>);
 }
 function Simaris() {
   const { data, status, rec } = useWorld("simaris", ok);
@@ -104,11 +115,15 @@ function Anomaly() {
   if (!v) return <Unavailable title="Sentient Anomaly" status={data ? "UNAVAILABLE" : status} why="No verified data." rec={rec} />;
   return (<Panel title="Sentient Anomaly" status={status} rec={rec}>{v.active ? <><b>{v.node}</b><div className="muted">{[v.type, v.faction].filter(Boolean).join(" · ")}</div>{v.expiry && <div><Countdown exp={v.expiry} pre="ends in " /></div>}</> : <p className="muted">Not active right now.</p>}</Panel>);
 }
-const Fixed = ({ name, role, where }: { name: string; role: string; where: string }) => (
-  <section className="panel"><div className="row"><h3>{name}</h3><span className="tag UNAVAILABLE">No stock data</span></div><Npc name={name} role={role} />
-    <p className="muted">{where}</p>
-    <p className="muted">This vendor's weekly stock is not in any data source FarmFrame uses, so nothing is listed instead of guessing.</p></section>
-);
+/** Acrithis' weekly wares as the wiki lists them. Copied by hand, so it says plainly when the week it was read in is over. */
+function Acrithis() {
+  const old = acrithisOutdated(Date.now());
+  return (<section className="panel"><div className="row"><h3>Acrithis</h3>{old ? <span className="tag STALE" title="The week this list was read in has ended">May be outdated</span> : <ManualTag date={ACRITHIS_SOURCE.date} />}</div><Npc name="Acrithis" role="Duviri vendor" />
+    <p className="muted">Found in Duviri. Her weekly wares change every Monday at 00:00 UTC. Reported on {ACRITHIS.asOf}:</p>
+    <ul className="rwlist">{ACRITHIS.wares.map(w => <li key={w}><span>{w}</span></li>)}</ul>
+    {old && <p className="muted">That week is over, so these wares have probably changed. Check the wiki for the current list.</p>}
+    <div className="muted">Source: <a href={ACRITHIS_SOURCE.url} target="_blank" rel="noreferrer">{ACRITHIS_SOURCE.name}</a>, checked {ACRITHIS_SOURCE.date}.</div></section>);
+}
 export default function Rotations() {
   const reset = iso(nextWeeklyReset());
   return (<><h1><PageArt name="Rotations" size={36} />Rotations</h1>
@@ -117,9 +132,9 @@ export default function Rotations() {
     <h2>Traders</h2><div className="grid"><Baro full /><Varzia /></div>
     <h2>Weekly shops and rewards</h2><div className="grid"><Teshin /><Duviri /><Calendar /><Archimedeas /></div>
     <h2>The Descendia</h2><Descendia />
-    <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><ArbRewards /><Kuva /><Simaris /><Anomaly /></div>
+    <h2>Daily and mission rotations</h2><div className="grid"><Darvo /><Arbitration /><ArbRewards /><Kuva /><KuvaInfo /><Simaris /><Anomaly /></div>
     <h2>Other weekly vendors</h2><div className="grid">
       <Palladino />
-      <Fixed name="Acrithis" role="Duviri vendor" where="Found in Duviri. Her weekly wares change and no live source lists them. See the current list on the Warframe wiki: https://wiki.warframe.com/w/Acrithis/Current_Offerings" />
+      <Acrithis />
     </div></>);
 }
