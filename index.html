@@ -2,18 +2,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="FarmFrame: unofficial fan-made Warframe planning and farming companion. Not affiliated with Digital Extremes.">
 <title>FarmFrame</title>
+<link rel="canonical" href="https://nawelm187.github.io/FarmFrame/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website"><meta property="og:site_name" content="FarmFrame"><meta property="og:title" content="FarmFrame: Warframe planning and farming companion"><meta property="og:description" content="Unofficial fan-made tool: what to farm, where, and what is still missing. Not affiliated with Digital Extremes."><meta property="og:url" content="https://nawelm187.github.io/FarmFrame/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"FarmFrame","url":"https://nawelm187.github.io/FarmFrame/","applicationCategory":"GameApplication","operatingSystem":"Any","description":"Unofficial fan-made Warframe planning and farming companion.","inLanguage":"en"}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230F1419'/%3E%3Cpath d='M16 3.2A12.8 12.8 0 1 1 6 8.2' fill='none' stroke='%2300D6D6' stroke-width='1.7' stroke-linecap='round'/%3E%3Cpath d='M16 1.5 18 5.2h-4z' fill='%2300D6D6'/%3E%3Cpath d='M11.2 23.5V9.2h10.3v3.1h-6.9v2.9h5.7v3h-5.7v5.3z' fill='%23E6E6E6'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0F1419">
 <style>body{margin:0;background:#0F1419;color:#E6E6E6;font:16px/1.5 system-ui,sans-serif}#boot{padding:1.5rem;max-width:44rem}#boot pre{white-space:pre-wrap;color:#C0524A}</style></head>
-<body><div id="root"><div id="boot"><p>Loading FarmFrame…</p><noscript><p>FarmFrame needs JavaScript enabled.</p></noscript></div></div>
+<body><div id="root"><div id="boot"><p>Loading FarmFrame…</p><noscript><p>FarmFrame needs JavaScript turned on to run.</p></noscript></div></div>
 <script>
 (function () {
-  function show(t) { var b = document.getElementById("boot"); if (!b) { b = document.createElement("div"); b.id = "boot"; document.body.appendChild(b); } var p = document.createElement("pre"); p.textContent = t; b.appendChild(p); }
-  window.addEventListener("error", function (e) { show("Error: " + (e.message || e)); });
-  window.addEventListener("unhandledrejection", function (e) { show("Promise error: " + (e.reason && e.reason.message || e.reason)); });
+  function show(t, detail) { var b = document.getElementById("boot"); if (!b) { b = document.createElement("div"); b.id = "boot"; document.body.appendChild(b); } var m = document.createElement("p"); m.textContent = t; b.appendChild(m); if (detail) { var d = document.createElement("details"), sm = document.createElement("summary"), p = document.createElement("pre"); sm.textContent = "Technical details"; p.textContent = detail; d.appendChild(sm); d.appendChild(p); b.appendChild(d); } }
+  window.addEventListener("error", function (e) { show("Something went wrong while loading FarmFrame. Reloading the page usually fixes it.", String(e.message || e)); });
+  window.addEventListener("unhandledrejection", function (e) { show("Something went wrong while loading FarmFrame. Reloading the page usually fixes it.", String(e.reason && e.reason.message || e.reason)); });
   setTimeout(function () {
     if (document.getElementById("root").getAttribute("data-ready") !== "1")
-      show("The app script did not load. If this page is on GitHub Pages, it is serving the unbuilt source: set Settings > Pages > Source to \"GitHub Actions\" and check that the latest run in the Actions tab is green.");
+      show("FarmFrame did not start. Check your connection and reload.", "The app script did not load. If this is GitHub Pages, it may be serving the unbuilt source: set Settings > Pages > Source to \"GitHub Actions\" and check that the latest run in the Actions tab is green.");
   }, 4000);
 })();
 </script>

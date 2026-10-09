@@ -1,52 +1,40 @@
-# FarmFrame v0.59 (Fissures grouped into Steel Path, Normal and Void Storms with the timer in its own column; The Descendia split into this week's floors and possible rewards; per-part icons so only a Blueprint shows its Warframe; Resources show description and source, with hand-written notes for the few that have none; Farm Plan and Roadmap rows as cards; Enemies keep a faction emblem when a picture is missing and groups have icons; Account: set or reset a password, readable sign-in errors)
-# FarmFrame v0.58 (cyan HUD theme: Orbitron and Inter bundled locally, new logo and favicon, buttons, links shown as small buttons; Home hero and quick tiles; Roadmap split into Tasks, Goals, Requirements and Completed; planet badges in Lore)
-# FarmFrame v0.57 (picture fallback chain with an extra name index in scripts/make-imgindex.mjs; Parts, Enemies and Resources in the side menu; Roadmap and Farm Plan redesign with rings, steppers and cards; Account with export and import; Lore with six tabs)
-# FarmFrame v0.56 (catalog parts read from the uniqueName because WFCD stopped sending component names; stat fixes in Patch notes; The Descendia and Alerts; companion mods under Companions; Prime or Normal filter; Home goals; Farm Plan grouped by availability; Tracking with progress, origin and undo; Not found page)
-# FarmFrame v0.55 (Railjack ship components from a hand-written, dated source with a Manual label and its own row in Data Sources; PAGE_IMAGES.md says every image is optional. Run no new SQL)
-# FarmFrame v0.54 (global search finds resources, items and enemies and opens them filtered; Resources, Enemies and Parts added to the page list. Run no new SQL)
-# FarmFrame v0.53 (pictures of items across Farm Plan, Roadmap, Tracking, Home, Farm, Builds and item pages; Resources and items page at /resources with picture and where to farm; Void Fissures mark tiers that have relics for your plan; your faction, form and page images included. Run no new SQL)
-# FarmFrame v0.52 (fissure fallback now applies on every page that reads fissures; faction emblem and faction filter on Void Fissures; DEPLOY_FUNCTIONS.md with step-by-step Supabase deploy. Run no new SQL)
-# FarmFrame v0.51 (builds: native polarities are a pool, not pasted on slots 1..n, so Forma is counted correctly; Sources health: live checks for wiki, image CDN, market, account and the new worldstate function, and empty lists no longer count as schema drift; fissure fallback straight from Digital Extremes via supabase/functions/worldstate (deploy it: `supabase functions deploy worldstate`); Forma pictures from src/assets/items/forma.png; Infested emblem tinted white. Run no new SQL)
-# FarmFrame v0.50 (item pictures in vendor stock and in the Finder; Hub tiles use page images when present; PAGE_IMAGES.md lists every missing file name. Run no new SQL)
-# FarmFrame v0.49 (item pictures inside relics; no 'cannot be traded' rows; Parts search at /parts with prices only for Prime parts; Enemies page with weaknesses and faction emblems in Invasions; Railjack weapons; patch notes summary reads far more of each update, grouped by subject; Builds mod browser with search by effect, polarity icons and rarity; page and panel images with the folders listed in PAGE_IMAGES.md. Run no new SQL)
-# FarmFrame v0.48 (polarity icons on a light gradient disc so dark PNGs are visible, file names matched by the polarity they contain; 1999 Calendar shows readable dates with challenges, rewards and bonuses separated; Teshin's permanent shop sorted by kind; Archon portrait only when the boss is known. Run no new SQL)
-# FarmFrame v0.47 (stale world-state detection with a fresh retry, so void fissures show up; arbitration placeholder hidden; original polarity icons from your own PNGs in src/assets/polarity, see POLARITY_ICONS.md; Relics page lists relics by default; Finder shows relic cards with the searched item highlighted; Baro and Varzia stock split into mods, weapons, warframes, cosmetics, resources and more; invented vendor claims removed. Run no new SQL)
-# FarmFrame v0.46 (Baro shown as here/coming from his timestamps with full stock and prices; moon on night cycles; duplicate mods removed and mod cards drawn like the in-game card; Farm Plan includes tracked items and build requirements not obtained; part and blueprint pages at /item/<name> with sources, difficulty, part price and set price; search finds parts; patch notes as a buff/nerf summary that flags what touches your builds; source registry with live health table; character portraits from bundled files or the Warframe wiki, list in NPC_IMAGES.md. Run no new SQL)
-# FarmFrame v0.45 (Patch notes page with search, from WFCD patchlogs; latest update on Home; patchlogs registered as a source)
-# FarmFrame v0.44 (Safe Browsing hardening: email sign-in link without password by default, no hidden form field, unofficial-tool notice; see SAFE_BROWSING.md. In Supabase set Site URL and Redirect URLs. Run no new SQL)
-# FarmFrame v0.43 (Rotations adds Darvo daily deal, Arbitration, Kuva, Simaris and Sentient Anomaly)
-# FarmFrame v0.42 (Farm Plan relic sources fixed, Prime parts shown as tradable, store prices separated, day and night sky on cycles, vendor portraits, Rotations page)
-# FarmFrame v0.41 (exact relic planning: goal > missing part > exact relic > how to get it > active fissures > refinement; Farm Plan page; Farm Now by exact relics with goal progress; Roadmap next actions and build requirements; build requirements to Roadmap; search intents; Baro Ki'Teer on Home; calculated open-world cycles instead of orange STALE; run no new SQL)
-<!-- v0.40 --> (optional skippable onboarding, data problem reports; run supabase/schema.sql again for the data_reports table)
-<!-- v0.39 --> (trading status per item and part, no prices for untradable things, damage-type icons and blank values handled in game text)
-<!-- v0.38 --> (previous line follows)
-<!-- v0.37 --> (favorites with account sync, green test suite)
-<!-- v0.36 --> (official platinum and credits icons bundled, set-marker mods hidden, relic value by refinement, direct comic links)
-<!-- v0.35 --> (currency icons, per-reward relic value table, junk mods hidden, in-site lore)
-<!-- v0.34 --> (AI build analysis through a server function, search covers the catalogs)
-<!-- v0.33 --> (performance: shared timer, memoized catalogs, deferred search, Supabase off the first load; grouped navigation with hubs)
-<!-- v0.32 --> (fresher catalog from warframe-items on GitHub, mod cards, detailed item info, Lore page, companion/railjack filters)
-<!-- v0.31 --> (relics by item, mod market prices, companions/archwings/railjack catalogs)
-<!-- v0.30 --> (full Prime set price on item pages and builds, with comparison against buying the parts)
-<!-- v0.29 --> (relic expected platinum value from live market medians; market check only for tradable parts)
-<!-- v0.28 --> (market price through a Supabase Edge Function; deploy supabase/functions/market)
-<!-- v0.27 --> (build types: weapons, companions, archwing; strict mod compatibility; omni forma counted apart; market button off)
-<!-- v0.26 --> (ducats per component, on-demand market price check labeled as dynamic market value)
-<!-- v0.25 --> (build statistics from mod percentages with Explain; conditional effects reported, not guessed)
-<!-- v0.24 --> (IndexedDB cache for large datasets with stale fallback, route code splitting)
-<!-- v0.23 --> (accounts and cloud sync via Supabase; run supabase/schema.sql once; RLS protects per-user data)
-<!-- v0.22 --> (Planner: sortie, archon hunt, steel path, nightwave, void trader with relevance to your goals; value label)
-<!-- v0.21 --> (real relic artwork from warframe-items imageName, tier emblem only as fallback)
-<!-- v0.20 --> (original relic tier emblems, tier filter bar in Fissures, faction markers in Invasions)
-<!-- v0.19 --> (item page composition: art right with fade, large stats, depth levels)
-<!-- v0.18 --> (logo + favicon, SVG nav icons, angular panels, lighter world-state strip)
-<!-- v0.17 --> (skeleton loading states, Retry on failed data, honest loading vs error in Finder)
-<!-- v0.16 --> (arcane slots in builds, counted in requirements and Tracking)
-<!-- v0.15.1 --> (vault data now read from the warframe-items file, api /relics returned 404) (relic vault status from a separate community dataset; unknown when missing)
-<!-- v0.14.1 --> (version label on Home and Sources to tell which build is live)
-<!-- v0.14 --> (Vite + React + TypeScript)
-Static build, hash routes (`/#/roadmap`), no backend yet. Works on any static host; a custom domain can be used later.
+# FarmFrame
 
-Local: `npm install && npm run dev` (tests: `npm test`, types: `npm run typecheck`, build: `npm run build` -> `dist/`).
-Test host: the included GitHub Actions workflow builds and publishes `dist/` (Settings > Pages > Source: GitHub Actions). Type-check and tests report but do not block publishing while iterating.
-Errors: a crash shows the error text on the page instead of a blank screen. Previous single-file version is in `legacy/`. v0.14: builds count Forma from slot polarity overrides and send it to Tracking. v0.13: build requirements (owned/missing mods, endo estimate) sent to Tracking so Home and Farm pick them up. v0.12: Home restructured; "What should I farm right now?" from goals + live fissures/invasions. v0.11: Builds MVP (`/#/builds`): mod slots, capacity and validation. v0.10: ranked farming page (`/#/farm/<item>`) with stacking against your goals. v0.9: nested requirements tree, summed resources and a Master checklist on the Roadmap.
+Unofficial, fan-made Warframe companion: what you are missing, what to farm next, where, and why. Not affiliated with Digital Extremes.
+
+Live site: https://nawelm187.github.io/FarmFrame/
+
+## Run it
+
+```
+npm ci
+npm run dev        # local site
+npm run typecheck  # types
+npm test           # tests
+npm run build      # production build into dist/
+```
+
+Stack: Vite, React 18, TypeScript, hash routes (`/#/roadmap`), Supabase for optional sign-in. Progress is saved in the browser (localStorage) unless you sign in.
+
+## Where things are
+
+| Folder | What lives there |
+|---|---|
+| `src/pages/` | One file per page |
+| `src/data/` | Hand-typed, dated data (Helminth, guides, vendors, syndicates, mastery) with tests |
+| `src/lib/` | Logic without screens: search, sources, mastery, syndicates, alerts |
+| `src/assets/` | Your own pictures. Each folder has a `LEEME.txt` with the naming rule |
+| `docs/` | Notes: deploy, images, security, best practices |
+| `public/` | `robots.txt`, `sitemap.xml` |
+| `legacy/` | The old single-file version, kept only for reference |
+
+## Rules the project follows
+
+- Nothing is invented. If a number is not known, the page says so. Hand-typed data carries its source URL and date, and tests check it.
+- No secrets in the repo. Only the public Supabase anon key lives in `src/lib/config.ts`.
+- Reuse before creating: shared pieces are in `src/ui.tsx` (page header, section tabs, meters).
+- Changes are listed in [CHANGELOG.md](CHANGELOG.md). The checklist we follow is in [docs/BUENAS_PRACTICAS.md](docs/BUENAS_PRACTICAS.md).
+
+## Publishing
+
+GitHub Actions builds `dist/` and publishes it (Settings > Pages > Source: GitHub Actions). `ci.yml` blocks on types, tests and build; `deploy.yml` still lets types and tests report without blocking.
