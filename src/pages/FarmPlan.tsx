@@ -12,6 +12,8 @@ import { readTracked } from "../lib/track";
 import { useExact } from "../lib/useExact";
 import { Badge, Countdown, Skeleton } from "./parts";
 import { Ring, StatTile, Stepper } from "../ui";
+import VendorList from "../VendorList";
+import { vendorSources } from "../lib/vendorSources";
 const ALL = FIND.map(f => ({ id: f.id, file: f.file }));
 const SRC = FIND.filter(f => RELIC_SOURCE_IDS.includes(f.id)).map(f => ({ id: f.id, file: f.file }));
 function Sources({ relic }: { relic: string }) {
@@ -23,10 +25,10 @@ function Sources({ relic }: { relic: string }) {
 }
 /** The best verified sources for an item name, from the drop tables. Says so when there are none. */
 function Where({ rows, ok, name, extra = [] }: { rows: Row[]; ok: boolean; name: string; extra?: string[] }) {
-  const q = name.trim().toLowerCase(), m = ok ? query(rows, q).filter(r => r.item.toLowerCase() === q || r.item.toLowerCase().startsWith(q + " ")).slice(0, 3) : [];
-  return (<div className="where">{m.length
+  const q = name.trim().toLowerCase(), m = ok ? query(rows, q).filter(r => r.item.toLowerCase() === q || r.item.toLowerCase().startsWith(q + " ")).slice(0, 3) : [], sold = vendorSources(name);
+  return (<div className="where">{sold.length > 0 && <VendorList hits={sold} />}{m.length
     ? <ul className="srcs">{m.map((r, i) => <li key={i}><b>{r.where}</b><span className="fchips">{r.rot ? <span className="fchip">Rotation {r.rot}</span> : null}{r.ch != null ? <span className="fchip gold">{r.ch}%</span> : null}<span className="fchip">{r.src}</span></span></li>)}</ul>
-    : extra.length ? <p className="muted">From the item data: {extra.join("; ")}</p> : <p className="muted">{ok ? "No drop in the loaded tables. It may come from a vendor, crafting or trading." : "Drop tables are still loading."}</p>}
+    : extra.length ? <p className="muted">From the item data: {extra.join("; ")}</p> : sold.length ? null : <p className="muted">{ok ? "No mission drop and no vendor in our data. It may be crafted or traded: open the item page to check the wiki." : "Drop tables are still loading."}</p>}
     <Link className="btn" to={`/farm/${encodeURIComponent(name)}`}>See all sources</Link></div>);
 }
 function Extras() {

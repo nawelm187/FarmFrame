@@ -17,7 +17,7 @@ export default function Helminth() {
   return (<><PageHead title="Helminth" art={<ItemArt file={null} name="Helminth" size={64} fallback={<span aria-hidden="true">✦</span>} />}>The Helminth lives in your Orbiter and does the "biological functions" of your Warframes. Feed it resources and it makes Secretions; spend Secretions to take an ability from one Warframe and put it on another (Subsume and Infuse), to Invigorate a Warframe for a week, or to imbue Archon Shards. Everything below follows the Warframe Wiki.</PageHead>
     <SectionTabs items={TABS} />
     <section id="unlock" className="gcard sec"><h2>How to unlock it</h2><div className="cols">
-      <div className="minicard"><h4>1. Get the segment</h4><p>{UNLOCK.segment}</p></div><div className="minicard"><h4>2. Build it</h4><p>{UNLOCK.build}</p></div><div className="minicard"><h4>3. Install it</h4><p>{UNLOCK.after}</p></div></div>
+      <article className="minicard"><h4>1. Get the segment</h4><p>{UNLOCK.segment}</p></article><article className="minicard"><h4>2. Build it</h4><p>{UNLOCK.build}</p></article><article className="minicard"><h4>3. Install it</h4><p>{UNLOCK.after}</p></article></div>
       <p className="note">{UNLOCK.cyst}</p></section>
     <section id="feeding" className="gcard sec"><h2>Feeding it: Secretions</h2>
       <p>Almost any resource can be fed. Each resource turns into one of six Secretions. The amount you get depends on whether the Helminth likes the resource right now.</p>
@@ -31,8 +31,8 @@ export default function Helminth() {
         <div className="scrollbox"><ul className="rows">{FEED[s].map(f => <li key={f[1]}><Pic name={f[1]} size={24} /><Link className="grow" to={`/farm/${encodeURIComponent(f[1])}`}>{f[1]}</Link>{f[2] && <span className="tag FRESH">double</span>}<span className="muted">{fmt(f[0])}</span></li>)}</ul></div></div>)}</div>
       <p className="muted">The number is the amount consumed as the wiki lists it. Sentient Appetite resources (unlocked at Metamorphosis rank 8) restore the Helminth's interest in a disliked resource.</p></section>
     <section id="subsume" className="gcard sec"><h2>Subsume an ability, then use it better</h2>
-      <div className="cols"><div className="minicard"><h3>Subsume (take an ability)</h3><ul>{SUBSUME.map(s => <li key={s}>{s}</li>)}</ul></div>
-        <div className="minicard"><h3>Infuse (put it on a Warframe)</h3><ul>{INFUSE.map(s => <li key={s}>{s}</li>)}</ul></div></div>
+      <div className="cols"><article className="minicard"><h3>Subsume (take an ability)</h3><ul>{SUBSUME.map(s => <li key={s}>{s}</li>)}</ul></article>
+        <article className="minicard"><h3>Infuse (put it on a Warframe)</h3><ul>{INFUSE.map(s => <li key={s}>{s}</li>)}</ul></article></div>
       <h3>Damage buff restrictions</h3><p>{LIMITS.text}</p><div className="cgrid wide">{LIMITS.pairs.map(([w, a]) => <div key={w} className="rel"><Pic name={w} size={30} /><span className="tn"><b>{w}</b><small>replaces only {a}</small></span></div>)}</div><p className="muted">{LIMITS.note}</p>
       <h3>Tips from the wiki</h3><ul>{TIPS.map(s => <li key={s}>{s}</li>)}</ul></section>
     <section id="meta" className="gcard sec"><h2>Metamorphosis (the Helminth's rank)</h2>
@@ -50,13 +50,13 @@ export default function Helminth() {
         {!rows.length && <p className="muted">No Warframe matches.</p>}</div>
       <p className="muted">"Avoid secretion" hides abilities that need that secretion to subsume. Costs of 82.5 / 55 / 65 (subsume) and 19 / 19 / 60 (infuse) look like the wiki's default values for newer Warframes. A "?" means the wiki shows no value. This table was read from screenshots of the wiki, so check the wiki before relying on one number.</p></section>
     <section id="own" className="gcard sec"><h2>The Helminth's own abilities</h2><p>{OWN_NOTE}</p>
-      <div className="cgrid wide">{OWN_ABILITIES.map(([n, e, d]) => <div key={n} className="minicard"><h4>{n}</h4><p className="muted" style={{ margin: 0 }}>{d}</p><span className="tag" style={{ marginTop: ".4rem", display: "inline-block" }}>{e} energy</span></div>)}</div></section>
+      <div className="cgrid wide">{OWN_ABILITIES.map(([n, e, d]) => <article key={n} className="minicard"><h4>{n}</h4><p className="muted" style={{ margin: 0 }}>{d}</p><span className="tag" style={{ marginTop: ".4rem", display: "inline-block" }}>{e} energy</span></article>)}</div></section>
     <section id="invig" className="gcard sec"><h2>Invigoration</h2><p>{INVIGORATION.unlock}</p><ul>{INVIGORATION.how.map(s => <li key={s}>{s}</li>)}</ul>
-      <div className="cols"><div className="minicard"><h3>Offense</h3><ul>{INVIGORATION.offense.map(s => <li key={s}>{s}</li>)}</ul></div><div className="minicard"><h3>Utility</h3><ul>{INVIGORATION.utility.map(s => <li key={s}>{s}</li>)}</ul></div></div>
+      <div className="cols"><article className="minicard"><h3>Offense</h3><ul>{INVIGORATION.offense.map(s => <li key={s}>{s}</li>)}</ul></article><article className="minicard"><h3>Utility</h3><ul>{INVIGORATION.utility.map(s => <li key={s}>{s}</li>)}</ul></article></div>
       <p className="muted">{INVIGORATION.note}</p></section>
     <section id="shards" className="gcard sec"><h2>Archon Shards</h2><p>{SHARDS.unlock}</p>
-      <div className="cols"><div className="minicard"><h3>Removing a shard</h3><ul>{SHARDS.unsocket.map(([s, x]) => <li key={s}>{s} Archon Shard returns {x}</li>)}</ul><p className="muted">{SHARDS.unsocketNote}</p></div>
-        <div className="minicard"><h3>Fusion</h3><ul>{SHARDS.fusion.map(s => <li key={s}>{s}</li>)}</ul></div></div>
+      <div className="cols"><article className="minicard"><h3>Removing a shard</h3><ul>{SHARDS.unsocket.map(([s, x]) => <li key={s}>{s} Archon Shard returns {x}</li>)}</ul><p className="muted">{SHARDS.unsocketNote}</p></article>
+        <article className="minicard"><h3>Fusion</h3><ul>{SHARDS.fusion.map(s => <li key={s}>{s}</li>)}</ul></article></div>
       <h3>What each color gives</h3><div className="sgrid">{Object.entries(SHARDS.buffs).map(([c, b]) => <div key={c} className="seccard"><h3>{c}</h3><ul>{b.map(x => <li key={x}>{x}</li>)}</ul></div>)}</div>
       <p className="muted">{SHARDS.buffNote}</p></section>
     <p className="srclist">Source: <a href={HELMINTH_SOURCE.url} target="_blank" rel="noreferrer">{HELMINTH_SOURCE.label}</a>, typed in by hand from screenshots of the page on {HELMINTH_SOURCE.verified}. Game updates can change numbers. See also the <Link to="/mastery">Mastery checklist</Link>.</p></>);

@@ -1,6 +1,6 @@
 import RarityMark from "../RarityMark";
 import PageArt from "../PageArt";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
 import ItemArt, { useImages } from "../ItemArt";
@@ -10,6 +10,7 @@ import { parseRelics, relicsByItem, type Relic } from "../lib/drops";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
 import { VAULT_ALT, VAULT_SRC, VAULT_URL, parseVault } from "../lib/vault";
 import { ts } from "../lib/format";
+import { relicIssues } from "../lib/exact";
 import { Plat } from "../Money";
 import { Prov, Unavailable } from "./parts";
 const TIERS = ["Lith", "Meso", "Neo", "Axi", "Requiem"], PAGE = 24;
@@ -17,11 +18,13 @@ const TIERS = ["Lith", "Meso", "Neo", "Axi", "Requiem"], PAGE = 24;
 function Browse({ relics, sp, setSp }: { relics: Relic[]; sp: URLSearchParams; setSp: (n: URLSearchParams, o?: { replace?: boolean }) => void }) {
   const [vr] = useMany([{ id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), vault = parseVault(vr.rec?.data);
   const [more, setMore] = useState(1), tier = sp.get("tier") ?? "", show = sp.get("vault") ?? "available";
+  const issues = useMemo(() => relicIssues(relics, 3), [relics]);
   const set = (k: string, v: string) => { const n = new URLSearchParams(sp); if (v) n.set(k, v); else n.delete(k); setSp(n, { replace: true }); setMore(1); };
   const list = relics.filter(r => (!tier || r.tier === tier) && (show === "all" || (show === "vaulted" ? vault?.get(r.name) === true : vault?.get(r.name) !== true)))
     .sort((a, b) => TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier) || a.name.localeCompare(b.name, undefined, { numeric: true }));
   return (<>
     <div className="tierbar" role="group" aria-label="Filter by era">{TIERS.map(t => { const n = relics.filter(r => r.tier === t).length; return n ? <button key={t} className="tierbtn" aria-pressed={tier === t} onClick={() => set("tier", tier === t ? "" : t)}><RelicArt tier={t} size={34} /><span>{t}</span><b>{n}</b></button> : null; })}</div>
+    {issues.length > 0 && <p className="STALE" role="status">Some relic odds look wrong in the downloaded table, so double-check before relying on them: {issues.join("; ")}.</p>}
     <div className="bar"><select aria-label="Vault status" value={show} onChange={e => set("vault", e.target.value === "available" ? "" : e.target.value)}><option value="available">Available (not vaulted)</option><option value="vaulted">Vaulted only</option><option value="all">All relics</option></select>
       <span className="muted">{list.length} relics{!vault ? " · vault status is still loading, so vaulted relics may be included" : ""}</span></div>
     {!list.length ? <p className="muted">No relics match these filters.</p> : <div className="relgrid">{list.slice(0, PAGE * more).map(r => <RelicCard key={r.name} r={r} />)}</div>}

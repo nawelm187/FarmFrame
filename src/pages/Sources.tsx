@@ -21,7 +21,7 @@ export default function Sources() {
       <h2>Source registry</h2>
       <div className="bar"><button className="btn" onClick={check}>Check all now</button></div>
       <div className="wrap"><table><thead><tr><th>Source</th><th>Trust</th><th>Status</th><th>Health now</th><th>Provides</th></tr></thead><tbody>
-        {SOURCES.map(s => <tr key={s.id}><td><b>{s.name}</b><div className="muted">{s.fallback ? `Fallback: ${s.fallback}` : "No fallback yet"}</div></td>
+        {SOURCES.map(s => <tr key={s.id}><td><b>{s.name}</b><div className="muted">{s.fallback ? `Fallback: ${s.fallback}` : "No fallback yet"}{s.checked ? ` · opened by hand ${s.checked}` : ""}</div></td>
           <td title={CONFIDENCE[s.confidence]}>{s.confidence} <span className="muted">{CONFIDENCE[s.confidence]}</span></td>
           <td>{s.use === "active" ? "In use" : "Planned"}</td><td>{s.id.startsWith("manual") ? <span className="tag STALE">MANUAL</span> : s.use === "active" ? <><H h={PROBE_IDS.includes(s.id) ? probeHealth(probes.get(s.id)) : health(s.hosts, s.recIds)} />{probes.get(s.id) && <div className="muted">{probes.get(s.id)!.note}{probes.get(s.id)!.ms ? ` · ${probes.get(s.id)!.ms} ms` : ""}{probes.get(s.id)!.http != null ? ` · HTTP ${probes.get(s.id)!.http}` : ""}</div>}</> : "—"}</td>
           <td>{s.provides}<div className="muted">{s.note}</div></td></tr>)}</tbody></table></div>

@@ -427,3 +427,9 @@ main{min-width:0}@media(max-width:700px){.app{grid-template-columns:minmax(0,1fr
 .skip:focus{top:.5rem}
 main:focus{outline:none}
 .err-details{margin-top:1rem}.err-details summary{cursor:pointer}
+
+/* v0.64 syndicate rank cards */
+.rankcard{display:grid;gap:.45rem;align-content:start}.rankcard h4{display:flex;gap:.45rem;align-items:center}
+.rankcard.here{border-color:var(--acc);box-shadow:var(--glow)}.rankcard.goal{border-color:var(--gold)}
+.rknum{display:inline-grid;place-items:center;min-width:1.7rem;height:1.7rem;border-radius:.5rem;background:var(--b3);font-size:.85rem}
+.chipline{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.2rem}

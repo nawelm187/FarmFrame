@@ -15,7 +15,7 @@ export default function KDrives() {
     <section className="gcard sec"><h2>How to get one</h2><ol className="steps">{KDRIVE_HOW.map(s => <li key={s} className="step"><span>{s}</span></li>)}</ol>{KDRIVE_NOTES.map(s => <p key={s} className="note">{s}</p>)}
       <p><Link to="/guides">Launcher guides</Link> · <Link to="/syndicates">Syndicates</Link> · <Link to="/mastery">Mastery checklist</Link></p></section>
     <div className="chips" role="group" aria-label="Part" style={{ marginBottom: ".8rem" }}>{PARTS.map(p => <button key={p} className={"btn" + (part === p ? " on" : "")} aria-pressed={part === p} onClick={() => setPart(p)}>{p}s</button>)}</div>
-    <section className="gcard sec" aria-label={part}><div className="sechead"><h2>{part}s</h2>{part === "Board" && <span className="muted">{n}/{rows.length} maxed · 6,000 Mastery Points each</span>}</div>
+    <section className="gcard sec" aria-label={part}><header className="sechead"><h2>{part}s</h2>{part === "Board" && <span className="muted">{n}/{rows.length} maxed · 6,000 Mastery Points each</span>}</header>
       <div className="cgrid wide">{rows.map(p => { const on = chk.has(itemKey("k-drive", p.name));
         return (<article key={p.name} className={"minicard" + (on ? " tile on" : "")} style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: ".4rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: ".6rem" }}><ItemArt file={null} name={p.name} size={44} fallback={<span aria-hidden="true">◈</span>} /><b style={{ flex: 1 }}>{p.name}</b></div>

@@ -8,6 +8,8 @@ import { useCatalogs } from "../lib/useCatalog";
 import type { Cat, Entity } from "../lib/catalog";
 import SetFarm from "./SetFarm";
 import { Unavailable } from "./parts";
+import VendorList from "../VendorList";
+import { vendorSources } from "../lib/vendorSources";
 const BUILT: Cat[] = ["warframe", "weapon", "companion", "archwing"];
 const items = FIND.map(f => ({ id: f.id, file: f.file }));
 export default function Farm() {
@@ -16,13 +18,14 @@ export default function Farm() {
   const built = BUILT.flatMap(c => (cats[c]?.items ?? []).filter(x => x.components.length > 0 && x.name.toLowerCase() === item.trim().toLowerCase()).map(x => ({ c, x: x as Entity })))[0];
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
   if (built) return <><h1><Pic name={item} size={44} /> Farming: {item}</h1><SetFarm e={built.x} cat={built.c} /></>;
-  if (!ok) return <><h1>{item}</h1><Unavailable title="Drop tables" status={res[0].status} why="No verified drop data loaded yet. See Data Sources." /></>;
-  const list = rank(query(rows, item), stackIndex(rows, needed), item);
+  if (!ok) return <><h1>{item}</h1><VendorList hits={vendorSources(item)} max={20} /><Unavailable title="Drop tables" status={res[0].status} why="No verified drop data loaded yet. See Data Sources." /></>;
+  const list = rank(query(rows, item), stackIndex(rows, needed), item), sold = vendorSources(item);
   return (<><h1><Pic name={item} size={44} /> Farming: {item}</h1>
     <p className="lead">Where it drops, ordered by drop chance, with your other goals taken into account. Not a universal "best farm".</p>
     <p className="muted"><b>Verified fact:</b> chance and source, from the official drop tables. <b>Calculated estimate:</b> rolls per drop (100 ÷ chance). Run speed, enemy density and modifiers are not in this data, so they are not part of the ranking.</p>
     {gaps.length > 0 && <p className="muted">Not included: {gaps.join("; ")}</p>}
-    {!list.length ? <p className="muted">No drop for "{item}" in the loaded tables. <Link to={`/finder?q=${encodeURIComponent(item)}`}>Search the Finder</Link></p> :
+    {sold.length > 0 && <section className="gcard sec"><h2>Where to buy it</h2><VendorList hits={sold} max={20} /><p className="muted">Vendor prices are typed in by hand from the Warframe Wiki. Check the wiki link before spending.</p></section>}
+    {!list.length ? <p className="muted">No mission drop for "{item}" in the loaded tables.{sold.length ? "" : " It may be crafted, traded or sold by a vendor we have no data for."} <Link to={`/finder?q=${encodeURIComponent(item)}`}>Search the Finder</Link></p> :
       <div className="wrap"><table><thead><tr><th>Where</th><th>Type</th><th>Rot.</th><th>Chance</th><th>≈ Rolls per drop</th><th>Also advances</th></tr></thead><tbody>
         {list.map((o, i) => (<tr key={i}><td>{o.row.item !== item && <span className="muted"><Pic name={o.row.item} size={22} /> {o.row.item} · </span>}{o.row.where}
           {o.tags.map(t => <div key={t}><span className="tag STALE">{t}</span></div>)}
