@@ -7,7 +7,8 @@ export interface Relic { name: string; tier: string; st: Record<string, Reward[]
 const isO = (x: unknown): x is O => !!x && typeof x === "object" && !Array.isArray(x);
 const str = (x: unknown) => (typeof x === "string" ? x : "");
 export const num = (v: unknown) => { const n = parseFloat(String(v)); return Number.isFinite(n) ? n : null; };
-export const eff = (a: number | null, b: number | null) => (a != null && b != null ? Math.round(a * b) / 100 : b);
+/** Overall chance = (chance the enemy drops loot) x (chance within its table). If either is unknown the result is unknown (null): the table chance alone is not the real chance. */
+export const eff = (a: number | null, b: number | null) => (a != null && b != null ? Math.round(a * b) / 100 : null);
 const unwrap = (d: unknown, k: string) => (isO(d) && k in d ? d[k] : d);
 const row = (p: Partial<R>): R => ({ item: "", where: "", mode: "", rot: "", ch: null, rar: "", note: "", ...p });
 const rot = (o: unknown, f: (k: string, x: O) => R) => { const r: R[] = []; if (isO(o)) for (const [k, v] of Object.entries(o)) if (Array.isArray(v)) for (const x of v) if (isO(x)) r.push(f(k, x)); return r; };
@@ -82,4 +83,18 @@ export function relicsByItem(relics: Relic[], l: string) {
   for (const r of relics) for (const x of r.st.Intact ?? []) if (x.itemName.toLowerCase().includes(l)) { const a = m.get(x.itemName) ?? []; a.push({ relic: r, rarity: x.rarity, chance: x.chance }); m.set(x.itemName, a); }
   const RO: Record<string, number> = { Common: 0, Uncommon: 1, Rare: 2 };
   return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(0, 12).map(([item, list]) => [item, [...list].sort((a, b) => (RO[a.rarity] ?? 3) - (RO[b.rarity] ?? 3) || a.relic.name.localeCompare(b.relic.name))] as const);
+}
+const RSTATES = ["Intact", "Exceptional", "Flawless", "Radiant"] as const;
+/** Integrity check for relic tables: every refinement of a relic must list 6 rewards whose chances add up to 100 (±1 for rounding). An empty list means the table is consistent. Use it to refuse or flag a damaged download instead of showing wrong odds. */
+export function relicIssues(relics: Relic[], max = 10): string[] {
+  const out: string[] = [];
+  for (const r of relics) for (const s of RSTATES) {
+    const rw = r.st[s]; if (!rw?.length) continue;
+    const sum = rw.reduce((a, x) => a + (Number.isFinite(x.chance) && x.chance >= 0 ? x.chance : NaN), 0);
+    if (!Number.isFinite(sum)) out.push(`${r.name} ${s}: a chance is missing or negative`);
+    else if (Math.abs(sum - 100) > 1) out.push(`${r.name} ${s}: chances add up to ${+sum.toFixed(2)}, not 100`);
+    else if (rw.length !== 6) out.push(`${r.name} ${s}: ${rw.length} rewards instead of 6`);
+    if (out.length >= max) return out;
+  }
+  return out;
 }

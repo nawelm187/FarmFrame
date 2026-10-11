@@ -20,3 +20,20 @@ import { search as s2 } from "./search";
 it("pages include resources, enemies and parts", () => {
   expect(s2("enemies", null).some(h => h.to === "/enemies")).toBe(true); expect(s2("parts", null).some(h => h.to === "/parts")).toBe(true);
 });
+it("finds buying questions, syndicates and the new guides", () => {
+  expect(search("where do i buy archon continuity", null)[0].to).toBe("/farm/archon%20continuity");
+  expect(search("who sells seeking shuriken", null)[0].to).toBe("/farm/seeking%20shuriken");
+  expect(search("new loka", null).some(h => h.to === "/syndicates?s=New%20Loka")).toBe(true);
+  expect(search("kuva siphon", null).some(h => h.to === "/guides?s=kuva")).toBe(true);
+  expect(search("arbitrations", null).some(h => h.to === "/guides?s=arbitrations")).toBe(true);
+});
+it("routes the remaining intents: farm now, who sells, prerequisites, latest update", () => {
+  const ents = [{ name: "Rhino Prime", cat: "warframe", slug: "rhino-prime", label: "Warframe", kind: "warframe" }];
+  expect(search("what can i farm right now?", null)[0].to).toBe("/farm");
+  expect(search("what should i farm today", null)[0].to).toBe("/farm");
+  expect(search("which syndicate sells seeking shuriken", null)[0].to).toBe("/farm/seeking%20shuriken");
+  expect(search("what is the prerequisite for rhino prime", null, ents)[0].to).toBe("/warframe/rhino-prime");
+  expect(search("how do i unlock mystery thing", null, ents)[0].to).toBe("/farm/mystery%20thing");
+  expect(search("what changed in the latest update?", null)[0].to).toBe("/patches");
+  expect(search("what's new", null)[0].to).toBe("/patches");
+});

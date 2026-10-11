@@ -3,7 +3,20 @@ import type { Build } from "./build";
 /** Requirements that come from builds (mods, arcanes, Forma) and live in the Roadmap next to goal parts. */
 export interface Req { id: string; build: string; buildName: string; kind: "mod" | "arcane" | "forma" | "omni"; name: string; slug?: string; need: number; have: number; src: string[] }
 const K = "ff.reqs";
-export const readReqs = (): Req[] => { try { const v: unknown = JSON.parse(localStorage.getItem(K) || "[]"); return Array.isArray(v) ? (v as Req[]) : []; } catch { return []; } };
+const KINDS: Req["kind"][] = ["mod", "arcane", "forma", "omni"];
+const cnt = (x: unknown) => (typeof x === "number" && Number.isFinite(x) && x >= 0 ? Math.floor(x) : null);
+/** Keeps only well-formed requirements. Storage and cloud rows are untrusted input: a damaged entry is dropped instead of crashing the Roadmap. */
+export function cleanReqs(v: unknown): Req[] {
+  if (!Array.isArray(v)) return [];
+  const out: Req[] = [];
+  for (const x of v) {
+    if (!x || typeof x !== "object") continue; const r = x as Record<string, unknown>, need = cnt(r.need), have = cnt(r.have);
+    if (typeof r.id !== "string" || typeof r.build !== "string" || typeof r.name !== "string" || !KINDS.includes(r.kind as Req["kind"]) || need == null || have == null) continue;
+    out.push({ id: r.id, build: r.build, buildName: typeof r.buildName === "string" ? r.buildName : "", kind: r.kind as Req["kind"], name: r.name, slug: typeof r.slug === "string" ? r.slug : undefined, need, have, src: Array.isArray(r.src) ? r.src.filter((y): y is string => typeof y === "string") : [] });
+  }
+  return out;
+}
+export const readReqs = (): Req[] => { try { return cleanReqs(JSON.parse(localStorage.getItem(K) || "[]")); } catch { return []; } };
 export const writeReqs = (a: Req[]) => { try { localStorage.setItem(K, JSON.stringify(a)); } catch { /* storage unavailable */ } };
 /** Acquisition methods listed by the item data itself (best chance first). Empty when the source lists none; nothing is invented. */
 export function acquisition(e: Entity | undefined, max = 3): string[] {

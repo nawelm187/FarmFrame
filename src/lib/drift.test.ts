@@ -18,3 +18,9 @@ it("checks catalog entries and their parts", () => {
   expect(detectDrift("f:Warframes.json", [{ name: "Rhino", uniqueName: "/x", components: [{ itemCount: 1 }] }])[0]).toContain("part entries");
   expect(detectDrift("f:Primary.json", [{ title: "x" }]).length).toBe(2);
 });
+it("flags relic tables whose odds do not add up, and accepts a sound one", () => {
+  const rw = (c: number[]) => c.map((chance, i) => ({ itemName: `X${i}`, rarity: "Common", chance }));
+  const good = { tier: "Lith", relicName: "A1", state: "Intact", rewards: rw([25.33, 25.33, 25.33, 11, 11, 2]) };
+  expect(detectDrift("relics", { relics: [good] })).toEqual([]);
+  expect(detectDrift("relics", { relics: [good, { ...good, relicName: "B2", rewards: rw([25, 25, 25, 11, 11]) }] })).toEqual(["1 relic refinements have odds that do not add up to 100 (for example Lith B2 Intact: chances add up to 97, not 100)"]);
+});

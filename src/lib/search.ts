@@ -1,6 +1,7 @@
 import type { Relic } from "./drops";
+import { ALL_SYNDICATES } from "../data/syndicateInfo";
 export interface Hit { label: string; cat: string; to: string; s: number }
-export const PAGES: [string, string][] = [["/mastery", "Mastery Rank checklist"], ["/syndicates", "Syndicates"], ["/kdrives", "K-Drives"], ["/helminth", "Helminth: feeding, subsume and infuse abilities"], ["/guides", "Starter guides: Archwing, K-Drive and Necramech launchers"], ["/profile", "Account"], ["/roadmap", "Roadmap"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/farm-plan", "Farm Plan"], ["/builds", "Builds"], ["/resources", "Resources and items"], ["/enemies", "Enemies"], ["/parts", "Parts"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/lore", "Lore"], ["/patches", "Patch notes"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/relics", "Relics"], ["/finder", "Resource Finder"], ["/tracking", "Tracking"], ["/sources", "Data Sources"]];
+export const PAGES: [string, string][] = [["/mastery", "Mastery Rank checklist"], ["/syndicates", "Syndicates"], ["/kdrives", "K-Drives"], ["/helminth", "Helminth: feeding, subsume and infuse abilities"], ["/guides", "Starter guides: Archwing, K-Drive and Necramech launchers"], ["/guides?s=arbitrations", "Arbitrations guide: rotations, rewards, Vitus Essence"], ["/guides?s=kuva", "Kuva Siphons guide"], ...ALL_SYNDICATES.map((n): [string, string] => [`/syndicates?s=${encodeURIComponent(n)}`, `Syndicate: ${n}`]), ["/profile", "Account"], ["/roadmap", "Roadmap"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/farm-plan", "Farm Plan"], ["/builds", "Builds"], ["/resources", "Resources and items"], ["/enemies", "Enemies"], ["/parts", "Parts"], ["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/lore", "Lore"], ["/patches", "Patch notes"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/relics", "Relics"], ["/finder", "Resource Finder"], ["/tracking", "Tracking"], ["/sources", "Data Sources"]];
 export function lev(a: string, b: string) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
   for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
@@ -8,10 +9,13 @@ export function lev(a: string, b: string) {
 }
 const q2 = (p: string, q: string) => `${p}?q=${encodeURIComponent(q)}`;
 export interface Ent { name: string; cat: string; slug: string; label: string; kind?: string; parts?: string[] }
-const FARM = /^(?:where(?: do i| can i| to)? (?:farm|get|find)|how(?: do i| can i| to)? (?:farm|get|obtain|find)|farm)\s+(.+?)\s*\??$/;
+const FARM = /^(?:where(?: do i| can i| to)? (?:farm|get|find|buy|purchase)|how(?: do i| can i| to)? (?:farm|get|obtain|find|buy)|who sells|what sells|which (?:syndicate|vendor|npc)s? (?:sells?|has|offers?)|farm|buy)\s+(.+?)\s*\??$/;
 const RELIC = /^(?:what|which) relics?(?: (?:do|does))? (?:contains?|has|have|drops?|holds?|gives?|includes?)\s+(.+?)\s*\??$|^relics? (?:for|with|containing)\s+(.+?)\s*\??$/;
 const NEED = /^what (?:do|will|would|should) i need (?:for|to (?:build|make|craft|get))\s+(.+?)\s*\??$|^what(?:'s| is) (?:needed|required) (?:for|to (?:build|make|craft))\s+(.+?)\s*\??$|^(?:requirements?|parts?) (?:for|of)\s+(.+?)\s*\??$|^what do i need\s+(.+?)\s*\??$/;
 const BUILD = /^(?:build(?: for)?|(?:create|make|new) (?:a )?build(?: for)?)\s+(.+?)\s*\??$/;
+const NOW = /^(?:what|which)(?: (?:can|should|do))? (?:i |we )?(?:farm|do|play)(?: [a-z ]+?)? (?:right now|now|today)\s*\??$|^(?:what to farm|farm)(?: right)? now\s*\??$/;
+const PREREQ = /^(?:what(?:'s| is) (?:the )?(?:prerequisite|requirement|unlock)s? (?:for|of)|prerequisites? (?:for|of)|what unlocks|how (?:do i|can i|to) unlock)\s+(.+?)\s*\??$/;
+const CHANGED = /^(?:what(?:'s| has| is)? (?:changed|new)(?: in (?:the )?(?:latest|last|newest|current) (?:update|patch|hotfix))?|(?:latest|newest|last) (?:update|patch|hotfix)(?: notes)?|patch notes)\s*\??$/;
 const cap = (m: RegExpMatchArray | null) => m?.slice(1).find(x => !!x);
 /** Best entity for a name typed in an intent: exact, then prefix, then contains; shorter names win ties. */
 const pick = (ents: Ent[] | undefined, x: string, ok: (e: Ent) => boolean = () => true) => {
@@ -25,6 +29,11 @@ export function search(q: string, relics: Relic[] | null, ents?: Ent[]): Hit[] {
   const l = q.trim().toLowerCase(); if (!l) return []; const o: Hit[] = [];
   const f = cap(l.match(FARM)), r = cap(l.match(RELIC)), n = cap(l.match(NEED)), b = cap(l.match(BUILD));
   if (f) { o.push({ label: `Where to farm "${f}"`, cat: "Intent", to: `/farm/${enc(f)}`, s: -2 }); o.push({ label: `Search drop tables for "${f}"`, cat: "Intent", to: q2("/finder", f), s: -1 }); }
+  if (NOW.test(l)) o.push({ label: "What to farm right now", cat: "Intent", to: "/farm", s: -2 });
+  if (CHANGED.test(l)) o.push({ label: "What changed in the latest update", cat: "Intent", to: "/patches", s: -2 });
+  const pre = cap(l.match(PREREQ));
+  if (pre) { const e = pick(ents, pre, x => x.cat !== "mod") ?? pick(ents, pre);
+    o.push(e ? { label: `What you need to unlock ${e.name}`, cat: "Intent", to: `/${e.cat}/${e.slug}`, s: -2 } : { label: `Where to get "${pre}"`, cat: "Intent", to: `/farm/${enc(pre)}`, s: -2 }); }
   if (r) o.push({ label: `Relics that contain "${r}"`, cat: "Intent", to: q2("/relics", r), s: -2 });
   if (n) { const e = pick(ents, n, x => x.cat !== "mod") ?? pick(ents, n);
     o.push(e ? { label: `What you need for ${e.name}`, cat: "Intent", to: `/${e.cat}/${e.slug}`, s: -2 } : { label: `Parts and relics for "${n}"`, cat: "Intent", to: q2("/relics", n), s: -2 }); }

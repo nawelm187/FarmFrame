@@ -65,3 +65,11 @@ it("groups each missing part: doable now, a step away, or blocked", () => {
 });
 import { aTier } from "./text";
 it("uses the right article for a relic tier", () => { expect(aTier("Axi")).toBe("an Axi"); expect(aTier("Lith")).toBe("a Lith"); });
+import { relicIssues } from "./exact";
+it("flags relic tables whose odds do not add up", () => {
+  const ok = (n: string, c: number[]) => c.map((chance, i) => ({ itemName: `${n}${i}`, rarity: "Common", chance }));
+  const good = { name: "Lith A1", tier: "Lith", st: { Intact: ok("a", [25.33, 25.33, 25.33, 11, 11, 2]), Radiant: ok("a", [16.67, 16.67, 16.67, 20, 20, 10]) } };
+  expect(relicIssues([good])).toEqual([]);
+  const bad = { name: "Axi B2", tier: "Axi", st: { Intact: ok("b", [25, 25, 25, 11, 11]), Flawless: ok("b", [20, 20, 20, 17, 17, NaN]) } };
+  expect(relicIssues([good, bad])).toEqual(["Axi B2 Intact: chances add up to 97, not 100", "Axi B2 Flawless: a chance is missing or negative"]);
+});

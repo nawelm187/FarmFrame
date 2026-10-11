@@ -24,3 +24,7 @@ it("groups relics by item, common first", () => {
   const g = relicsByItem([rl("Axi B1", "Rare"), rl("Lith A1", "Common")], "ash prime");
   expect(g[0][0]).toBe("Ash Prime Chassis"); expect(g[0][1].map(x => x.relic.name)).toEqual(["Lith A1", "Axi B1"]);
 });
+import { eff } from "./drops";
+it("overall chance needs both numbers; a missing one is unknown, not the table chance", () => {
+  expect(eff(50, 10)).toBe(5); expect(eff(null, 10)).toBeNull(); expect(eff(50, null)).toBeNull(); expect(eff(0, 10)).toBe(0);
+});

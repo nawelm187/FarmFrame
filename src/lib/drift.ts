@@ -1,3 +1,4 @@
+import { parseRelics, relicIssues } from "./drops";
 /** Structural check of a downloaded dataset. A source that quietly renames or drops a field makes pages empty without any error, so each known dataset lists the fields the app reads. */
 type O = Record<string, unknown>;
 const isO = (v: unknown): v is O => !!v && typeof v === "object" && !Array.isArray(v);
@@ -7,6 +8,11 @@ const CATALOG = ["name", "uniqueName"];
 const SAMPLE = 30, MIN = 0.8;
 /** Human-readable problems; an empty list means the data has the expected shape (or the dataset is not one we know). */
 export function detectDrift(id: string, data: unknown): string[] {
+  if (id === "relics") {
+    // Relic odds are checked as a whole: each refinement must list 6 rewards adding up to 100.
+    const rl = parseRelics(data), bad = rl ? relicIssues(rl, 50) : [];
+    return bad.length ? [`${bad.length} relic refinements have odds that do not add up to 100 (for example ${bad[0]})`] : [];
+  }
   const keys = id.startsWith("f:") ? CATALOG : SHAPES[id];
   if (!keys || data == null) return [];
   if (!Array.isArray(data)) return [`expected a list, got ${isO(data) ? "an object" : typeof data}`];
