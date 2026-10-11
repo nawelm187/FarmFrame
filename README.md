@@ -24,7 +24,7 @@ Stack: Vite, React 18, TypeScript, hash routes (`/#/roadmap`), Supabase for opti
 | `src/data/` | Hand-typed, dated data (Helminth, guides, vendors, syndicates, mastery) with tests |
 | `src/lib/` | Logic without screens: search, sources, mastery, syndicates, alerts |
 | `src/assets/` | Your own pictures. Each folder has a `LEEME.txt` with the naming rule |
-| `docs/` | Notes: deploy, images, security, best practices |
+| `docs/` | Notes: deploy, images, security, best practices, [audit and roadmap](docs/AUDITORIA_v0.66.md) |
 | `public/` | `robots.txt`, `sitemap.xml` |
 | `legacy/` | The old single-file version, kept only for reference |
 
@@ -37,4 +37,4 @@ Stack: Vite, React 18, TypeScript, hash routes (`/#/roadmap`), Supabase for opti
 
 ## Publishing
 
-GitHub Actions builds `dist/` and publishes it (Settings > Pages > Source: GitHub Actions). `ci.yml` blocks on types, tests and build; `deploy.yml` still lets types and tests report without blocking.
+GitHub Actions builds `dist/` and publishes it (Settings > Pages > Source: GitHub Actions). `ci.yml` blocks on types, tests and build; `deploy.yml` now blocks on types, tests and build too.

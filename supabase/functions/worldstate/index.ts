@@ -11,13 +11,13 @@ const ms = (d: unknown): number | null => { const v = isO(d) && isO(d.$date) ? d
 let nodes: Record<string, { value?: string; enemy?: string; type?: string }> | null = null, nodesAt = 0;
 async function getNodes() {
   if (nodes && Date.now() - nodesAt < 6 * 3_600_000) return nodes;
-  try { const r = await fetch(NODES); if (r.ok) { nodes = await r.json(); nodesAt = Date.now(); } } catch { /* keep the old copy if any */ }
+  try { const r = await fetch(NODES, { signal: AbortSignal.timeout(8000) }); if (r.ok) { nodes = await r.json(); nodesAt = Date.now(); } } catch { /* keep the old copy if any */ }
   return nodes ?? {};
 }
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   try {
-    const [r, nd] = await Promise.all([fetch(WS, { headers: { "User-Agent": "FarmFrame/1.0", Accept: "application/json" } }), getNodes()]);
+    const [r, nd] = await Promise.all([fetch(WS, { headers: { "User-Agent": "FarmFrame/1.0", Accept: "application/json" }, signal: AbortSignal.timeout(8000) }), getNodes()]);
     if (!r.ok) return json({ error: "upstream " + r.status }, 502);
     const ws = (await r.json()) as O, now = Date.now(), out: unknown[] = [];
     const push = (x: O, storm: boolean) => {

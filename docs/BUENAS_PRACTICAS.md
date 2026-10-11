@@ -20,8 +20,9 @@ Basado en la lista "Buenas Prácticas Web A-Z". FarmFrame es una herramienta gra
 Pagos, carrito, panel de cliente, Google Business Profile, WhatsApp, política de envíos, cookies de publicidad (no hay analítica ni publicidad).
 
 ## Pendiente
-- Pasar `deploy.yml` a estricto cuando `ci.yml` esté en verde en GitHub.
+- `deploy.yml` ya es estricto (tipos, tests y build bloquean la publicación). Si falla, la web anterior sigue publicada y el error sale en la pestaña Actions.
 - Cabeceras HTTP de seguridad (CSP, etc.): GitHub Pages no permite configurarlas; se haría al migrar de hosting.
 - Revisión de contraste con una herramienta real (Lighthouse) en la web publicada.
 - `npm audit` y subida de Vite: probar aparte para no romper el build.
+- `robots.txt` y `sitemap.xml` viven en `/FarmFrame/` (subcarpeta). Los buscadores solo leen el robots.txt de la raíz del dominio, que en GitHub Pages de proyecto no controlamos; se resolverá con dominio propio.
 - Sitemap con más URLs: no es útil con rutas `#/`.
