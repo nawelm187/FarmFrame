@@ -1,0 +1,1 @@
+import{j as r}from"./index-Bp-RRV_v.js";function e({r:o}){const n=o==="Common"||o==="Uncommon"||o==="Rare"?o:"Common",m={Common:"Bronze",Uncommon:"Silver",Rare:"Gold"}[n];return r.jsx("span",{className:"rar "+n,role:"img","aria-label":m,children:"◆"})}export{e as R};
