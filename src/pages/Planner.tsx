@@ -1,4 +1,5 @@
 import PageArt from "../PageArt";
+import { READY_LABEL, readiness } from "../lib/unlock";
 import { Link } from "react-router-dom";
 import { useRefreshAt, useWorld } from "../lib/data";
 import { value } from "../lib/farmNow";
@@ -45,7 +46,7 @@ export default function Planner() {
       : !fis.data && !inv.data && !trader.data ? <p className="muted">Live data is unavailable, so relevance cannot be computed right now.</p>
       : empty ? <p className="muted">Nothing active right now advances your goals.</p>
       : <ol className="opps">{baro.length > 0 && <li><b>Void Trader</b><div className="muted">Advances: {baro.map(i => i.item).join(", ")}</div><div className="muted">Value to your current goals: <b>{value(baro.length)}</b></div></li>}
-        {opps.slice(0, 4).map(o => <li key={o.key}><b>{o.title}</b><div className="muted">Advances: {o.advances.slice(0, 4).join(", ")}</div><div className="muted">Value to your current goals: <b>{value(o.advances.length)}</b></div></li>)}</ol>}
+        {opps.slice(0, 4).map(o => <li key={o.key}><b>{o.title}</b> <span className="tag">{READY_LABEL[readiness(o.blocks)]}</span>{(o.blocks ?? []).map(b => <div key={b.text} className="muted">{b.severity === "blocked" ? "Needs: " : "Check: "}{b.text}</div>)}<div className="muted">Advances: {o.advances.slice(0, 4).join(", ")}</div><div className="muted">Value to your current goals: <b>{value(o.advances.length)}</b></div></li>)}</ol>}
     <h2>Daily</h2><div className="grid"><Sortie /></div>
     <h2>Weekly and rotating</h2><div className="grid"><ArchonHunt /><SteelPath /><Nightwave /><Baro full /></div></>);
 }

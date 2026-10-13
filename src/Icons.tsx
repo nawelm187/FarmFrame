@@ -28,6 +28,7 @@ P["/syndicates"] ??= P["/planner"] ?? P["/finder"];
 P["/mastery"] ??= P["/tracking"];
 P["/kdrives"] ??= P["/planner"] ?? P["/finder"];
 P["/guides"] ??= P["/lore"];
+P["/methods"] ??= P["/planner"] ?? P["/finder"];
 P["/helminth"] ??= P["/planner"] ?? P["/finder"];
 P["/rotations"] ??= P["/planner"] ?? P["/finder"];
 export const Icon = ({ n }: { n: string }) => (

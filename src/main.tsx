@@ -8,6 +8,8 @@ import "@fontsource-variable/inter";
 import "@fontsource/orbitron/latin-600.css";
 import "@fontsource/orbitron/latin-700.css";
 import "./styles.css";
+import { trackImages } from "./lib/imgHosts";
+trackImages();
 const root = document.getElementById("root")!;
 root.setAttribute("data-ready", "1"); // proves the bundle loaded
 createRoot(root).render(<StrictMode><ErrorBoundary><CloudProvider><HashRouter><App /></HashRouter></CloudProvider></ErrorBoundary></StrictMode>);

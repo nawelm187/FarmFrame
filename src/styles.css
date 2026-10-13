@@ -433,3 +433,5 @@ main:focus{outline:none}
 .rankcard.here{border-color:var(--acc);box-shadow:var(--glow)}.rankcard.goal{border-color:var(--gold)}
 .rknum{display:inline-grid;place-items:center;min-width:1.7rem;height:1.7rem;border-radius:.5rem;background:var(--b3);font-size:.85rem}
 .chipline{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.2rem}
+.pal .answers{max-height:42dvh;overflow:auto}.answer{margin:.5rem .6rem;padding:.7rem .8rem;background:var(--b2);border:1px solid var(--b4);border-radius:.9rem}.answer h3{margin:.1rem 0 .4rem;font-size:1rem}.answer p{margin:.3rem 0}.answer ul{margin:.3rem 0;padding-left:1.1rem}.answer .best{border-left:3px solid var(--gold);padding-left:.6rem;margin-bottom:.4rem}
+.plays{list-style:none;padding:0!important;margin:.4rem 0}.plays li{padding:.25rem 0;border-bottom:1px solid var(--b3,#2a2a2a)}

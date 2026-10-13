@@ -13,16 +13,17 @@ import { allStats, useMany } from "../lib/data";
 import { FIND, collect } from "../lib/drops";
 import { trustLine } from "../lib/freshness";
 import { itemAdvice, sourceWhy } from "../lib/itemAdvice";
-import { readTracked, writeTracked } from "../lib/track";
+import { isTracked, readTracked, writeTracked } from "../lib/track";
 import { useNeeded } from "../lib/useNeeded";
+import { READY_LABEL } from "../lib/unlock";
 import { Skeleton } from "./parts";
 const ALL = FIND.map(f => ({ id: f.id, file: f.file }));
 /** Any single item (mod, resource, part): the best verified places to get it, why, and a way to track how many you need. */
 function ItemPlan({ name, onClose }: { name: string; onClose: () => void }) {
   const res = useMany(ALL), { rows, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
-  const needed = useNeeded(), [qty, setQty] = useState(1), [tracked, setTracked] = useState(() => readTracked().some(t => t.n.toLowerCase() === name.toLowerCase()));
+  const needed = useNeeded(), [qty, setQty] = useState(1), [tracked, setTracked] = useState(() => isTracked(readTracked(), name));
   const adv = ok > 0 ? itemAdvice(rows, name, needed) : null;
-  const track = () => { const a = readTracked(); if (!a.some(t => t.n.toLowerCase() === name.toLowerCase())) writeTracked([...a, { n: name, o: 0, t: Math.max(1, qty), from: "Advisor" }]); setTracked(true); };
+  const track = () => { const a = readTracked(); if (!isTracked(a, name)) writeTracked([...a, { n: name, o: 0, t: Math.max(1, qty), from: "Advisor" }]); setTracked(true); };
   return (<div className="adv"><div className="row"><h3>{name}</h3><button className="btn" onClick={onClose}>Close</button></div>
     {!adv ? <p className="muted">Loading drop tables…</p> : !adv.sources.length ? <p className="muted">No drop for this name in the loaded tables. It may come from a vendor, crafting or trading. <Link to={`/farm/${encodeURIComponent(name)}`}>Check all sources</Link></p>
       : <><h3>Best places to get it</h3><ol className="opps">{adv.sources.map((s, i) => <li key={s.row.where + i}>{i === 0 && <span className="tag FRESH">Best option</span>} <b>{s.row.where}</b>{s.row.rot ? ` · rotation ${s.row.rot}` : ""}<div className="muted">{sourceWhy(s)} · {s.row.src}</div></li>)}</ol>
@@ -68,7 +69,7 @@ export default function Advisor() {
           <button className="btn" onClick={got}>I got it</button></span></div>}
         <details open><summary>Why this?</summary><ul>{a.why.map(w => <li key={w}>{w}</li>)}</ul></details>
         {a.missing.length > 1 && <><h3>Everything still missing</h3><MissingList items={a.missing} /></>}
-        {acts.length > 0 && <><h3>Best activity right now</h3><ul className="list">{acts.map((x, i) => <li key={x.opp.key}><span><b>{x.opp.title}</b>{i === 0 && acts.length > 1 && <span className="tag FRESH"> Best for your plan</span>}<div className="muted">{x.reasons.join(" · ")}</div></span><Link className="btn" to={x.opp.kind === "fissure" ? "/fissures" : "/invasions"}>Open</Link></li>)}</ul></>}
+        {acts.length > 0 && <><h3>Best activity right now</h3><ul className="list">{acts.map((x, i) => <li key={x.opp.key}><span><b>{x.opp.title}</b>{i === 0 && x.ready === "ready" && <span className="tag FRESH"> Best for your plan</span>}<span className="tag"> {READY_LABEL[x.ready]}</span><div className="muted">{x.reasons.join(" · ")}</div>{x.blocks.map(b => <div key={b.text} className="muted">{b.severity === "blocked" ? "Needs: " : "Check: "}{b.text}</div>)}</span><Link className="btn" to={x.opp.kind === "fissure" ? "/fissures" : "/invasions"}>Open</Link></li>)}</ul></>}
         <p className={trust.warn ? "tag STALE" : "muted"}>{trust.warn ?? `Based on: ${trust.lines.join(" · ")}.`} <Link to="/sources">Data sources</Link></p>
         {a.after ? <p className="muted"><b>After that:</b> {a.after}</p> : <p className="muted"><b>After that:</b> {a.goal} would be complete.</p>}
       </div>}
