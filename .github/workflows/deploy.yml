@@ -9,11 +9,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npm install
+      - run: npm ci
       - run: npm run typecheck
-        continue-on-error: true
       - run: npm test
-        continue-on-error: true
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with: { path: dist }
