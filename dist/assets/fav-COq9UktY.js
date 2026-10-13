@@ -1,0 +1,1 @@
+const e="ff.fav",s=(t,a)=>`${t}:${a}`,o=()=>{try{const t=JSON.parse(localStorage.getItem(e)||"[]");return Array.isArray(t)?t:[]}catch{return[]}},c=t=>{try{localStorage.setItem(e,JSON.stringify(t))}catch{}},n=(t,a)=>t.some(r=>r.id===a.id)?t.filter(r=>r.id!==a.id):[...t,a];export{s as f,o as r,n as t,c as w};
