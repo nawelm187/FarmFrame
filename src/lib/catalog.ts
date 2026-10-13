@@ -83,12 +83,4 @@ export function parseCatalog(d: unknown, cat: Cat): Entity[] | null {
   const r = out.length ? out.sort((a, b) => a.name.localeCompare(b.name)) : null;
   cache.set(d, r); return r;
 }
-/** Item pictures live in the WFCD repository (every file name in the catalogs exists there) and on the WarframeStat CDN. The repository is tried first;
- *  `imgRetry` switches to the CDN once if a picture fails. Enemies are only on the CDN, so they take the retry path. */
-export const imgUrl = (i: string) => "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/img/" + encodeURIComponent(i);
-export const imgCdn = (i: string) => "https://cdn.warframestat.us/img/" + encodeURIComponent(i);
-/** For an <img onError>: tries the CDN copy once and returns true; returns false when there is nothing left to try. */
-export function imgRetry(ev: { currentTarget: HTMLImageElement }): boolean {
-  const el = ev.currentTarget; if (el.dataset.retried || !el.src.includes("raw.githubusercontent.com")) return false;
-  el.dataset.retried = "1"; el.src = imgCdn(decodeURIComponent(el.src.split("/").pop() ?? "")); return true;
-}
+export { imgUrl, imgCdn, imgRetry } from "./imgHosts"; // item pictures: see imgHosts.ts for the host order and the fallback

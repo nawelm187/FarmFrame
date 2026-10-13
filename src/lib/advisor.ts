@@ -36,13 +36,15 @@ export function advise(goalId: string, goalName: string, plans: PartPlan[], info
     why, after: second ? `${label(second.p)}: ${second.action.text}` : null };
 }
 import type { Opp } from "./farmNow";
-export interface Activity { opp: Opp; goals: string[]; score: number; reasons: string[] }
-/** Ranks the activities running now by how much of YOUR plan they advance: goals first, then missing parts, then relics you already own. Not a universal ranking. */
+import { READY_RANK, readiness, type Block, type Ready } from "./unlock";
+export interface Activity { opp: Opp; goals: string[]; score: number; reasons: string[]; ready: Ready; blocks: Block[] }
+/** Ranks the activities running now: the ones you can start right now come first, then by how much of YOUR plan they advance (goals, missing parts, relics you already own). Not a universal ranking. */
 export function rankActivities(opps: Opp[]): Activity[] {
   return opps.map(opp => {
     const goals = (opp.goals ?? []).map(g => g.name), owned = (opp.relics ?? []).filter(r => r.owned > 0).map(r => r.relic);
     const reasons = [goals.length ? `Advances ${goals.length} goal${goals.length > 1 ? "s" : ""}: ${goals.join(", ")}` : "Its reward matches something you still need", `${opp.advances.length} missing item${opp.advances.length === 1 ? "" : "s"} can come from it`];
     if (owned.length) reasons.push(`You already own ${owned.slice(0, 3).join(", ")}, so you can start right away`);
-    return { opp, goals, score: goals.length * 100 + opp.advances.length * 10 + (owned.length ? 5 : 0), reasons };
-  }).sort((a, b) => b.score - a.score || a.opp.title.localeCompare(b.opp.title));
+    const blocks = opp.blocks ?? [];
+    return { opp, goals, score: goals.length * 100 + opp.advances.length * 10 + (owned.length ? 5 : 0), reasons, ready: readiness(blocks), blocks };
+  }).sort((a, b) => READY_RANK[a.ready] - READY_RANK[b.ready] || b.score - a.score || a.opp.title.localeCompare(b.opp.title));
 }
