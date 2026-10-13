@@ -8,7 +8,7 @@ it("finds who sells an item and at which rank", () => {
   expect(h[0].need?.startsWith("Rank 3")).toBe(true);
   const s = vendorSources("Seeking Shuriken");
   expect(s[0].seller).toBe("Arbiters of Hexis");
-  expect(s[0].price).toBe("25,000 standing");
+  expect(s[0].price).toBe(`${(25000).toLocaleString()} standing`); // follows the machine's number format, so the test does too
 });
 it("ignores the Warframe in brackets and short or unknown names", () => {
   expect(vendorSources("Seeking Shuriken").length > 0).toBe(true);

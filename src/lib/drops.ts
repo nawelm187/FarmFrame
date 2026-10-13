@@ -72,7 +72,8 @@ export function parseRelics(d: unknown): Relic[] | null {
   const a = unwrap(d, "relics"); if (!Array.isArray(a)) return null; const m = new Map<string, Relic>();
   for (const r of a) { if (!isO(r) || !r.tier || !r.relicName || !Array.isArray(r.rewards)) continue;
     const k = `${str(r.tier)} ${str(r.relicName)}`; if (!m.has(k)) m.set(k, { name: k, tier: str(r.tier), st: {} });
-    m.get(k)!.st[str(r.state)] = r.rewards.filter(isO).map(x => ({ itemName: str(x.itemName), rarity: str(x.rarity), chance: num(x.chance) ?? 0 })); }
+    // A reward with no chance is dropped, not turned into 0%: a missing number must never look like a real one, and relicIssues() then flags the incomplete table.
+    m.get(k)!.st[str(r.state)] = r.rewards.filter(isO).flatMap(x => { const chance = num(x.chance); return chance == null ? [] : [{ itemName: str(x.itemName), rarity: str(x.rarity), chance }]; }); }
   return m.size ? [...m.values()] : null;
 }
 export const query = (rows: Row[], q: string) => { const l = q.trim().toLowerCase();

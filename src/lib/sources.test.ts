@@ -20,3 +20,9 @@ it("the official weekly Riven dump is planned and never claims to carry disposit
   const s = sourceById("official-rivens-weekly")!;
   expect(s.use).toBe("planned"); expect(s.note).toContain("no disposition");
 });
+
+it("community strategy sources are never trusted above E, and unreadable ones are planned", () => {
+  for (const id of ["steam-discussions", "warframe-forums", "reddit-warframe"]) expect(sourceById(id)!.confidence).toBe("E");
+  for (const id of ["warframe-forums", "reddit-warframe", "guide-sites"]) expect(sourceById(id)!.use).toBe("planned");
+  expect(sourceById("guide-sites")!.note).toContain("Neither cites");
+});

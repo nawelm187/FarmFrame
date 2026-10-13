@@ -28,3 +28,34 @@ it("flags invasion rewards that match what you need, on either side", () => {
   expect(usefulInvasion(v, new Set(["orokin reactor blueprint"]))).toEqual(["Orokin Reactor Blueprint"]);
   expect(usefulInvasion(v, new Set())).toEqual([]);
 });
+import { rankActivities } from "./advisor";
+const fis = (tier: string, node: string, over: Partial<{ isHard: boolean; isStorm: boolean }> = {}) => ({ tier, node, missionType: "Capture", expiry: exp, isHard: false, isStorm: false, ...over });
+const link = (tier: string, relic: string, owned: number) => ({ tier, relic, rarity: "Common", part: "P (G)", goal: "G", vaulted: false, owned });
+it("a relic you do not own makes the activity need setup; an owned one is ready", () => {
+  const o = farmNow({ tiers: new Map(), fissures: [fis("Lith", "A (Earth)"), fis("Axi", "B (Earth)")], invasions: null, needed: new Set(), now: Date.now(), exact: [link("Lith", "Lith A1", 0), link("Axi", "Axi B2", 1)] });
+  expect(o.map(x => x.key)).toEqual(["fAxi", "fLith"]); expect(o[0].blocks).toEqual([]); expect(o[1].blocks?.[0].kind).toBe("relic"); expect(o[1].blocks?.[0].severity).toBe("blocked");
+  expect(rankActivities(o).map(a => a.ready)).toEqual(["ready", "needs"]);
+});
+it("among fissures of one tier, the one you can start is shown, not a Void Storm", () => {
+  const o = farmNow({ tiers: new Map([["Axi", ["P (G)"]]]), fissures: [fis("Axi", "Lu-yan (Saturn Proxima)", { isStorm: true }), fis("Axi", "C (Earth)")], invasions: null, needed: new Set(), now: Date.now(),
+    unlock: n => (n.storm ? [{ kind: "railjack", severity: "check", text: "railjack" }] : []) });
+  expect(o[0].node).toBe("C (Earth)"); expect(o[0].blocks).toEqual([]);
+});
+it("a ready activity ranks above a better one that is blocked", () => {
+  const o = farmNow({ tiers: new Map(), fissures: [fis("Lith", "A (Earth)"), fis("Axi", "B (Earth)")], invasions: null, needed: new Set(), now: Date.now(), exact: [link("Lith", "Lith A1", 0), { ...link("Lith", "Lith A1", 0), part: "Q (G)" }, link("Axi", "Axi B2", 1)] });
+  const r = rankActivities(o); expect(r[0].opp.tier).toBe("Axi"); expect(r[0].ready).toBe("ready");
+});
+it("invasions carry their node's checks too", () => {
+  const o = farmNow({ tiers: new Map(), fissures: null, invasions: [{ node: "Ceres (Ceres)", completed: false, attacker: { reward: { items: ["Plastids"] } } }], needed: new Set(["plastids"]), now: Date.now(), unlock: () => [{ kind: "node", severity: "check", text: "n" }] });
+  expect(o[0].node).toBe("Ceres (Ceres)"); expect(o[0].blocks).toHaveLength(1);
+});
+it("an owned relic is paired with the best fissure you can start, and every node is listed", () => {
+  const o = farmNow({ tiers: new Map(), fissures: [fis("Lith", "S (Saturn Proxima)", { isStorm: true }), fis("Lith", "E (Earth)")], invasions: null, needed: new Set(), now: Date.now(), exact: [link("Lith", "Lith A1", 1), link("Lith", "Lith B2", 0)],
+    unlock: n => (n.storm ? [{ kind: "railjack", severity: "check", text: "r" }] : []) });
+  expect(o[0].plays).toEqual([{ relic: "Lith A1", parts: ["P (G)"], node: "E (Earth)", mission: "Capture", ready: "ready" }]);
+  expect(o[0].nodes?.map(n => n.node)).toEqual(["E (Earth)", "S (Saturn Proxima)"]); expect(o[0].nodes?.[1].ready).toBe("check");
+});
+it("without an owned relic there is nothing to open yet", () => {
+  const o = farmNow({ tiers: new Map(), fissures: [fis("Lith", "E (Earth)")], invasions: null, needed: new Set(), now: Date.now(), exact: [link("Lith", "Lith B2", 0)] });
+  expect(o[0].plays).toEqual([]);
+});

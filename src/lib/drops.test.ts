@@ -28,3 +28,8 @@ import { eff } from "./drops";
 it("overall chance needs both numbers; a missing one is unknown, not the table chance", () => {
   expect(eff(50, 10)).toBe(5); expect(eff(null, 10)).toBeNull(); expect(eff(50, null)).toBeNull(); expect(eff(0, 10)).toBe(0);
 });
+it("a relic reward with no chance is dropped instead of becoming 0%", () => {
+  const r = parseRelics([{ tier: "Lith", relicName: "A1", state: "Intact", rewards: [{ itemName: "X", chance: 25.33, rarity: "Common" }, { itemName: "Y", rarity: "Rare" }, { itemName: "Z", chance: "n/a", rarity: "Rare" }] }])!;
+  expect(r[0].st.Intact.map(x => x.itemName)).toEqual(["X"]); expect(r[0].st.Intact[0].chance).toBe(25.33);
+});
+

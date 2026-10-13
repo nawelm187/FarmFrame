@@ -5,6 +5,8 @@ import { label } from "./exact";
 import { useExact } from "./useExact";
 import { useNeeded } from "./useNeeded";
 import { useCatalogs } from "./useCatalog";
+import { readMastery } from "./mastery";
+import { nodeBlocks } from "./unlock";
 const isInv = (d: unknown): d is Inv[] => Array.isArray(d);
 export function useFarmNow() {
   const ex = useExact(), inv = useWorld("invasions", isInv), needed = useNeeded(), own = readOwned();
@@ -15,6 +17,6 @@ export function useFarmNow() {
     for (const t of p.relicTiers) tiers.set(t, [...(tiers.get(t) ?? []), label(p)]);
     for (const r of p.relics) links.push({ tier: r.tier, relic: r.name, rarity: r.rarity, part: label(p), goal: p.goal.name, vaulted: r.vaulted, owned: ex.mine[r.name] ?? 0 });
   }
-  const opps = farmNow({ tiers, fissures: ex.fis.data, invasions: inv.data, needed, now: Date.now(), exact: ex.relics ? links : null, progress: prog });
+  const mastery = readMastery(), opps = farmNow({ tiers, fissures: ex.fis.data, invasions: inv.data, needed, now: Date.now(), exact: ex.relics ? links : null, progress: prog, unlock: n => nodeBlocks(n.node, n.hard, n.storm, mastery) });
   return { goals: ex.goals.length, fis: ex.fis, inv, opps, exact: ex };
 }
