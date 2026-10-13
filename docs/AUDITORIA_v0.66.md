@@ -18,6 +18,14 @@ Resumen de lo verificado contra el código del zip y de lo que queda. Fuente de 
 | Probabilidades | `eff()` en `drops.ts` devuelve null si falta la probabilidad de botín del enemigo (antes mostraba la de su tabla como si fuera la total); las pantallas ya muestran "—" para null. Test nuevo |
 | Coherencia | Changelog ordenado, versión alineada en `version.ts`, `package.json` y lockfile |
 
+## Hecho en v0.68
+- Imágenes: orden jsDelivr → CDN de WarframeStat → raw GitHub, con reintento por host y omisión de un host que falla sin éxitos (`src/lib/imgHosts.ts`). No se pudo comprobar desde el entorno de trabajo que jsDelivr sirva todas las imágenes; falta medir tiempos en un navegador real.
+- `parseRelics` ya no convierte una probabilidad ausente en 0 %: descarta esa recompensa y `relicIssues` marca la tabla incompleta.
+- El test de vendors sigue el formato numérico de la máquina.
+
+## Hecho en v0.69
+- Búsqueda global inteligente: índice único por palabras (orden libre, prefijos, erratas, descripciones y drops), intenciones leídas por palabras clave en inglés y español, y tarjetas de respuesta (qué farmear ahora, dónde conseguir X, qué cambió). Falta probarla en un navegador con los datos reales y medir tiempos con el catálogo completo.
+
 ## Pendiente, por prioridad
 **P1 (núcleo de farmeo)**
 - Reliquias exactas con probabilidad por refinamiento (A): ya existe (`relicsForPart`, `refinement`); falta comprobar fissures  activas ligadas a la reliquia exacta, no solo al tier.
@@ -35,3 +43,27 @@ Resumen de lo verificado contra el código del zip y de lo que queda. Fuente de 
 
 ## Datos manuales con caducidad
 Sindicatos (`syndicateWiki.ts`), Acrithis, Nightwave y Railjack son manuales: llevan fuente y fecha. Revisar tras cada update grande (44.x en la fecha de la auditoría).
+
+## Hecho en v0.71
+Farm Now (P1-B): etiquetas Ready/Check/Needs y bloqueos por nodo, Steel Path, Railjack y reliquias no poseídas (`unlock.ts`). Basado en el checklist de Mastery y reliquias marcadas; no lee el juego. Falta probar en la PC.
+
+## Hecho en v0.72
+Fisuras ligadas a reliquias exactas: `plays` (reliquia que tienes + mejor nodo jugable) y `nodes` (todas las fisuras del tier con su estado). Falta probar en la PC.
+
+## Hecho en v0.73
+Identificadores compartidos (`refs.ts`): `ref`, `refOf`, `sameName`, `thingRoute`; `Doc.id` en la búsqueda; `isTracked` en Tracking/Advisor. Pendiente: usar `refOf` en Farm Plan y Roadmap y migrar los demás `toLowerCase() ===` (Part, Farm, Relics).
+
+## Hecho en v0.74
+Sección Farming Methods (`data/methods.ts`, 7 métodos con fuente y fecha) y respuesta de búsqueda para material y para "mejor forma de farmear X". Pendiente: más métodos (Forma, Ayatan, Riven, Steel Essence, Orokin Cells), medir tiempos reales en lugar de chances por tirada, builds sin Forma verificados con los datos de polaridad del compañero, leer completas las tablas de Aya y Endo.
+
+## Hecho en v0.75
+Métodos: 13 (Forma, Orokin Cells, Steel Essence, Endo/Ayatan, Index+Xoris como estrategia de comunidad no verificada). Campo `status` wiki/community. Pendiente: leer el hilo del foro (abrirlo en tu PC y pegarme el texto), resolver la contradicción del Credit Booster en el Index, medir tiempos reales.
+
+## Hecho en v0.76
+20 métodos y 5 fuentes nuevas registradas. Foros de Warframe y Reddit no se pueden leer desde el servidor: abrirlos en el navegador y pegar el texto. Pendiente: Kuva, Plat, Riven y Arcanes; leer completas las tablas de Aya y Endo; medir tiempos.
+
+## Hecho en v0.77
+25 métodos. Nuevos: Void Traces, Vosfor, Gallium, Nitain Extract, Tellurium. Contradicciones de la wiki anotadas en los métodos. Pendiente: Riven/Kuva Lich, Platino, Arcanes (Vosfor ya), Neurodes/Rubedo/Detonite, Pathos Clamps, Vitus Essence, Entrati Lanthorn, y las tablas completas de Endo.
+
+## Hecho en v0.78
+Buscador: léxico ES↔EN (`lexicon.ts`), `understand.ts`, intenciones "cómo consigo X" y "qué es X", archivo de frases (`search.golden.test.ts`). Pendiente: más términos (armas, mods, Warframes en español), "¿quisiste decir?", recientes, registro de búsquedas sin resultado, comparar X con Y, respuesta compuesta con la meta.
