@@ -4,7 +4,7 @@ import { SYNDICATE_WIKI, NIGHTWAVE_SERIES } from "../data/syndicateWiki";
 import { PALLADINO, ARB_ROTATIONS } from "../data/vendors";
 import { SUBSUMABLE } from "../data/helminth";
 import { LAUNCHERS } from "../data/guides";
-import { ref, refOf, thingRoute } from "./refs";
+import { refOf, thingRoute } from "./refs";
 const enc = encodeURIComponent;
 /** Extra words for each page, so "baro", "circuit" or "mastery points" find the right page without the page name containing them. */
 export const PAGE_WORDS: Record<string, string> = {
