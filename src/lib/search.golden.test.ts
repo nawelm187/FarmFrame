@@ -43,3 +43,8 @@ it("never leaves a material name in Spanish or short form un-translated", () => 
   // "forma" as the Spanish word for "way" is not the item Forma.
   expect(understand("mejor forma de farmear aya").material).toBe("Aya");
 });
+it("understands misspelt materials like the correct ones", () => {
+  for (const [q, mat] of [["como consigo aia", "Aya"], ["donde farmear kuba", "Kuva"], ["como conseguir creditoz", "Credits"], ["que es bosfor", "Vosfor"], ["how do i get galium", "Gallium"], ["donde consigo selulas orokin", "Orokin Cell"], ["fastest way to farm tellurum", "Tellurium"]]) expect(understand(q).material).toBe(mat);
+  // Question words must never be bent into a material: "sell" sounds like "cell".
+  expect(understand("where do they sell vosfor").material).toBe("Vosfor"); expect(understand("who sells forma").material).toBe("Forma");
+});

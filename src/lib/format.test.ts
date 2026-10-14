@@ -12,3 +12,12 @@ describe("statusOf", () => {
     expect(statusOf(undefined, false)).toBe("UNAVAILABLE");
   });
 });
+it("statusOf: cached copies are judged by their source age, never fresh just because they came from cache", () => {
+  const r = (o: object) => ({ id: "x", data: {}, at: 1000, err: null, url: "", window: 100, src: "", via: "cache" as const, ...o });
+  expect(statusOf(r({}), false, 1050)).toBe("FRESH");
+  expect(statusOf(r({}), false, 1200)).toBe("STALE");
+  expect(statusOf(r({ at: null }), false, 1200)).toBe("STALE"); // unknown age is never fresh
+  expect(statusOf(undefined, true)).toBe("LOADING");
+  expect(statusOf(undefined, false)).toBe("UNAVAILABLE");
+  expect(statusOf(r({ data: null }), false)).toBe("UNAVAILABLE");
+});

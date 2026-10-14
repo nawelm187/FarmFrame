@@ -8,7 +8,7 @@ export function ago(at: number | null | undefined, now = Date.now()): string {
 export interface Used { label: string; status: Status; rec?: Rec; /** Structural problems found in the data (see drift.ts). */ drift?: string[] }
 /** What a recommendation was based on and how fresh it is. `warn` is set when any input is not fresh, so the user knows to double-check. */
 export function trustLine(used: Used[], now = Date.now()): { lines: string[]; warn: string | null } {
-  const lines = used.map(u => `${u.label}: ${u.status === "LOADING" ? "loading" : u.status === "FRESH" ? ago(u.rec?.at, now) : `${u.status.toLowerCase()}${u.rec?.at ? `, last retrieved ${ago(u.rec.at, now)}` : ""}`}`);
+  const lines = used.map(u => `${u.label}: ${u.status === "LOADING" ? "loading" : u.status === "FRESH" ? `${ago(u.rec?.at, now)}${u.rec?.via === "cache" ? " (from the device cache, not re-checked this visit)" : ""}` : `${u.status.toLowerCase()}${u.rec?.at ? `, last retrieved ${ago(u.rec.at, now)}` : ""}`}`);
   const bad = used.filter(u => u.status !== "FRESH" && u.status !== "LOADING").map(u => u.label), odd = used.filter(u => u.drift?.length).map(u => u.label);
   const warn = [bad.length ? `${bad.join(" and ")} may be out of date, so double-check before acting.` : "", odd.length ? `${odd.join(" and ")} changed format, so some results may be missing or wrong.` : ""].filter(Boolean).join(" ");
   return { lines, warn: warn || null };

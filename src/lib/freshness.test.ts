@@ -16,3 +16,9 @@ it("warns when a dataset changed format even if it is fresh", () => {
   const t = trustLine([{ label: "Fissures", status: "FRESH", drift: ['field "tier" is missing in 3 of 3 sampled entries'] }, { label: "Relic tables", status: "FRESH", drift: [] }], now);
   expect(t.warn).toBe("Fissures changed format, so some results may be missing or wrong.");
 });
+it("says when a fresh result came from the device cache and not from the source in this visit", () => {
+  const rec = (via?: "network" | "cache") => ({ id: "x", data: null, at: now - 3_600_000, err: null, url: "", window: 1, src: "", via });
+  expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec("cache") }], now).lines[0]).toBe("Drops: 1 h ago (from the device cache, not re-checked this visit)");
+  expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec("network") }], now).lines[0]).toBe("Drops: 1 h ago");
+  expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec() }], now).lines[0]).toBe("Drops: 1 h ago");
+});

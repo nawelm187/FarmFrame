@@ -1,4 +1,4 @@
-import { normalize } from "./smartSearch";
+import { isFiller, normalize, phon, within } from "./smartSearch";
 /** Materials and currencies the search recognises, with the other names players use for them (Spanish, short forms, singular/plural).
  *  A name found here is turned into its game name before searching, so "creditos", "plat" or "celulas orokin" mean the same as "Credits", "Platinum" or "Orokin Cell". */
 export interface Material { name: string; aliases: string[] }
@@ -21,6 +21,12 @@ export const MATERIALS: Material[] = [
   { name: "Ayatan Star", aliases: ["ayatan stars", "ayatan star", "estrellas ayatan", "estrella ayatan", "ayatan"] },
   { name: "Neurodes", aliases: ["neurodes", "neurodo"] },
   { name: "Rubedo", aliases: ["rubedo"] },
+  { name: "Detonite Injector", aliases: ["detonite injector", "detonite injectors", "inyector de detonite", "inyector detonite"] },
+  { name: "Pathos Clamp", aliases: ["pathos clamp", "pathos clamps", "pinzas pathos", "pathos"] },
+  { name: "Vitus Essence", aliases: ["vitus essence", "vitus", "esencia vitus", "esencia de vitus"] },
+  { name: "Entrati Lanthorn", aliases: ["entrati lanthorn", "entrati lanthorns", "lanthorn", "lanthorns", "linterna entrati"] },
+  { name: "Fieldron", aliases: ["fieldron", "fieldrons"] },
+  { name: "Mutagen Sample", aliases: ["mutagen sample", "mutagen samples", "muestra mutagena", "muestras mutagenas", "mutagen"] },
   { name: "Detonite Ampule", aliases: ["detonite ampule", "detonite"] },
   { name: "Alloy Plate", aliases: ["alloy plate", "alloy plates", "placa de aleacion", "placas de aleacion"] },
   { name: "Ferrite", aliases: ["ferrite", "ferrita"] },
@@ -34,6 +40,15 @@ export const MATERIALS: Material[] = [
 ];
 const ALIAS = new Map<string, string>();
 for (const m of MATERIALS) { for (const a of m.aliases) ALIAS.set(normalize(a), m.name); ALIAS.set(normalize(m.name), m.name); }
+const SINGLE = [...ALIAS.entries()].filter(([k]) => !k.includes(" ") && k.length >= 3);
+/** A single misspelt word that sounds like one material name (aia = aya), or is one letter off a long one. Words that mean something else in a question are never touched. */
+function nearAlias(t: string): string | null {
+  if (t.length < 3 || isFiller(t)) return null;
+  const pt = phon(t), hits = new Set<string>();
+  for (const [k, m] of SINGLE) if (phon(k) === pt) hits.add(m);
+  if (!hits.size && t.length >= 6) for (const [k, m] of SINGLE) if (k.length >= 6 && Math.abs(k.length - t.length) <= 1 && within(t, k, 1) === 1) hits.add(m);
+  return hits.size === 1 ? [...hits][0] : null;
+}
 const MAXN = Math.max(...[...ALIAS.keys()].map(k => k.split(" ").length));
 /** "mejor forma de farmear X" says "way", not the item Forma. */
 const WAY = [[/\b(?:la |una |otra )?mejor(?:es)? formas? de\b/g, "best way to"], [/\bformas? (?:rapidas? |mas rapidas? )?de (farmear|conseguir|obtener|ganar)\b/g, "way to $1"]] as const;
@@ -45,6 +60,7 @@ export function canon(q: string): Canon {
   for (let i = 0; i < ts.length;) {
     let hit: string | null = null, len = 0;
     for (let k = Math.min(MAXN, ts.length - i); k >= 1; k--) { const m = ALIAS.get(ts.slice(i, i + k).join(" ")); if (m) { hit = m; len = k; break; } }
+    if (!hit) { const near = nearAlias(ts[i]); if (near) { hit = near; len = 1; } }
     if (hit) { out.push(normalize(hit)); if (!mats.includes(hit)) mats.push(hit); i += len; } else { out.push(ts[i]); i++; }
   }
   return { text: out.join(" "), materials: mats };

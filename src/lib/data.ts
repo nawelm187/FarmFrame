@@ -4,7 +4,7 @@ import { cget, cset } from "./idb";
 import { SUPABASE_URL } from "./config";
 import { allExpired, bust, countOf, nextStat, type LoadStat } from "./health";
 export type Status = "FRESH" | "STALE" | "UNAVAILABLE" | "ERROR" | "LOADING";
-export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string }
+export interface Rec { id: string; data: unknown; at: number | null; err: string | null; url: string; window: number; src: string; /** How this copy reached us: from the source in this visit, or from the on-device cache. A cached copy keeps its original `at`, so age is always the age at the source fetch. Absent on records built before this field existed. */ via?: "network" | "cache" }
 export const API = "https://api.warframestat.us/pc/";
 export const WS_WINDOW = 150_000;
 const reqs = new Map<string, { url: string; window: number; src: string; alt?: string }>(), recs = new Map<string, Rec>(), loading = new Set<string>(), subs = new Set<() => void>();
@@ -23,7 +23,7 @@ export async function load(id: string, url: string, window: number, src: string,
   let cached: { data: unknown; at: number; url: string } | undefined;
   const persist = window >= 3_600_000, t0 = Date.now(); let http: number | null = null;
   try {
-    if (persist && !r?.data) { cached = await cget(`v2:${id}`); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src }); return; } }
+    if (persist && !r?.data) { cached = await cget(`v2:${id}`); if (cached && Date.now() - cached.at < window) { recs.set(id, { id, data: cached.data, at: cached.at, err: null, url: cached.url, window, src, via: "cache" }); return; } }
     const get = async (u: string) => { const res = await fetch(u, { signal: c.signal }); http = res.status; if (!res.ok) throw new Error("HTTP " + res.status); return (await res.json()) as unknown; };
     let used = url, data: unknown;
     try { data = await get(url); } catch (e) { if (!alt) throw e; used = alt; data = await get(alt); }
@@ -33,13 +33,13 @@ export async function load(id: string, url: string, window: number, src: string,
     // Still old: use the second source (for fissures, our own function reading Digital Extremes' world state) when it has live entries.
     if (old && alt && used !== alt) { try { const second = await get(alt); if (Array.isArray(second) && second.length && !allExpired(second)) { data = second; used = alt; old = false; } } catch { /* keep the old copy and say so */ } }
     const at = Date.now();
-    recs.set(id, { id, data, at, err: old ? "The source is serving old data (every entry has already ended)" : null, url: used, window, src });
+    recs.set(id, { id, data, at, err: old ? "The source is serving old data (every entry has already ended)" : null, url: used, window, src, via: "network" });
     stats.set(id, nextStat(stats.get(id), { ok: true, at, ms: at - t0, http, data, drift: [...(!Array.isArray(data) && countOf(data) === 0 ? ["empty response"] : []), ...detectDrift(id, data)] }));
     if (persist) setTimeout(() => void cset(`v2:${id}`, { data, at, url: used }), 800);
   } catch (e) {
     const msg = e instanceof Error && e.name === "AbortError" ? "timeout" : String(e instanceof Error ? e.message : e);
     stats.set(id, nextStat(stats.get(id), { ok: false, at: Date.now(), ms: Date.now() - t0, http, data: null, drift: [] }));
-    recs.set(id, { id, data: r?.data ?? cached?.data ?? null, at: r?.at ?? cached?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src });
+    recs.set(id, { id, data: r?.data ?? cached?.data ?? null, at: r?.at ?? cached?.at ?? null, err: msg + " (network, CORS or service down)", url, window, src, via: r?.via ?? (cached ? "cache" : undefined) });
   } finally { clearTimeout(t); loading.delete(id); emit(); }
 }
 /** Re-requests a dataset now, ignoring the freshness gap. */
@@ -48,7 +48,8 @@ export function statusOf(r: Rec | undefined, isLoading: boolean, now = Date.now(
   if (!r) return isLoading ? "LOADING" : "UNAVAILABLE";
   if (r.data == null) return r.err ? "ERROR" : "UNAVAILABLE";
   if (r.err) return "STALE";
-  return r.at !== null && now - r.at > r.window ? "STALE" : "FRESH";
+  // Data of unknown age (no timestamp) is never called fresh.
+  return r.at === null || now - r.at > r.window ? "STALE" : "FRESH";
 }
 /** Loads a live dataset, refreshes every 60s, exposes status + provenance. Never fabricates data. */
 /** Second source per dataset, used when the first one fails or serves only old entries. */
