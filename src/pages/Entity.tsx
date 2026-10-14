@@ -17,15 +17,24 @@ import ModPrice from "../ModPrice";
 import SetPrice from "../SetPrice";
 import { partTradable, setTradable } from "../lib/trade";
 import { favId, readFavs, toggleFav, writeFavs } from "../lib/fav";
-import { goalId, readGoals, tiersOf, writeGoals } from "../lib/goals";
+import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
 import { Badge, Prov, Unavailable } from "./parts";
+import { partNote } from "../lib/partNote";
 /** Exact relics for one part, from the relic tables (not just the tier). Vaulted relics are marked. */
-function PartRelics({ e, k }: { e: Ent; k: Component }) {
+function usePartRelics(e: Ent, k: Component) {
   const [rr, vr] = useMany([{ id: "relics", file: "relics.json" }, { id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), relics = relicsOf(rr.rec?.data);
-  if (!relics) return null;
-  const o = relicsForPart(relics, e.name, k, parseVault(vr.rec?.data)).sort(byValue).slice(0, 4);
-  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} />{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}</div> : null;
+  return relics ? relicsForPart(relics, e.name, k, parseVault(vr.rec?.data)).sort(byValue) : null;
+}
+function PartRelics({ e, k }: { e: Ent; k: Component }) {
+  const all = usePartRelics(e, k);
+  if (!all) return null;
+  const o = all.slice(0, 4);
+  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} />{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}{all.length > o.length && <Link className="relicchip" to={`/relics?q=${encodeURIComponent(e.name + " " + k.name)}`}>+{all.length - o.length} more</Link>}</div> : null;
+}
+function PartNote({ e, k }: { e: Ent; k: Component }) {
+  const all = usePartRelics(e, k);
+  return <span className="muted">{partNote(k.drops, all ? all.length : null)}</span>;
 }
 const Sub = ({ cs }: { cs: Component[] }) => cs.length ? <ul className="sub">{cs.map(k => <li key={k.name}>{k.name}{k.count > 1 ? ` ×${k.count}` : ""}<Sub cs={k.children} /></li>)}</ul> : null;
 export default function Entity({ cat }: { cat: Cat }) {
@@ -54,7 +63,7 @@ export default function Entity({ cat }: { cat: Cat }) {
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
     {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
     {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>Where to farm</Link></span>{tiersOf(k).length > 0 && <PartRelics e={e} k={k} />}<Sub cs={k.children} /></span>
-        <span><span className="muted">{k.drops.length ? k.drops.slice(0, 6).map(d => `${d.location}${d.type ? " (" + d.type + ")" : ""}`).join("; ") : "No acquisition data in this source"}</span>{MARKET_ENABLED && partTradable(e, k) !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
+      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>Where to farm</Link></span><PartRelics e={e} k={k} /><Sub cs={k.children} /></span>
+        <span><PartNote e={e} k={k} />{MARKET_ENABLED && partTradable(e, k) !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }

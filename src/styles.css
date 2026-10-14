@@ -435,3 +435,28 @@ main:focus{outline:none}
 .chipline{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.2rem}
 .pal .answers{max-height:42dvh;overflow:auto}.answer{margin:.5rem .6rem;padding:.7rem .8rem;background:var(--b2);border:1px solid var(--b4);border-radius:.9rem}.answer h3{margin:.1rem 0 .4rem;font-size:1rem}.answer p{margin:.3rem 0}.answer ul{margin:.3rem 0;padding-left:1.1rem}.answer .best{border-left:3px solid var(--gold);padding-left:.6rem;margin-bottom:.4rem}
 .plays{list-style:none;padding:0!important;margin:.4rem 0}.plays li{padding:.25rem 0;border-bottom:1px solid var(--b3,#2a2a2a)}
+
+/* v0.79 uniform cards: equal heights per row, same inner alignment everywhere */
+.gcards{align-items:stretch}.gcards>.gcard{display:flex;flex-direction:column;height:100%;margin:0}
+.gcards>.gcard>.sechead{padding-bottom:.5rem;border-bottom:1px solid var(--b4)}
+.gcards>.gcard>.srclist{margin-top:auto;padding-top:.6rem}
+.grid>.panel,.grid>section.panel{display:flex;flex-direction:column;gap:.35rem;min-width:0;height:100%;box-sizing:border-box}
+.grid>.panel>h3,.grid>.panel>.row{margin:0}
+.panel .npc{flex-direction:row;align-items:center;text-align:left;gap:.7rem;margin:0 0 .3rem;width:100%}
+.panel .npc img,.panel .npc svg{width:52px;height:52px;flex:none}
+.panel .npc figcaption{min-width:0}
+
+/* v0.83 Methods: one column, same collapsed card for every method; details open on demand */
+.mlist{display:flex;flex-direction:column;gap:.7rem;max-width:60rem}
+.mcard{margin:0;padding:0}
+.mhead{padding:.9rem 1.1rem .6rem}.mhead h2{margin:.35rem 0 .3rem;font-size:1.1rem}.mhead p{margin:0;color:var(--t2)}
+.mtags{display:flex;flex-wrap:wrap;gap:.35rem}
+.mbody{border-top:1px solid var(--b4);padding:0 1.1rem}.mbody>summary{cursor:pointer;padding:.6rem 0;color:var(--acc);font-weight:600;list-style:none}.mbody>summary::-webkit-details-marker{display:none}.mbody>summary::before{content:"▸ "}.mbody[open]>summary::before{content:"▾ "}
+.mbody[open]{padding-bottom:1rem}
+
+/* v0.84 every card grid: boxes in a row share one height; a box with more content scrolls inside instead of growing */
+.grid,.cols,.acctgrid,.lgrid,.hubgrid,.relgrid,.acards,.pgrid,.zones,.rgroups,.sgrid,.found,.goalgrid,.cgrid,.gsel,.emb,.qtiles,.facts,.rungs,.cards,.list.cat{align-items:stretch}
+.grid>*,.cols>*,.acctgrid>*,.lgrid>*,.hubgrid>*,.relgrid>*,.acards>*,.pgrid>*,.zones>*,.rgroups>*,.sgrid>*,.found>*,.goalgrid>*,.cgrid>*,.gsel>*,.emb>*{box-sizing:border-box;min-width:0;height:100%}
+.goalgrid>li>a,.cgrid>li>*{height:100%;box-sizing:border-box}
+.grid>.panel,.cols>.minicard,.rgroups>.rgroup,.sgrid>*,.relgrid>*{max-height:26rem;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--b4) transparent}
+.lgrid>.lcard.open{max-height:none}

@@ -6,7 +6,7 @@ import { useCatalogs } from "./lib/useCatalog";
 import { parseRelics } from "./lib/drops";
 import { PAGES, search, type Ent, type Hit } from "./lib/search";
 import { buildDocs, goalTarget } from "./lib/searchDocs";
-import { buildIndex, searchIndex } from "./lib/smartSearch";
+import { buildIndex, searchIndex, suggest } from "./lib/smartSearch";
 import { methodsForQuery, understand } from "./lib/understand";
 import { ENEMY_ALT, ENEMY_SRC, ENEMY_URL, parseEnemies } from "./lib/enemies";
 import { FILES, parseThings, resAlt, resUrl, RES_SRC } from "./lib/resources";
@@ -31,7 +31,10 @@ export default function Palette({ onClose }: { onClose: () => void }) {
   const d0 = extra[0]?.rec?.data, d1 = extra[1]?.rec?.data, d2 = extra[2]?.rec?.data;
   const resources = useMemo(() => parseThings(d0), [d0]), items = useMemo(() => parseThings(d1), [d1]), enemies = useMemo(() => parseEnemies(d2), [d2]);
   const ix = useMemo(() => buildIndex([...buildDocs({ pages: PAGES, ents, relics, resources, items, enemies }), ...methodDocs()]), [ents, relics, resources, items, enemies]);
-  const u = useMemo(() => understand(q), [q]), intent = u.intent, sub = intent && "subject" in intent ? intent.subject : "";
+  const u0 = useMemo(() => understand(q), [q]);
+  // Misspelt words: if nothing was recognised, retry with the closest known words and offer them as "Did you mean".
+  const fixed = useMemo(() => (q.trim().length >= 3 ? suggest(ix, u0.text) : null), [ix, u0.text, q]);
+  const u = useMemo(() => (!u0.material && fixed ? understand(fixed) : u0), [u0, fixed]), intent = u.intent, sub = intent && "subject" in intent ? intent.subject : "";
   const smart = useMemo(() => searchIndex(ix, sub || u.text, 12), [ix, u.text, sub]);
   // The older sentence patterns still add their shortcuts (need, build, prerequisite); the cards below replace the ones they overlap with.
   const shortcuts = q.trim().length >= 3 ? search(q, relics, ents).filter(h => h.cat === "Intent" && h.to !== "/farm" && h.to !== "/patches") : [];
@@ -57,6 +60,7 @@ export default function Palette({ onClose }: { onClose: () => void }) {
     <div className="pal" role="dialog" aria-modal="true" aria-label="Search">
       <input autoFocus aria-label="Search" placeholder="Search anything, or ask: what should I farm now, where do I get X" value={q} onChange={e => { setQ(e.target.value); setSel(0); }} onKeyDown={key} />
       <div className="answers">{intent?.kind === "now" && <NowAnswer go={onClose} />}{intent?.kind === "changed" && <ChangedAnswer go={onClose} />}{methods && <MethodAnswer key={methods.map(m => m.id).join()} methods={methods} subject={intent?.kind === "method" ? u.material ?? intent.subject : ""} go={onClose} />}{whatName && <WhatAnswer key={"w" + whatName} name={whatName} info={info} go={onClose} />}{itemName && <ItemAnswer key={itemName} name={itemName} go={onClose} info={info} />}{target && top && <GoalAnswer key={top.doc.to} cat={target.cat} slug={target.slug} name={top.doc.title} go={onClose} />}</div>
+      {fixed && fixed !== u0.text && <div className="muted pad">Did you mean <button className="btn sm" onClick={() => { setQ(fixed); setSel(0); }}>{fixed}</button>?</div>}
       <div role="listbox">{hits.map((h, i) => <div key={h.cat + h.label + i} role="option" aria-selected={i === sel} onClick={() => go(h)}><span>{h.label}</span><span className="tag">{h.cat}</span></div>)}
         {!hits.length && <div className="muted pad">{q ? "No results. Try fewer or shorter words." : "Type to search"}</div>}</div></div></div>);
 }

@@ -13,15 +13,15 @@ export default function Methods() {
     <div className="chips" role="group" aria-label="What do you want to farm">{GOALS.map(g => <button key={g} className={"btn" + (goal === g ? " on" : "")} aria-pressed={goal === g} onClick={() => setGoal(g)}>{g}</button>)}</div>
     <div className="chips" role="group" aria-label="Level">{LEVELS.map(l => <button key={l} className={"btn" + (level === l ? " on" : "")} aria-pressed={level === l} onClick={() => setLevel(l)}>{l}</button>)}</div>
     <p className="muted">The numbers are chances or amounts per roll or per run, not per hour: the wiki does not measure time. Methods are written by hand and may change with game updates.</p>
-    <div className="gcards">{list.map(m => <section key={m.id} id={m.id} className="gcard sec" style={{ scrollMarginTop: "4.2rem" }}>
-      <header className="sechead"><h2>{m.title}</h2><span className="tag">{m.level}</span>{m.status === "community" && <span className="tag STALE">Community strategy, not verified</span>}</header>
-      <p>{m.summary}</p>
-      {m.requires.length > 0 && <p className="note"><b>Needs first:</b> {m.requires.join("; ")}.</p>}
-      <h3>What to do</h3><ol className="steps">{m.steps.map(s => <li key={s} className="step"><span>{s}</span></li>)}</ol>
-      <h3>Boosts</h3><ul>{m.boosts.map(b => <li key={b.name}><b>{b.name}</b>: {b.effect} <span className={"tag " + (b.applies ? "FRESH" : "STALE")}>{b.applies ? "Applies" : "Does not apply"}</span></li>)}</ul>
-      {m.mods?.map(x => <article key={x.name} className="minicard"><h4>{x.name}</h4><p>{x.effect}</p><p className="muted">Polarity {x.polarity} · drain {x.drain}</p><p className="muted">Where to get it: {x.where}.</p><Link to={thingRoute(x.name)}>Open its page</Link></article>)}
-      {m.notes.map(n => <p key={n} className="note">{n}</p>)}
-      <p className="muted">{m.yields.map((y, i) => <span key={y}>{i ? " · " : ""}<Link to={thingRoute(y)}>All sources of {y}</Link></span>)}</p>
-      <p className="srclist">Source: <a href={m.source.url} target="_blank" rel="noreferrer">{m.source.label}</a> (read {m.checked}). {m.confidence}</p></section>)}</div>
+    <div className="mlist">{list.map(m => <section key={m.id} id={m.id} className="gcard sec mcard" style={{ scrollMarginTop: "4.2rem" }}>
+      <header className="mhead"><div className="mtags"><span className="tag">{m.level}</span>{m.yields.map(y => <span key={y} className="tag FRESH">{y}</span>)}{m.status === "community" && <span className="tag STALE">Community strategy, not verified</span>}</div><h2>{m.title}</h2><p>{m.summary}</p></header>
+      <details open={m.id === target} className="mbody"><summary>Steps, boosts and sources</summary>
+        {m.requires.length > 0 && <p className="note"><b>Needs first:</b> {m.requires.join("; ")}.</p>}
+        <h3>What to do</h3><ol className="steps">{m.steps.map(s => <li key={s} className="step"><span>{s}</span></li>)}</ol>
+        <h3>Boosts</h3><ul>{m.boosts.map(b => <li key={b.name}><b>{b.name}</b>: {b.effect} <span className={"tag " + (b.applies ? "FRESH" : "STALE")}>{b.applies ? "Applies" : "Does not apply"}</span></li>)}</ul>
+        {m.mods?.map(x => <article key={x.name} className="minicard"><h4>{x.name}</h4><p>{x.effect}</p><p className="muted">Polarity {x.polarity} · drain {x.drain}</p><p className="muted">Where to get it: {x.where}.</p><Link to={thingRoute(x.name)}>Open its page</Link></article>)}
+        {m.notes.map(n => <p key={n} className="note">{n}</p>)}
+        <p className="muted">{m.yields.map((y, i) => <span key={y}>{i ? " · " : ""}<Link to={thingRoute(y)}>All sources of {y}</Link></span>)}</p>
+        <p className="srclist">Source: <a href={m.source.url} target="_blank" rel="noreferrer">{m.source.label}</a> (read {m.checked}). {m.confidence}</p></details></section>)}</div>
     {!list.length && <p className="muted">No method matches that filter.</p>}</>);
 }
