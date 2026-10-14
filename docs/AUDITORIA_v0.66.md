@@ -67,3 +67,21 @@ Métodos: 13 (Forma, Orokin Cells, Steel Essence, Endo/Ayatan, Index+Xoris como 
 
 ## Hecho en v0.78
 Buscador: léxico ES↔EN (`lexicon.ts`), `understand.ts`, intenciones "cómo consigo X" y "qué es X", archivo de frases (`search.golden.test.ts`). Pendiente: más términos (armas, mods, Warframes en español), "¿quisiste decir?", recientes, registro de búsquedas sin resultado, comparar X con Y, respuesta compuesta con la meta.
+
+## Hecho en v0.79
+- Tarjetas uniformes (Métodos, NPC/vendors), reliquias exactas en componentes (Entity), tolerancia a errores de escritura ("aia"→Aya) y "Did you mean" en el buscador.
+
+## Hecho en v0.80
+- 4 métodos nuevos (Neurodes, Detonite Injector, Pathos Clamp, Rubedo): 29 en total. Lexicon: Detonite Injector, Pathos Clamp.
+
+## Hecho en v0.81
+- 4 métodos más (Vitus Essence, Entrati Lanthorn, Fieldron, Mutagen Sample): 33 en total.
+
+## Hecho en v0.82
+- Nano Spores y recursos básicos (Ferrite, Alloy Plate, Polymer Bundle): 35 métodos.
+
+## Hecho en v0.83
+- Methods: una columna, tarjetas colapsadas iguales (el grid de v0.79 seguía quedando desparejo).
+
+## Hecho en v0.84
+- CSS global: todas las grillas de tarjetas igualan alto por fila; las largas scrollean adentro (max 26rem).
