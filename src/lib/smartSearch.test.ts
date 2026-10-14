@@ -34,3 +34,14 @@ it("reads \"how do I get X\" and \"what is X\" without a farming word", () => {
   expect(detectIntent("best way to get endo fast")).toEqual({ kind: "method", subject: "endo" }); expect(detectIntent("what is vosfor")).toEqual({ kind: "what", subject: "vosfor" }); expect(detectIntent("para que sirve el vosfor")).toEqual({ kind: "what", subject: "vosfor" });
   expect(detectIntent("how are you")).toBeNull(); expect(detectIntent("what is")).toBeNull();
 });
+import { phon, suggest } from "./smartSearch";
+it("finds the right thing when a beginner misspells it, even a three-letter word", () => {
+  const docs: Doc[] = ["Aya", "Kuva", "Gallium", "Vosfor", "Nitain Extract", "Wisp Prime", "Acceltra Prime", "Ayatan Star", "Tellurium"].map(t => ({ title: t, kind: "Resource", to: "/" + t }));
+  const ix = buildIndex(docs);
+  for (const [typed, want] of [["aia", "Aya"], ["aja", "Aya"], ["kuba", "Kuva"], ["cuva", "Kuva"], ["galium", "Gallium"], ["bosfor", "Vosfor"], ["nytain", "Nitain Extract"], ["wsip prime", "Wisp Prime"], ["aceltra", "Acceltra Prime"], ["telurium", "Tellurium"]]) expect(searchIndex(ix, typed, 1)[0]?.doc.title).toBe(want);
+  expect(phon("aia")).toBe(phon("aya")); expect(phon("kuba")).toBe(phon("kuva"));
+});
+it("suggests the corrected query, and leaves a word that is still being typed alone", () => {
+  const ix = buildIndex(["Aya", "Kuva", "Vosfor"].map(t => ({ title: t, kind: "Resource", to: "/" + t })));
+  expect(suggest(ix, "aia")).toBe("aya"); expect(suggest(ix, "bosfor")).toBe("vosfor"); expect(suggest(ix, "vos")).toBeNull(); expect(suggest(ix, "aya")).toBeNull(); expect(suggest(ix, "zzzzzz")).toBeNull();
+});

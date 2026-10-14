@@ -22,7 +22,9 @@ export function within(a: string, b: string, max: number): number {
   }
   return p[b.length];
 }
-export interface Index { docs: Doc[]; post: Map<string, [number, number][]>; vocab: string[]; titles: string[] }
+/** How a word sounds, roughly, so that spellings a beginner would write match: aia = aya, kuba = kuva, bosfor = vosfor, galium = gallium. Not a spelling rule: it only compares. */
+export const phon = (w: string) => w.replace(/ph/g, "f").replace(/ck|qu/g, "k").replace(/c(?=[eiy])/g, "s").replace(/c/g, "k").replace(/z/g, "s").replace(/v/g, "b").replace(/y/g, "i").replace(/(?<![cs])h/g, "").replace(/(.)\1+/g, "$1");
+export interface Index { docs: Doc[]; post: Map<string, [number, number][]>; vocab: string[]; titles: string[]; /** Sound-alike key to the words that have it. */ ph: Map<string, string[]> }
 const W = { title: 3, alias: 2, body: 1 } as const;
 export function buildIndex(docs: Doc[]): Index {
   const post = new Map<string, [number, number][]>(), titles: string[] = [];
@@ -33,7 +35,8 @@ export function buildIndex(docs: Doc[]): Index {
     if (d.body) tokens(d.body).slice(0, 300).forEach(t => put(t, W.body));
     for (const [t, w] of best) { const a = post.get(t); if (a) a.push([i, w]); else post.set(t, [[i, w]]); }
   });
-  return { docs, post, vocab: [...post.keys()].sort(), titles };
+  const ph = new Map<string, string[]>(); for (const t of post.keys()) if (t.length >= 3) { const k = phon(t), a = ph.get(k); if (a) a.push(t); else ph.set(k, [t]); }
+  return { docs, post, vocab: [...post.keys()].sort(), titles, ph };
 }
 const lower = (v: string[], t: string) => { let lo = 0, hi = v.length; while (lo < hi) { const m = (lo + hi) >> 1; if (v[m] < t) lo = m + 1; else hi = m; } return lo; };
 /** Ranks the documents for a query. A document needs most of the words (at least 60%); more words, better words and a title that starts like the query score higher. */
@@ -46,8 +49,11 @@ export function searchIndex(ix: Index, query: string, limit = 10): Match[] {
     const add = (tok: string, q: number) => { for (const [d, w] of ix.post.get(tok) ?? []) { const cur = found.get(d); if (!cur || q * w > cur[0]) found.set(d, [q * w, w]); } };
     if (ix.post.has(t)) add(t, 1);
     if (t.length >= 2) { let c = 0; for (let i = lower(ix.vocab, t); i < ix.vocab.length && ix.vocab[i].startsWith(t) && c < 300; i++, c++) if (ix.vocab[i] !== t) add(ix.vocab[i], last ? 0.8 : 0.65); }
-    if (t.length >= 3 && found.size < 40) for (const v of ix.vocab) if (v.length > t.length && !v.startsWith(t) && v.includes(t)) add(v, 0.4);
+    if (t.length >= 4 && found.size < 40) for (const v of ix.vocab) if (v.length > t.length && !v.startsWith(t) && v.includes(t)) add(v, 0.4);
     if (t.length >= 4 && found.size < 10) { const max = t.length >= 8 ? 2 : 1; for (const v of ix.vocab) { if (Math.abs(v.length - t.length) > max) continue; const d = within(t, v, max); if (d >= 1 && d <= max) add(v, d === 1 ? 0.55 : 0.4); } }
+    // Nothing matched this word: look for words that sound the same (aia = aya), then for one or two wrong letters.
+    if (found.size === 0 && t.length >= 3) { const pt = phon(t); for (const v of ix.ph.get(pt) ?? []) add(v, 0.7);
+      if (found.size === 0) { const max = pt.length >= 9 ? 2 : 1; for (const [k, vs] of ix.ph) { if (Math.abs(k.length - pt.length) > max) continue; const d = within(pt, k, max); if (d >= 1 && d <= max) for (const v of vs) add(v, d === 1 ? 0.5 : 0.35); } } }
     for (const [d, [s, w]] of found) { const e = per.get(d) ?? { s: new Array<number>(n).fill(0), w: 0 }; e.s[k] = s; e.w = Math.max(e.w, w); per.set(d, e); }
   });
   const qn = qt.join(" "), out: Match[] = [];
@@ -59,6 +65,20 @@ export function searchIndex(ix: Index, query: string, limit = 10): Match[] {
     out.push({ doc, score, field: e.w >= 3 ? "title" : e.w >= 2 ? "alias" : "body" });
   }
   return out.sort((a, b) => b.score - a.score || a.doc.title.length - b.doc.title.length).slice(0, limit);
+}
+/** The query with each misspelt word replaced by the closest word the index knows, or null when nothing needed fixing. A word that is the start of a known word is left alone (the person is still typing). */
+export function suggest(ix: Index, query: string): string | null {
+  const ts = tokens(query); let changed = false;
+  const out = ts.map(t => {
+    if (t.length < 3 || STOP.has(t) || ix.post.has(t)) return t;
+    const k = lower(ix.vocab, t); if (k < ix.vocab.length && ix.vocab[k].startsWith(t)) return t;
+    const weight = (v: string) => ix.post.get(v)?.length ?? 0, pt = phon(t);
+    let best: string | null = null, bd = 9;
+    for (const v of ix.ph.get(pt) ?? []) if (best === null || weight(v) > weight(best)) { best = v; bd = 0; }
+    if (best === null) { const max = t.length >= 9 ? 2 : 1; for (const v of ix.vocab) { if (Math.abs(v.length - t.length) > max) continue; const d = within(t, v, max); if (d >= 1 && d <= max && (d < bd || (d === bd && weight(v) > weight(best!)))) { best = v; bd = d; } } }
+    if (best === null || bd > 2) return t; changed = true; return best;
+  });
+  return changed ? out.join(" ") : null;
 }
 /** What the person is asking for, read from the words and not from a fixed sentence. */
 export type Intent = { kind: "now" } | { kind: "changed" } | { kind: "method"; subject: string } | { kind: "where"; subject: string } | { kind: "what"; subject: string } | null;
@@ -73,6 +93,7 @@ const GETW = new Set("get got obtain find consigo conseguir consigue conseguirlo
 /** Nouns that only point at the thing ("this material"), not at which thing it is. */
 const NOUNW = new Set("material materials recurso recursos resource resources item items objeto objetos este esta esto ese esa aquel".split(" "));
 const WHATRE = /^(?:what is|what are|what s|whats|que es|que son|para que sirve|para que sirven|what does (.+) do|tell me about|info about|info on|info sobre|informacion de|informacion sobre|explain|explica|explicame)\b/;
+export const isFiller = (t: string) => isIntentWord(t);
 const isIntentWord = (t: string) => GETW.has(t) || NOUNW.has(t) || FASTW.has(t) || STOP.has(t) || FARMW.has(t) || NOWW.has(t) || WHEREW.has(t) || DOW.has(t);
 export function detectIntent(q: string): Intent {
   const n = normalize(q), ts = n ? n.split(" ") : []; if (ts.length < 2) return null;
