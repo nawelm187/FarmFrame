@@ -22,6 +22,17 @@ Re-count of tests: 60 test files and 241 `it(`/`test(` text matches, but only 23
 
 **Before publishing run:** `npm ci && npm run typecheck && npm test && npm run build`. If typecheck reports an error in `CloudProvider.tsx` or `Sources.tsx`, it comes from my edit there.
 
+### Results reported from the owner's PC (2026-10-14, Windows, vitest 2.1.9; pasted console output, not run by me)
+
+| Command | Result |
+|---|---|
+| `npm ci` | OK, 112 packages. `npm` reported **8 vulnerabilities (5 moderate, 1 high, 2 critical)**, not analysed yet: run `npm audit --omit=dev` to see whether any affects what ships to the browser; do not run `npm audit fix --force` blindly. npm also blocked the `esbuild` install script (`allowScripts`); typecheck and tests still ran. |
+| `npm run typecheck` (real `tsc --noEmit`) | **Passed** (the chain continued). This covers my edits in `CloudProvider.tsx` and `Sources.tsx`. |
+| `npm test` (real vitest) | 65 files, **264 passed, 1 failed**. The failure was my own test: `featureMatrix.test.ts` compared testIds with the wrong glob key format (vite names files of the same folder `./x`, my stand-in runner named them `../lib/x`). Fixed in this version and reproduced with a stand-in that now mimics vite's key format. Not yet re-run with the real vitest. |
+| `npm build` | The command typed was `npm build`, which is not the build script: **the build has not run**. Use `npm run build`. |
+
+Lesson recorded: the stand-in runner is not faithful to vite in details like glob keys, so its passes are weaker evidence than a real run.
+
 ## 2. Audit findings re-verified against the code
 
 | Claim in the directive | Verified result |
