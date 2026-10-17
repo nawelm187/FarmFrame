@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { aboutText, MANUAL, parseThings, pct, whereFrom } from "./resources";
 it("reads resources and sorts drops by chance", () => {
   const t = parseThings([{ name: "Ferrite", type: "Resource", imageName: "f.png", drops: [{ location: "A", chance: 0.1 }, { location: "B", chance: 0.3 }] }, { name: "Alloy" }])!;
@@ -14,3 +14,8 @@ it("pulls the source out of a description", () => {
   expect(whereFrom("")).toEqual([]);
 });
 it("has manual sources for the Necramech parts", () => { expect(MANUAL["Voidrig Capsule"]).toMatch(/Necraloid/); });
+describe("pct: pinned behaviour", () => {
+  it("values up to 1 are read as fractions, larger ones as percentages (the source's format is assumed, not verified)", () => {
+    expect(pct(0.5)).toBe(50); expect(pct(1)).toBe(100); expect(pct(22.5)).toBe(22.5); expect(pct(null)).toBeNull(); expect(pct(0.14289)).toBe(14.29);
+  });
+});

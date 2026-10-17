@@ -13,3 +13,10 @@ export function trustLine(used: Used[], now = Date.now()): { lines: string[]; wa
   const warn = [bad.length ? `${bad.join(" and ")} may be out of date, so double-check before acting.` : "", odd.length ? `${odd.join(" and ")} changed format, so some results may be missing or wrong.` : ""].filter(Boolean).join(" ");
   return { lines, warn: warn || null };
 }
+/** The line under a panel: when its data was retrieved. A time of day alone is not enough (data from yesterday looked like today's), so another day shows the date too, and a copy read from the device cache says so. */
+export function provLine(rec: Rec | undefined, now = Date.now()): string {
+  const err = rec?.err ? " · " + rec.err : "";
+  if (!rec?.at) return "Not retrieved" + err;
+  const d = new Date(rec.at), same = new Date(now).toDateString() === d.toDateString();
+  return `Retrieved ${same ? d.toLocaleTimeString() : d.toLocaleString()}${rec.via === "cache" ? " · from the device cache" : ""}${err}`;
+}

@@ -33,3 +33,12 @@ it("a relic reward with no chance is dropped instead of becoming 0%", () => {
   expect(r[0].st.Intact.map(x => x.itemName)).toEqual(["X"]); expect(r[0].st.Intact[0].chance).toBe(25.33);
 });
 
+describe("probability arithmetic: pinned edge cases", () => {
+  it("eff multiplies two percentages and keeps two decimals; null in, null out", () => {
+    expect(eff(25.33, 11)).toBe(2.79); expect(eff(100, 100)).toBe(100); expect(eff(0, 0)).toBe(0);
+    expect(eff(undefined as unknown as number, 5)).toBeNull();
+  });
+  it("known limit: a tiny but non-zero product rounds to 0 (shown as 0%, not 'less than 0.01%')", () => {
+    expect(eff(1, 0.4)).toBe(0);
+  });
+});

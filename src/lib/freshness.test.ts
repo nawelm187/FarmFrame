@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { ago, trustLine } from "./freshness";
+import { ago, provLine, trustLine } from "./freshness";
 const now = 10_000_000_000;
 it("describes how long ago something was retrieved", () => {
   expect(ago(null, now)).toBe("not retrieved"); expect(ago(now - 20_000, now)).toBe("just now"); expect(ago(now - 5 * 60_000, now)).toBe("5 min ago");
@@ -21,4 +21,14 @@ it("says when a fresh result came from the device cache and not from the source 
   expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec("cache") }], now).lines[0]).toBe("Drops: 1 h ago (from the device cache, not re-checked this visit)");
   expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec("network") }], now).lines[0]).toBe("Drops: 1 h ago");
   expect(trustLine([{ label: "Drops", status: "FRESH", rec: rec() }], now).lines[0]).toBe("Drops: 1 h ago");
+});
+it("provLine: same-day time only, other days with the date, cache and errors are said", () => {
+  const at = Date.parse("2026-10-13T15:15:00"), rec = (o: object = {}) => ({ id: "x", data: null, at, err: null, url: "", window: 1, src: "", ...o });
+  const sameDay = Date.parse("2026-10-13T20:00:00"), nextDay = Date.parse("2026-10-14T09:00:00");
+  expect(provLine(rec(), sameDay)).toBe("Retrieved " + new Date(at).toLocaleTimeString());
+  expect(provLine(rec(), nextDay)).toBe("Retrieved " + new Date(at).toLocaleString());
+  expect(provLine(rec({ via: "cache" }), sameDay)).toContain("from the device cache");
+  expect(provLine(rec({ err: "HTTP 500" }), sameDay)).toContain(" · HTTP 500");
+  expect(provLine(undefined, sameDay)).toBe("Not retrieved");
+  expect(provLine(rec({ at: null, err: "down" }), sameDay)).toBe("Not retrieved · down");
 });
