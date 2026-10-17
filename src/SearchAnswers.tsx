@@ -84,3 +84,13 @@ export function WhatAnswer({ name, info, go }: { name: string; info: ThingInfo |
     {ms.length > 0 && <><b>Ways to farm it</b><ul>{ms.map(m => <li key={m.id}><Link to={`/methods?m=${m.id}`} onClick={go}>{m.title}</Link> <span className="muted">· {m.level}</span></li>)}</ul></>}
     <Link to={`/item/${encodeURIComponent(name)}`} onClick={go}>Where to get it, with prices</Link></Card>);
 }
+
+/** "Lore of X": shows the in-game description FarmFrame has for the best match and opens the Lore codex on that name. It never writes story text of its own. */
+export function LoreAnswer({ subject, hit, go }: { subject: string; hit: { title: string; kind: string; to: string; body?: string } | null; go: () => void }) {
+  const name = hit?.title ?? subject, base = name.replace(/ prime$/i, "");
+  return (<Card title={`Lore: ${name}`}>
+    {hit?.body ? <p><b>In-game description</b>{`. ${hit.body.slice(0, 400)}${hit.body.length > 400 ? "…" : ""}`}</p> : <p className="muted">No description for this name in the loaded data.</p>}
+    <p className="muted">The Lore page has the story timeline, factions, places and the Warframe codex.</p>
+    <Link to={`/lore?t=warframes&q=${encodeURIComponent(base)}`} onClick={go}>Find {base} in the Warframe codex</Link>{" · "}
+    {hit && <><Link to={hit.to} onClick={go}>Open {hit.title}</Link>{" · "}</>}<Link to="/lore" onClick={go}>Lore page</Link></Card>);
+}

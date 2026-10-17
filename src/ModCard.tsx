@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { PolIcon } from "./Icons";
 import { imgRetry, imgUrl, type Entity } from "./lib/catalog";
 import { clean } from "./lib/text";
+import { useT } from "./i18n";
 // Frame colors per rarity (light, base, dark), in the spirit of the in-game bronze / silver / gold / white cards. Drawn in CSS, no game assets used.
 const RC: Record<string, [string, string, string]> = {
   common: ["#D2A275", "#9A6B43", "#4E3522"], uncommon: ["#E6E9ED", "#A1A7AE", "#5A5F65"], rare: ["#F3DA92", "#C29B4A", "#6E5526"],
@@ -11,6 +12,7 @@ const FALLBACK: [string, string, string] = ["#A6ABAE", "#757B7F", "#3B4043"];
 const ARCHON = /archon|primed|amalgam/i;
 /** Mod card in the spirit of the in-game card: metal frame by rarity, drain and polarity over the art, name banner, effect text, rank pips and category. */
 export default function ModCard({ e, rank, big }: { e: Entity; rank?: number; big?: boolean }) {
+  const tr = useT();
   const [bad, setBad] = useState(false), mr = e.maxRank ?? 0, r = Math.min(rank ?? mr, mr), key = e.rarity.toLowerCase(), [lt, bs, dk] = RC[key] ?? FALLBACK;
   const ls = e.levelStats?.length ? e.levelStats[Math.min(r, e.levelStats.length - 1)] : [];
   const raw = ls.length ? ls : e.description ? [e.description] : [];
@@ -22,7 +24,7 @@ export default function ModCard({ e, rank, big }: { e: Entity; rank?: number; bi
     <div className="mface">
       <div className="mart">
         {e.image && !bad ? <img src={imgUrl(e.image)} alt="" loading="lazy" decoding="async" onError={ev => { if (!imgRetry(ev)) setBad(true); }} /> : <span className="noart" aria-hidden="true">{e.name.charAt(0)}</span>}
-        {drain != null && <span className="drain" title="Mod capacity cost at this rank"><b>{drain}</b></span>}
+        {drain != null && <span className="drain" title={tr("modDrain")}><b>{drain}</b></span>}
         {e.polarity && <span className="mpol" title={e.polarity + " polarity"}><PolIcon pol={e.polarity} size={big ? 20 : 16} /></span>}
       </div>
       <h4>{e.name}</h4>

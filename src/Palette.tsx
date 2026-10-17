@@ -10,15 +10,16 @@ import { buildIndex, searchIndex, suggest } from "./lib/smartSearch";
 import { methodsForQuery, understand } from "./lib/understand";
 import { ENEMY_ALT, ENEMY_SRC, ENEMY_URL, parseEnemies } from "./lib/enemies";
 import { FILES, parseThings, resAlt, resUrl, RES_SRC } from "./lib/resources";
-import { ChangedAnswer, GoalAnswer, ItemAnswer, MethodAnswer, NowAnswer, WhatAnswer } from "./SearchAnswers";
+import { ChangedAnswer, GoalAnswer, ItemAnswer, LoreAnswer, MethodAnswer, NowAnswer, WhatAnswer } from "./SearchAnswers";
 import { METHODS } from "./data/methods";
 import { methodDocs } from "./lib/methods";
 import { sameName } from "./lib/refs";
+import { useT } from "./i18n";
 const ITEM_KINDS = new Set(["Part", "Item", "Resource", "Vendor"]);
 const kindOf = (c: Cat, cg: string) => (c === "warframe" || c === "companion" || c === "archwing" ? c : c === "weapon" && ["primary", "secondary", "melee"].includes(cg.toLowerCase()) ? cg.toLowerCase() : undefined);
 export default function Palette({ onClose }: { onClose: () => void }) {
   const [{ rec }] = useMany([{ id: "relics", file: "relics.json" }]);
-  const [q, setQ] = useState(""), [sel, setSel] = useState(0), nav = useNavigate();
+  const [q, setQ] = useState(""), [sel, setSel] = useState(0), nav = useNavigate(), t = useT();
   const cats: Cat[] = q.trim().length >= 3 ? ["warframe", "weapon", "companion", "archwing", "mod"] : ["warframe", "weapon", "companion", "archwing"];
   const loaded = useCatalogs(cats);
   const ents = useMemo(() => cats.flatMap(c => (loaded[c]?.items ?? []).map((e): Ent & { description: string } => ({ name: e.name, cat: c, slug: e.slug, label: CATS[c].label.replace(/s$/, ""), kind: kindOf(c, e.category), parts: e.components.map(k => k.name), description: e.description }))),
@@ -50,6 +51,8 @@ export default function Palette({ onClose }: { onClose: () => void }) {
   const topMethod = !intent && !itemName && top?.doc.kind === "Method" && top.score >= 1.5 ? METHODS.find(x => `method:${x.id}` === top.doc.id) : undefined;
   const methods = intent?.kind === "method" ? ms : topMethod ? [topMethod] : intent?.kind === "where" && !itemName && ms.length ? ms : null;
   const target = !intent && !itemName && !methods && q.trim().length >= 3 && top && top.field === "title" && top.score >= 2.2 ? goalTarget(top.doc.to) : null;
+  // Lore question: the best catalog match that is a real thing (not a page), so "lore de styanax" shows Styanax.
+  const loreHit = intent?.kind === "lore" ? smart.find(m => m.doc.kind !== "Page")?.doc ?? null : null;
   const go = (h?: Hit) => { if (h) { nav(h.to); onClose(); } };
   const key = (e: KeyboardEvent) => {
     if (e.key === "Escape") onClose();
@@ -57,10 +60,10 @@ export default function Palette({ onClose }: { onClose: () => void }) {
     else if (e.key === "Enter") go(hits[sel]);
   };
   return (<div className="ov" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-    <div className="pal" role="dialog" aria-modal="true" aria-label="Search">
-      <input autoFocus aria-label="Search" placeholder="Search anything, or ask: what should I farm now, where do I get X" value={q} onChange={e => { setQ(e.target.value); setSel(0); }} onKeyDown={key} />
-      <div className="answers">{intent?.kind === "now" && <NowAnswer go={onClose} />}{intent?.kind === "changed" && <ChangedAnswer go={onClose} />}{methods && <MethodAnswer key={methods.map(m => m.id).join()} methods={methods} subject={intent?.kind === "method" ? u.material ?? intent.subject : ""} go={onClose} />}{whatName && <WhatAnswer key={"w" + whatName} name={whatName} info={info} go={onClose} />}{itemName && <ItemAnswer key={itemName} name={itemName} go={onClose} info={info} />}{target && top && <GoalAnswer key={top.doc.to} cat={target.cat} slug={target.slug} name={top.doc.title} go={onClose} />}</div>
-      {fixed && fixed !== u0.text && <div className="muted pad">Did you mean <button className="btn sm" onClick={() => { setQ(fixed); setSel(0); }}>{fixed}</button>?</div>}
+    <div className="pal" role="dialog" aria-modal="true" aria-label={t("searchLabel")}>
+      <input autoFocus aria-label={t("searchLabel")} placeholder={t("paletteHint")} value={q} onChange={e => { setQ(e.target.value); setSel(0); }} onKeyDown={key} />
+      <div className="answers">{intent?.kind === "now" && <NowAnswer go={onClose} />}{intent?.kind === "changed" && <ChangedAnswer go={onClose} />}{intent?.kind === "lore" && <LoreAnswer key={"l" + intent.subject} subject={intent.subject} hit={loreHit} go={onClose} />}{methods && <MethodAnswer key={methods.map(m => m.id).join()} methods={methods} subject={intent?.kind === "method" ? u.material ?? intent.subject : ""} go={onClose} />}{whatName && <WhatAnswer key={"w" + whatName} name={whatName} info={info} go={onClose} />}{itemName && <ItemAnswer key={itemName} name={itemName} go={onClose} info={info} />}{target && top && <GoalAnswer key={top.doc.to} cat={target.cat} slug={target.slug} name={top.doc.title} go={onClose} />}</div>
+      {fixed && fixed !== u0.text && <div className="muted pad">{t("didA")} <button className="btn sm" onClick={() => { setQ(fixed); setSel(0); }}>{fixed}</button>{t("didB")}</div>}
       <div role="listbox">{hits.map((h, i) => <div key={h.cat + h.label + i} role="option" aria-selected={i === sel} onClick={() => go(h)}><span>{h.label}</span><span className="tag">{h.cat}</span></div>)}
-        {!hits.length && <div className="muted pad">{q ? "No results. Try fewer or shorter words." : "Type to search"}</div>}</div></div></div>);
+        {!hits.length && <div className="muted pad">{q ? t("paletteNone") : t("paletteType")}</div>}</div></div></div>);
 }

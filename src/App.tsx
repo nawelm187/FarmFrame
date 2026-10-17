@@ -4,6 +4,8 @@ import { Icon, Logo } from "./Icons";
 import { CATS } from "./lib/catalog";
 import { Skeleton } from "./pages/parts";
 import usePageTitle from "./usePageTitle";
+import LangBar from "./LangBar";
+import { useT } from "./i18n";
 const Home = lazy(() => import("./pages/Home"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Alerts = lazy(() => import("./pages/Alerts"));
@@ -39,13 +41,13 @@ const Guides = lazy(() => import("./pages/Guides"));
 const Helminth = lazy(() => import("./pages/Helminth"));
 const Methods = lazy(() => import("./pages/Methods"));
 const GROUPS = [
-  { label: "Explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/parts", "/enemies", "/resources", "/lore", "/patches", "/kdrives", "/guides", "/helminth"], items: [["/warframes", "Warframes"], ["/weapons", "Weapons"], ["/mods", "Mods"], ["/companions", "Companions"], ["/archwings", "Archwings"], ["/railjack", "Railjack"], ["/relics", "Relics"], ["/parts", "Parts"], ["/enemies", "Enemies"], ["/resources", "Resources"], ["/lore", "Lore"], ["/patches", "Patch notes"], ["/kdrives", "K-Drives"], ["/guides", "Starter guides"], ["/helminth", "Helminth"]] },
-  { label: "Farm", hub: "/farm", pre: ["/farm", "/methods", "/finder", "/planner", "/syndicates", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "Farm Plan"], ["/methods", "Farming Methods"], ["/syndicates", "Syndicates"], ["/finder", "Resource Finder"], ["/planner", "Planner"], ["/rotations", "Rotations"], ["/fissures", "Fissures"], ["/invasions", "Invasions"], ["/alerts", "Alerts"]] },
-  { label: "Plan", hub: "/plan", pre: ["/plan", "/mastery", "/roadmap", "/builds", "/build", "/tracking"], items: [["/mastery", "Mastery Rank"], ["/roadmap", "Roadmap"], ["/builds", "Builds"], ["/tracking", "Tracking"]] },
-  { label: "Account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "Data sources"]] },
+  { k: "explore", hub: "/explore", pre: ["/explore", "/warframe", "/weapon", "/mod", "/companion", "/archwing", "/railjack", "/relics", "/parts", "/enemies", "/resources", "/lore", "/patches", "/kdrives", "/guides", "/helminth"], items: [["/warframes", "warframes"], ["/weapons", "weapons"], ["/mods", "mods"], ["/companions", "companions"], ["/archwings", "archwings"], ["/railjack", "railjack"], ["/relics", "relics"], ["/parts", "parts"], ["/enemies", "enemies"], ["/resources", "resources"], ["/lore", "lore"], ["/patches", "patchNotes"], ["/kdrives", "kdrives"], ["/guides", "starterGuides"], ["/helminth", "helminth"]] },
+  { k: "farm", hub: "/farm", pre: ["/farm", "/methods", "/finder", "/planner", "/syndicates", "/rotations", "/fissures", "/invasions", "/alerts"], items: [["/farm-plan", "farmPlan"], ["/methods", "farmingMethods"], ["/syndicates", "syndicates"], ["/finder", "resourceFinder"], ["/planner", "planner"], ["/rotations", "rotations"], ["/fissures", "fissures"], ["/invasions", "invasions"], ["/alerts", "alerts"]] },
+  { k: "plan", hub: "/plan", pre: ["/plan", "/mastery", "/roadmap", "/builds", "/build", "/tracking"], items: [["/mastery", "mastery"], ["/roadmap", "roadmap"], ["/builds", "builds"], ["/tracking", "tracking"]] },
+  { k: "account", hub: "/profile", pre: ["/profile", "/sources"], items: [["/sources", "dataSources"]] },
 ] as const;
 export default function App() {
-  const [open, setOpen] = useState(false), loc = useLocation();
+  const [open, setOpen] = useState(false), loc = useLocation(), t = useT();
   usePageTitle();
   useEffect(() => { const t = setTimeout(() => { void import("./pages/Explore"); void import("./pages/Entity"); void import("./pages/Relics"); void import("./pages/Builds"); }, 2500); return () => clearTimeout(t); }, []);
   useEffect(() => {
@@ -54,15 +56,15 @@ export default function App() {
   }, []);
   return (
     <div className="app">
-      <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById("main")?.focus(); }}>Skip to content</a>
-      <nav aria-label="Main">
+      <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById("main")?.focus(); }}>{t("skip")}</a>
+      <nav aria-label={t("navMain")}>
         <div className="logo"><Logo size={32} /><span className="wm">FARM<span>FRAME</span></span></div>
-        <NavLink to="/" end className="tab"><Icon n="/" />Home</NavLink>
-        {GROUPS.map(g => (<div key={g.label} className="grp"><Link to={g.hub} className={"tab grphead" + (g.pre.some(p => loc.pathname.startsWith(p)) ? " active" : "")}><Icon n={g.hub} />{g.label}</Link>
-          {g.items.map(([to, l]) => <NavLink key={to} to={to} className="sublink">{l}</NavLink>)}</div>))}
+        <NavLink to="/" end className="tab"><Icon n="/" />{t("home")}</NavLink>
+        {GROUPS.map(g => (<div key={g.k} className="grp"><Link to={g.hub} className={"tab grphead" + (g.pre.some(p => loc.pathname.startsWith(p)) ? " active" : "")}><Icon n={g.hub} />{t(g.k)}</Link>
+          {g.items.map(([to, l]) => <NavLink key={to} to={to} className="sublink">{t(l)}</NavLink>)}</div>))}
       </nav>
       <main id="main" tabIndex={-1}>
-        <button className="sbtn" onClick={() => setOpen(true)}>Search relics, items, pages… or ask "where do I farm X" <kbd>Ctrl K</kbd></button>
+        <div className="topbar"><button className="sbtn" onClick={() => setOpen(true)}>{t("search")} <kbd>Ctrl K</kbd></button><LangBar /></div>
         <Suspense fallback={<Skeleton />}><Routes>
           <Route path="/" element={<Home />} /><Route path="/fissures" element={<Fissures />} /><Route path="/invasions" element={<Invasions />} />
           <Route path="/relics" element={<Relics />} /><Route path="/finder" element={<Finder />} /><Route path="/tracking" element={<Tracking />} />

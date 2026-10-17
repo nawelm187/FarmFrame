@@ -9,7 +9,9 @@ import "@fontsource/orbitron/latin-600.css";
 import "@fontsource/orbitron/latin-700.css";
 import "./styles.css";
 import { trackImages } from "./lib/imgHosts";
+import { initLang } from "./i18n";
 trackImages();
 const root = document.getElementById("root")!;
 root.setAttribute("data-ready", "1"); // proves the bundle loaded
-createRoot(root).render(<StrictMode><ErrorBoundary><CloudProvider><HashRouter><App /></HashRouter></CloudProvider></ErrorBoundary></StrictMode>);
+// The saved or browser language is loaded first, so a returning visitor never sees English flash by. English itself needs no download.
+void initLang().catch(() => undefined).then(() => createRoot(root).render(<StrictMode><ErrorBoundary><CloudProvider><HashRouter><App /></HashRouter></CloudProvider></ErrorBoundary></StrictMode>));

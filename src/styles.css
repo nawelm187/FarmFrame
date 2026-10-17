@@ -460,3 +460,27 @@ main:focus{outline:none}
 .goalgrid>li>a,.cgrid>li>*{height:100%;box-sizing:border-box}
 .grid>.panel,.cols>.minicard,.rgroups>.rgroup,.sgrid>*,.relgrid>*{max-height:26rem;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--b4) transparent}
 .lgrid>.lcard.open{max-height:none}
+
+/* v0.85 Rotations: opening a card must not stretch its whole row. The opened list scrolls inside its own capped box (summary stays visible),
+   the card grows only by that cap, and its neighbours keep their natural height. Cards with nothing open stay equal in height as before. */
+.grid:has(>.panel details[open]),.rgroups:has(>.rgroup details[open]){align-items:start}
+.grid:has(>.panel details[open])>.panel,.rgroups:has(>.rgroup details[open])>.rgroup{height:auto}
+.grid>.panel:has(details[open]){max-height:none;overflow:visible}
+.grid>.panel details[open],.rgroups>.rgroup details[open]{max-height:min(20rem,60dvh);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--acc2) transparent}
+.grid>.panel details[open]>summary{position:sticky;top:0;z-index:1;background:var(--b2)}
+.grid>.panel details[open] details[open],.rgroups>.rgroup details[open] details[open]{max-height:none;overflow:visible}
+
+/* v0.85 Home hero: rotating Warframes */
+.herorot{gap:.35rem;align-content:center}.herorot .heroframe{display:grid;place-items:center;border-radius:1rem;outline-offset:4px}
+.herorot .herocap{display:grid;justify-items:center;text-align:center;line-height:1.25}.herorot .herocap b{font-size:1rem}.herorot .herocap .muted{font-size:.8rem}
+.herodots{display:flex;gap:.35rem;margin-top:.15rem}.herodots .dot{width:.55rem;height:.55rem;min-width:0;padding:0;border-radius:50%;border:1px solid var(--acc2);background:transparent;cursor:pointer}.herodots .dot.on{background:var(--acc)}
+.herodots .dot:focus-visible,.herorot .heroframe:focus-visible{outline:2px solid var(--acc)}
+@media(prefers-reduced-motion:no-preference){.herorot .heroframe>*{animation:herofade .5s ease}@keyframes herofade{from{opacity:0}to{opacity:1}}}
+
+/* v0.89 top bar: search + language flags, always visible at the top of every page */
+.topbar{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:.5rem .75rem;align-items:center;margin:0 0 1rem;padding:.4rem 0;background:color-mix(in srgb,var(--b0) 88%,transparent);backdrop-filter:blur(6px)}
+.topbar .sbtn{flex:1 1 16rem;width:auto;margin:0}
+.langbar{display:flex;flex-wrap:wrap;gap:.3rem;margin-left:auto}
+.flag{display:grid;place-items:center;width:2.25rem;min-width:0;height:2.25rem;padding:0;border:1px solid var(--b4);border-radius:.5rem;background:var(--b2);cursor:pointer;opacity:.7}
+.flag svg{display:block;border-radius:2px}.flag:hover{opacity:1}.flag.on{opacity:1;border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}.flag:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(max-width:700px){.langbar{margin-left:0;width:100%}.topbar{position:static;backdrop-filter:none}}
