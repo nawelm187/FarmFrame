@@ -2,11 +2,13 @@
 // or come from the description or the drop list instead of the name. Nothing here knows a fixed sentence.
 export interface Doc { /** Stable id shared with goals, Tracking and Farm Plan (see refs.ts). */ id?: string; title: string; kind: string; to: string; /** Other names and keywords: counted almost like the title. */ alias?: string; /** Descriptions, drop places, rewards: counted lightly. */ body?: string; boost?: number }
 export interface Match { doc: Doc; score: number; field: "title" | "alias" | "body" }
-export const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/['’`]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+// Latin accents are removed (so "dónde" = "donde"); letters of other scripts (Cyrillic, Chinese, Japanese...) are kept, not erased.
+export const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").normalize("NFC").replace(/['’`]/g, "").replace(/ß/g, "ss").replace(/ø/g, "o").replace(/æ/g, "ae").replace(/œ/g, "oe").replace(/ł/g, "l").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 export const tokens = (s: string): string[] => { const n = normalize(s); return n ? n.split(" ") : []; };
 /** Words that carry no meaning on their own (English and Spanish). They are ignored unless the query has nothing else. */
 const STOP = new Set(("the a an of for to do does did i me my we you can could should would which what where when who how is are was in on at it its that this these with and or be get need want have has there any some " +
-  "de la el los las un una que como donde cual cuales para por mi quiero puedo debo se en y o con del al es hay algo thing things stuff something anything cosa cosas").split(" "));
+  "de la el los las un una que como donde cual cuales para por mi quiero puedo debo se en y o con del al es hay algo thing things stuff something anything cosa cosas " +
+  "necesito necesitas necesita ocupo busco buscando quisiera dame muestrame mostrar ver saber ayuda ayudame help hace hacen funciona funcionan llega llegan cuando cuanto quien quienes sirve sirven").split(" "));
 /** Distance with swapped neighbours counted as one edit; returns max + 1 as soon as it is clear the words are further apart than `max`. */
 export function within(a: string, b: string, max: number): number {
   if (Math.abs(a.length - b.length) > max) return max + 1;
@@ -81,15 +83,17 @@ export function suggest(ix: Index, query: string): string | null {
   return changed ? out.join(" ") : null;
 }
 /** What the person is asking for, read from the words and not from a fixed sentence. */
-export type Intent = { kind: "now" } | { kind: "changed" } | { kind: "method"; subject: string } | { kind: "where"; subject: string } | { kind: "what"; subject: string } | null;
-const FARMW = new Set("farm farming farmear farmeo grind grindear conseguir conseguirlo obtener obtain buy comprar find encontrar drop drops sells sell sold vende venden unlock desbloquear".split(" "));
+export type Intent = { kind: "now" } | { kind: "changed" } | { kind: "method"; subject: string } | { kind: "where"; subject: string } | { kind: "what"; subject: string } | { kind: "lore"; subject: string } | null;
+const FARMW = new Set("farm farming farmear farmeo farmeas farmea grind grindear conseguir conseguirlo obtener obtain buy comprar compro compras compra find encontrar drop drops cae caen sells sell sold vende venden unlock desbloquear desbloqueo desbloqueas desbloquea cuesta cuestan precio price cost costs".split(" "));
 const NOWW = new Set("now today tonight currently current right ahora hoy actualmente next best worth priority priorities conviene mejor primero first".split(" "));
 const DOW = new Set("do play run hacer jugar".split(" "));
 const WHEREW = new Set("where donde how como who which obtain".split(" "));
 const CHANGEDRE = /\b(changed|changes|patch notes?|patchnotes|hotfix|hotfixes|cambio|cambios|parche|parches|novedades|latest update|last update|newest update|ultima actualizacion)\b/;
-const FASTW = new Set("fast faster fastest quick quickly efficient efficiently rapido rapida eficiente method methods metodo metodos way ways".split(" "));
+/** "lore of X", "cual es la historia de X": the person wants the story or codex text of something, not where to get it. */
+const LOREW = new Set("lore historia trasfondo background backstory origen origin story".split(" "));
+const FASTW = new Set("fast faster fastest quick quickly efficient efficiently rapido rapida eficiente method methods metodo metodos way ways lugar lugares sitio sitios place places spot spots location".split(" "));
 /** Words of "how do I get X": with "how"/"como" they mean the person wants to know where X comes from. */
-const GETW = new Set("get got obtain find consigo conseguir consigue conseguirlo encuentro encontrar encuentra obtengo obtener obtiene ganar earn".split(" "));
+const GETW = new Set("get got obtain find consigo conseguir consigue conseguirlo encuentro encontrar encuentra obtengo obtener obtiene ganar earn saco sacar sacas saca".split(" "));
 /** Nouns that only point at the thing ("this material"), not at which thing it is. */
 const NOUNW = new Set("material materials recurso recursos resource resources item items objeto objetos este esta esto ese esa aquel".split(" "));
 const WHATRE = /^(?:what is|what are|what s|whats|que es|que son|para que sirve|para que sirven|what does (.+) do|tell me about|info about|info on|info sobre|informacion de|informacion sobre|explain|explica|explicame)\b/;
@@ -98,6 +102,7 @@ const isIntentWord = (t: string) => GETW.has(t) || NOUNW.has(t) || FASTW.has(t) 
 export function detectIntent(q: string): Intent {
   const n = normalize(q), ts = n ? n.split(" ") : []; if (ts.length < 2) return null;
   if (CHANGEDRE.test(n) && ts.length <= 7) return { kind: "changed" };
+  if (ts.some(t => LOREW.has(t))) { const subject = ts.filter(t => !isIntentWord(t) && !LOREW.has(t)).join(" "); if (subject.length >= 2 && subject.split(" ").length <= 5) return { kind: "lore", subject }; }
   const hasGet = ts.some(t => GETW.has(t)) && ts.some(t => t === "how" || t === "como" || t === "where" || t === "donde"), hasFarm = ts.some(t => FARMW.has(t)), hasNow = ts.some(t => NOWW.has(t)), hasDo = ts.some(t => DOW.has(t));
   const rest = ts.filter(t => !isIntentWord(t));
   // "forma" is also an item, so it only means "way" in "mejor forma de ...".

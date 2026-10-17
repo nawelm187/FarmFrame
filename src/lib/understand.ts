@@ -1,11 +1,15 @@
 import { METHODS, type Method } from "../data/methods";
 import { methodDocs, methodsFor } from "./methods";
 import { canon } from "./lexicon";
-import { buildIndex, detectIntent, searchIndex, type Intent } from "./smartSearch";
+import { toCanonical } from "./multilang";
+import { buildIndex, detectIntent, normalize, searchIndex, type Intent } from "./smartSearch";
+const NEED = /\b(necesito|necesitas|necesita|ocupo|busco|buscando|quiero|quisiera|dame|give me|i need|need|i want|want|looking for)\b/;
 /** What a typed query means: the query in game words, the intent, which material it names (if any) and what is left over. */
 export interface Understood { text: string; intent: Intent; material: string | null; /** Words of the subject that are not the material (for example "xoris" in "credit farm xoris"). */ hint: string }
 export function understand(q: string): Understood {
-  const c = canon(q), intent = detectIntent(c.text), material = c.materials[0] ?? null;
+  const qq = toCanonical(q), c = canon(qq), material = c.materials[0] ?? null;
+  // "necesito creditos", "i need platinum": a need plus a material we know means "how do I get it".
+  const intent = detectIntent(c.text) ?? (material && NEED.test(normalize(qq)) ? ({ kind: "where", subject: normalize(material) } as const) : null);
   const subject = intent && "subject" in intent ? intent.subject : "";
   const matWords = new Set((material ? canon(material).text : "").split(" ").filter(Boolean));
   const hint = subject.split(" ").filter(w => w && !matWords.has(w)).join(" ");
