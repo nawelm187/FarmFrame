@@ -1,3 +1,4 @@
+import { curLang } from "../i18n";
 /** The source writes game text with the game's own markup: icon tags like <DT_SLASH_COLOR>, <br>, and unfilled values like |DAMAGE|. */
 const TAG = /<\/?[A-Za-z_0-9]+\/?>/g, BR = /<br\s*\/?>/gi, SLOT = /\|[A-Za-z_0-9]+\|/g;
 /** Removes the markup tags and keeps the words that follow them. Placeholders are left for the renderer. */
@@ -28,3 +29,5 @@ export function rich(raw: string): Tok[] {
 
 /** "a Lith", "a Meso", "a Neo", "an Axi": the right article for a relic tier. */
 export const aTier = (t: string) => (/^[aeiou]/i.test(t) ? "an " : "a ") + t;
+/** "an Axi" in English (the sentence needs the article); just the tier name in other languages, whose sentences handle it themselves. */
+export const tierA = (t: string) => (curLang() === "en" ? aTier(t) : t);
