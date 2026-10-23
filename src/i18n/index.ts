@@ -24,6 +24,8 @@ export function pickLang(saved: string | null, browser: readonly string[]): stri
 /** Replaces {name} placeholders. A placeholder with no value is left as written so a mistake is visible, not silent. */
 export const fill = (s: string, v?: Record<string, string | number>) => (v ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in v ? String(v[k]) : m)) : s);
 let code = "en", dict: Dict = en; const subs = new Set<() => void>();
+/** The code of the current language ("en", "es"...), for code outside components that needs it (for example Intl formatting). */
+export const curLang = () => code;
 /** Text for a key in the current language; a key missing from a dictionary falls back to English instead of showing blank. */
 export const t = (k: Key, v?: Record<string, string | number>) => fill(dict[k] || en[k], v);
 /** Text for a count in the right plural form of the current language ("1 relic", "2 relics"; Russian has three forms, Chinese and Japanese one). {n} is filled in. */
@@ -36,7 +38,8 @@ export async function setLang(c: string): Promise<void> {
   const l = LANGS.find(x => x.code === c); if (!l || c === code) return;
   try { dict = l.load ? (await l.load()).default : en; } catch { return; } // offline or file missing: stay as we are
   code = c; try { localStorage.setItem(STORE, c); } catch { /* private mode: the choice just is not remembered */ }
-  document.documentElement.lang = HTML_LANG[c] ?? c; subs.forEach(f => f());
+  if (typeof document !== "undefined") document.documentElement.lang = HTML_LANG[c] ?? c; // no document in a test run
+  subs.forEach(f => f());
 }
 export function initLang(): Promise<void> {
   let saved: string | null = null; try { saved = localStorage.getItem(STORE); } catch { /* ignore */ }

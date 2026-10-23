@@ -40,3 +40,14 @@ describe("tp: plural forms", () => {
     for (const f of ["one", "few", "many", "other"]) expect(ru[`fisPlanRelics_${f}`], f).toBeTruthy();
   });
 });
+describe("plural completeness", () => {
+  it("Russian has one, few, many and other for every plural key", async () => {
+    const ru = (await LANGS.find(l => l.code === "ru")!.load!()).default as Record<string, string>, bases = keys.filter(k => k.endsWith("_other")).map(k => k.slice(0, -6));
+    expect(bases.length > 5).toBe(true);
+    for (const b of bases) for (const f of ["one", "few", "many", "other"]) expect(ru[`${b}_${f}`], `ru.${b}_${f}`).toBeTruthy();
+  });
+  it("every language has both _one and _other for each plural base", () => {
+    const bases = keys.filter(k => k.endsWith("_other")).map(k => k.slice(0, -6));
+    for (const b of bases) { expect(keys.includes(`${b}_one` as Key), `${b}_one`).toBe(true); }
+  });
+});
