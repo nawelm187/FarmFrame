@@ -5,9 +5,9 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 const walk = d => readdirSync(d).flatMap(f => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : /\.tsx$/.test(p) && !/\.test\.tsx$/.test(p) ? [p] : []; });
 /** Names and key caps shown as in the game or on the keyboard: not translated on purpose. */
-const KEEP = /^(FarmFrame|Ctrl K|Cetus \(Plains\)|Orb Vallis|Cambion Drift|Zariman|Void Fissures|Steel Path|Star Chart and Railjack|Star Chart only|Void Storms \(Railjack\)|Shield drain|Health drain|Energy drain)$/;
+const KEEP = /^(FarmFrame|Ctrl K|Cetus \(Plains\)|Orb Vallis|Cambion Drift|Zariman|Void Fissures|Steel Path|Star Chart and Railjack|Star Chart only|Void Storms \(Railjack\)|Shield drain|Health drain|Energy drain|Steel Path Honors|Duviri|1999 Calendar|Prime Resurgence|Archimedea|Arbitration|Sanctuary|Sentient Anomaly|Kuva Siphons|Palladino|Acrithis|The Descendia|Teshin|Varzia|Darvo|Baro Ki'Teer|Cephalon Simaris|Forma Blueprint|Omni Forma Blueprint|Omni Forma|Orokin Catalyst|Orokin Reactor|WFCD warframe-items on GitHub[^|]*|Sortie|Archon Hunt|Nightwave|Nora Night)$/;
 /** Text that is really code (generics, operators) caught by the simple tag pattern. */
-const CODE = /prefers-reduced-motion|crashed|[=;&|]|=>|useState|useRef|Record|\bnull\b|createRoot|\.length\b/;
+const CODE = /Date\.now|application\/json|\?\? |^[:?]\s|\s[?:]\s*$|\bs\.mod\b|prefers-reduced-motion|crashed|[=;&|]|=>|useState|useRef|Record|\bnull\b|createRoot|\.length\b/;
 /** Attributes and props whose string is code, a path, a picture name or a style, never text a person reads. */
 const NOT_TEXT = /(className|to|href|key|role|type|id|name|art|src|style|rel|target|aria-pressed|aria-selected|aria-current|aria-live|htmlFor|loading|inputMode|autoComplete|pattern|viewBox|fill|stroke|d|k|f|s|c|on|tier|kind|mode|status|cat|slug|from|import)\s*[=:(]\s*\{?\s*$/;
 export function findHardcoded(src) {
@@ -19,7 +19,7 @@ export function findHardcoded(src) {
     // Sentence-like string literals and template strings anywhere in an expression ("Mark complete", `, ${n} still missing`).
     for (const m of ln.matchAll(/(["`])((?:\\.|(?!\1)[^\\\n])*)\1/g)) {
       const before = ln.slice(Math.max(0, m.index - 40), m.index), raw = m[2], text = raw.replace(/\$\{[^}]*\}/g, "").trim();
-      if (NOT_TEXT.test(before) || /\b(?:t|tr)\($/.test(before) || KEEP.test(text) || CODE.test(text) || /^[\w./:#?&=%-]+$/.test(text)) continue;
+      if (NOT_TEXT.test(before) || /\b(?:t|tr)\($/.test(before) || KEEP.test(text) || CODE.test(text) || /^[\w./:#?&=%@-]+$/.test(text)) continue;
       const words = text.match(/[A-Za-z]{3,}/g) ?? [];
       if (words.length >= 2 || (words.length === 1 && /^[A-Z]/.test(text) && /[.!?:…✓★]/.test(text + before.slice(-2)))) { if (!/^(btn|tag|muted|chips|bar|list|wrap|panel|row|num|gold|lead)\b/.test(text)) add(i + 1, text); }
     }
