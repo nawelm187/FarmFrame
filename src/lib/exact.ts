@@ -1,5 +1,6 @@
 import type { Component, Entity } from "./catalog";
-import { aTier } from "./text";
+import { tierA } from "./text";
+import { t, tp } from "../i18n";
 import { parseRelics, relicIssues, type Relic, type Row } from "./drops";
 export { relicIssues };
 import { missing, tiersOf, type Goal, type Owned } from "./goals";
@@ -85,15 +86,16 @@ export function nextAction(p: PartPlan, fis: Fis[] | null, owned: Record<string,
   const live = p.relics.filter(r => r.vaulted !== true);
   const mine = live.find(r => (owned[r.name] ?? 0) > 0);
   if (mine) { const f = fissuresFor(fis, mine.tier, now);
-    return { kind: "open", now: f.length > 0, to: "/farm-plan", text: f.length ? `Open ${mine.name} (${mine.rarity}) in ${aTier(mine.tier)} fissure now: ${f[0].missionType} ${f[0].node}${f.length > 1 ? ` and ${f.length - 1} more` : ""}` : `You own ${mine.name} (${mine.rarity}). No ${mine.tier} fissure is active right now.` }; }
-  if (live.length) { const r = live[0]; return { kind: "get", to: `/farm/${encodeURIComponent(r.name + " Relic")}`, text: `Get ${r.name} (${r.rarity})${live.length > 1 ? ` or ${live.length - 1} other relic${live.length > 2 ? "s" : ""}` : ""}, then open it in ${aTier(r.tier)} fissure` }; }
-  if (p.relics.length) return { kind: "vaulted", text: `Only in vaulted relics (${p.relics.slice(0, 2).map(r => r.name).join(", ")}). Vaulted relics no longer drop; they come from trading or Varzia.` };
-  if (p.relicTiers.length && !relicsLoaded) return { kind: "none", text: "Relic tables are not loaded yet, so the exact relics cannot be listed." };
-  if (p.other.length) return { kind: "source", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: `Source: ${p.other.slice(0, 2).map(d => d.location).join("; ")}` };
-  return { kind: "none", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: "No acquisition data in the loaded sources. Check the drop tables." };
+    return { kind: "open", now: f.length > 0, to: "/farm-plan", text: f.length ? t(f.length > 1 ? "exOpenNowMore" : "exOpenNow", { relic: mine.name, rarity: mine.rarity, tier: mine.tier, tierA: tierA(mine.tier), mission: f[0].missionType, node: f[0].node, n: f.length - 1 }) : t("exOwnIdle", { relic: mine.name, rarity: mine.rarity, tier: mine.tier }) }; }
+  if (live.length) { const r = live[0]; return { kind: "get", to: `/farm/${encodeURIComponent(r.name + " Relic")}`, text: live.length > 1 ? tp("exGetOther", live.length - 1, { relic: r.name, rarity: r.rarity, tier: r.tier, tierA: tierA(r.tier) }) : t("exGet", { relic: r.name, rarity: r.rarity, tier: r.tier, tierA: tierA(r.tier) }) }; }
+  if (p.relics.length) return { kind: "vaulted", text: t("exVaulted", { list: p.relics.slice(0, 2).map(r => r.name).join(", ") }) };
+  if (p.relicTiers.length && !relicsLoaded) return { kind: "none", text: t("exTablesNo") };
+  if (p.other.length) return { kind: "source", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: t("exSource", { list: p.other.slice(0, 2).map(d => d.location).join("; ") }) };
+  return { kind: "none", to: `/farm/${encodeURIComponent(p.entity + " " + p.part.name)}`, text: t("exNoAcq") };
 }
 
 /** Where a missing part sits in the plan: doable right now, a step away, or blocked (vaulted relic, or no data to act on). */
 export type Group = "now" | "next" | "blocked";
 export const groupOf = (n: Next): Group => (n.kind === "open" && n.now ? "now" : n.kind === "vaulted" || n.kind === "none" ? "blocked" : "next");
-export const GROUP_TITLE: Record<Group, string> = { now: "Available now", next: "Next steps", blocked: "Blocked or no data" };
+/** Read each time, so the titles follow the interface language. */
+export const GROUP_TITLE: Record<Group, string> = { get now() { return t("grpNow"); }, get next() { return t("grpNext"); }, get blocked() { return t("grpBlocked"); } };

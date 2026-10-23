@@ -11,6 +11,12 @@ export function buildImageIndex(lists: (Entity[] | null | undefined)[]): ImgInde
   for (const l of lists) for (const e of l ?? []) { put(e.name, e.image); walk(e, e.components); }
   return m;
 }
+/** A picture the catalogs have under exactly this name (or this name without "Blueprint"), never the owning item's picture borrowed for a part. */
+export function imageExact(idx: ImgIndex, name: string): string | null {
+  const n = key(name); return idx.get(n) ?? idx.get(n.replace(/ blueprint$/, "")) ?? null;
+}
+/** Colour palettes (ColorPicker*.png) share names with real items ("Jade" is a Warframe and a palette); they are never the picture of an item. */
+export const isPalette = (file: string | null | undefined): boolean => !!file && /^ColorPicker/i.test(file);
 /** Exact match first; otherwise the owning item's picture ("Akbronco Prime Receiver" → Akbronco Prime). */
 export function imageFor(idx: ImgIndex, name: string): string | null {
   const n = key(name); if (idx.has(n)) return idx.get(n)!;

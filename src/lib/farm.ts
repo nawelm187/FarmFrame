@@ -1,4 +1,5 @@
 import type { Row } from "./drops";
+import { t } from "../i18n";
 export interface Ranked { row: Row; rolls: number | null; stacked: string[]; tags: string[] }
 /** location -> needed items that also drop there (needed: lowercase names). */
 export function stackIndex(rows: Row[], needed: Set<string>): Map<string, Set<string>> {
@@ -11,6 +12,6 @@ export function rank(matches: Row[], idx: Map<string, Set<string>>, item: string
   const me = item.trim().toLowerCase();
   const out: Ranked[] = matches.map(row => ({ row, rolls: row.ch != null && row.ch > 0 ? Math.ceil(100 / row.ch) : null, stacked: [...(idx.get(row.where) ?? [])].filter(x => x.toLowerCase() !== me), tags: [] }));
   out.sort((a, b) => (b.row.ch ?? -1) - (a.row.ch ?? -1) || b.stacked.length - a.stacked.length);
-  out.forEach((o, i) => { if (i < 3 && o.row.ch != null) o.tags.push("Strong option for this objective"); if (o.stacked.length) o.tags.push("Currently useful"); });
+  out.forEach((o, i) => { if (i < 3 && o.row.ch != null) o.tags.push(t("fmTagStrong")); if (o.stacked.length) o.tags.push(t("fmTagUseful")); });
   return out;
 }

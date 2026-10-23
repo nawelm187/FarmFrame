@@ -1,5 +1,6 @@
 import type { Cat, Component, Entity } from "./catalog";
 import type { RelicOpt } from "./exact";
+import { t, tp } from "../i18n";
 export interface PartRef { entity: Entity; cat: Cat; comp: Component; blueprint: boolean; /** Name as the game writes it, e.g. "Ash Prime Neuroptics Blueprint". */ title: string }
 const norm = (t: string) => t.toLowerCase().replace(/\s+/g, " ").trim();
 /** Turns a typed item name ("Ash Prime Neuroptics Blueprint", "Ash Prime Systems", "Ash Prime Blueprint") into its parent item and component.
@@ -16,15 +17,19 @@ export function resolvePart(text: string, ents: { e: Entity; cat: Cat }[]): Part
   return { entity: best.e, cat: best.cat, comp, blueprint: blueprint || isMain, title: isMain ? `${best.e.name} Blueprint` : `${best.e.name} ${comp.name}${blueprint ? " Blueprint" : ""}` };
 }
 export interface Difficulty { level: "Easy" | "Medium" | "Hard" | "Very hard" | "Unknown"; why: string }
+/** Translation key and status-tag class of each level (the level itself stays a fixed English code). */
+export const LEVEL_KEY = { Easy: "prtLvEasy", Medium: "prtLvMedium", Hard: "prtLvHard", "Very hard": "prtLvVeryHard", Unknown: "prtUnknown" } as const;
+export const LEVEL_TAG: Record<Difficulty["level"], string> = { Easy: "FRESH", Medium: "STALE", Hard: "STALE", "Very hard": "ERROR", Unknown: "UNAVAILABLE" };
 const LV: Record<string, Difficulty["level"]> = { Common: "Easy", Uncommon: "Medium", Rare: "Hard" };
+const RAR = { Common: "rarCommon", Uncommon: "rarUncommon", Rare: "rarRare" } as const;
 /** A calculated estimate from drop rarity and vault status. It is not an official rating. */
 export function difficulty(opts: RelicOpt[], otherSources: number): Difficulty {
   if (opts.length) {
     const live = opts.filter(o => o.vaulted !== true);
-    if (!live.length) return { level: "Very hard", why: "Every relic that holds it is vaulted, so it no longer drops. It comes from trading with players or from Varzia." };
+    if (!live.length) return { level: "Very hard", why: t("prtWhyVaulted") };
     const order = ["Common", "Uncommon", "Rare"], best = order.find(r => live.some(o => o.rarity === r));
-    if (best) return { level: LV[best], why: `Its best case is a ${best} reward in ${live.filter(o => o.rarity === best).length} relic${live.filter(o => o.rarity === best).length === 1 ? "" : "s"} you can still get.` };
+    if (best) return { level: LV[best], why: tp("prtWhyBest", live.filter(o => o.rarity === best).length, { rarity: t(RAR[best as keyof typeof RAR]) }) };
   }
-  if (otherSources > 0) return { level: "Medium", why: "It comes from non-relic sources listed below; difficulty depends on that activity." };
-  return { level: "Unknown", why: "The loaded data does not say where it comes from." };
+  if (otherSources > 0) return { level: "Medium", why: t("prtWhyOther") };
+  return { level: "Unknown", why: t("prtWhyUnknown") };
 }

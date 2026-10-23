@@ -1,4 +1,5 @@
-import { aTier } from "./text";
+import { tierA } from "./text";
+import { t as tr, tp } from "../i18n";
 import { READY_RANK, readiness, type Block, type Ready } from "./unlock";
 export interface Fis { tier: string; node: string; missionType: string; expiry: string; isHard: boolean; isStorm: boolean }
 export interface Side { faction?: string; reward?: { countedItems?: { count: number; type: string }[]; items?: string[] } }
@@ -24,7 +25,7 @@ export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | nul
     // A mission you can start comes first; among equals, normal missions before Void Storms.
     const f = (i.fissures ?? []).filter(x => x.tier === t && Date.parse(x.expiry) > i.now).sort((a, b) => READY_RANK[readiness(fb(a))] - READY_RANK[readiness(fb(b))] || Number(a.isStorm) - Number(b.isStorm));
     if (!f.length) continue;
-    const head = `${f.length} active ${t} fissure${f.length > 1 ? "s" : ""}: ${f.slice(0, 3).map(x => `${x.missionType} ${x.node}`).join(", ")}${f.length > 3 ? " and more" : ""}`;
+    const head = tp("fnHead", f.length, { tier: t, list: f.slice(0, 3).map(x => `${x.missionType} ${x.node}`).join(", ") }) + (f.length > 3 ? " " + tr("fnAndMore") : "");
     if (i.exact) {
       const links = i.exact.filter(l => l.tier === t && l.vaulted !== true); if (!links.length) continue;
       const rm = new Map<string, OppRelic>();
@@ -33,25 +34,25 @@ export function farmNow(i: { tiers: Map<string, string[]>; fissures: Fis[] | nul
       const parts = [...new Set(links.map(l => l.part))], goals = [...new Set(links.map(l => l.goal))].map(g => i.progress?.get(g) ?? { name: g, have: 0, total: 0 }), mine = relics.filter(r => r.owned > 0);
       const nodes: OppNode[] = f.map(x => ({ node: x.node, mission: x.missionType, storm: x.isStorm, hard: x.isHard, ready: readiness(fb(x)) })), bestNode = nodes[0];
       const plays: Play[] = mine.slice(0, 3).map(r => ({ relic: r.relic, parts: r.parts, node: bestNode.node, mission: bestNode.mission, ready: bestNode.ready }));
-      const noRelic: Block[] = mine.length ? [] : [{ kind: "relic", severity: "blocked", text: `You own none of the relics that hold your missing parts: get one first (${relics.slice(0, 3).map(r => r.relic).join(", ")}).` }];
-      out.push({ key: "f" + t, kind: "fissure", tier: t, exact: true, nodes, plays, node: f[0].node, blocks: [...noRelic, ...fb(f[0])], title: `${t} fissure: ${f[0].node} (${f[0].missionType})`, advances: parts, relics, goals,
-        why: [head, `Exact relics that hold your missing parts: ${relics.slice(0, 4).map(r => `${r.relic} (${r.rarity})`).join(", ")}${relics.length > 4 ? ` and ${relics.length - 4} more` : ""}`,
-          mine.length ? `You own: ${mine.map(r => r.relic).join(", ")}. Open them in these fissures.` : "You have not marked any of these relics as owned. Get one first (see Farm Plan), then open it in a fissure of this tier."] });
+      const noRelic: Block[] = mine.length ? [] : [{ kind: "relic", severity: "blocked", text: tr("fnNoRelic", { list: relics.slice(0, 3).map(r => r.relic).join(", ") }) }];
+      out.push({ key: "f" + t, kind: "fissure", tier: t, exact: true, nodes, plays, node: f[0].node, blocks: [...noRelic, ...fb(f[0])], title: tr("fnTitle", { tier: t, node: f[0].node, mission: f[0].missionType }), advances: parts, relics, goals,
+        why: [head, relics.length > 4 ? tr("fnExactMore", { list: relics.slice(0, 4).map(r => `${r.relic} (${r.rarity})`).join(", "), n: relics.length - 4 }) : tr("fnExact", { list: relics.slice(0, 4).map(r => `${r.relic} (${r.rarity})`).join(", ") }),
+          mine.length ? tr("fnYouOwn", { list: mine.map(r => r.relic).join(", ") }) : tr("fnNoneOwned")] });
       continue;
     }
     const items = i.tiers.get(t) ?? [];
-    out.push({ key: "f" + t, kind: "fissure", tier: t, node: f[0].node, nodes: f.map(x => ({ node: x.node, mission: x.missionType, storm: x.isStorm, hard: x.isHard, ready: readiness(fb(x)) })), blocks: fb(f[0]), title: `${t} fissure: ${f[0].node} (${f[0].missionType})`, advances: items,
-      why: [head, `These missing parts list ${aTier(t)} relic as a source`, "Matched by relic tier because the exact relic tables are not loaded"] });
+    out.push({ key: "f" + t, kind: "fissure", tier: t, node: f[0].node, nodes: f.map(x => ({ node: x.node, mission: x.missionType, storm: x.isStorm, hard: x.isHard, ready: readiness(fb(x)) })), blocks: fb(f[0]), title: tr("fnTitle", { tier: t, node: f[0].node, mission: f[0].missionType }), advances: items,
+      why: [head, tr("fnTierPart", { tier: t, tierA: tierA(t) }), tr("fnMatchedTier")] });
   }
   (i.invasions ?? []).forEach((v, n) => {
     if (v.completed) return;
     const hit = [...new Set([...names(v.attacker), ...names(v.defender)].filter(x => i.needed.has(x.toLowerCase())))];
-    if (hit.length) out.push({ key: "i" + n, kind: "invasion", node: v.node, blocks: i.unlock?.({ node: v.node, hard: false, storm: false }) ?? [], title: `Invasion: ${v.node}`, advances: hit, why: ["Its reward matches something you still need (matched by item name)"] });
+    if (hit.length) out.push({ key: "i" + n, kind: "invasion", node: v.node, blocks: i.unlock?.({ node: v.node, hard: false, storm: false }) ?? [], title: tr("fnInvasion", { node: v.node }), advances: hit, why: [tr("fnInvMatch")] });
   });
   return out.sort((a, b) => READY_RANK[readiness(a.blocks)] - READY_RANK[readiness(b.blocks)] || Number((b.relics?.some(r => r.owned > 0)) ?? false) - Number((a.relics?.some(r => r.owned > 0)) ?? false) || b.advances.length - a.advances.length).slice(0, 5);
 }
 /** Calculated relevance to the user's own goals (number of objectives advanced), not a universal ranking. */
-export const value = (n: number) => (n >= 3 ? "High" : n === 2 ? "Medium" : "Low");
+export const value = (n: number) => (n >= 3 ? tr("valHigh") : n === 2 ? tr("valMedium") : tr("valLow"));
 
 /** Reward names of an invasion (either side) that match something the user still needs (`needed`: lowercase names). */
 export const usefulInvasion = (v: Inv, needed: Set<string>): string[] => [...new Set([...names(v.attacker), ...names(v.defender)].filter(x => needed.has(x.toLowerCase())))];

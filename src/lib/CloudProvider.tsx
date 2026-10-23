@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { applySnap, fingerprint, snapshot, type Snap } from "./cloud";
 import { claimOwner, decideSync, readOwner } from "./syncGuard";
 import { pushGuarded, type Store } from "./syncPush";
+import { t } from "../i18n";
 export type SyncState = "off" | "checking" | "conflict" | "synced" | "error";
 interface Ctx { email: string | null; ready: boolean; sync: SyncState; err: string | null; signIn: (e: string, p: string) => Promise<string | null>; signUp: (e: string, p: string) => Promise<string | null>; signInLink: (e: string) => Promise<string | null>; resetPassword: (e: string) => Promise<string | null>; setPassword: (p: string) => Promise<string | null>; recovery: boolean; signOut: () => Promise<void>; resolve: (c: "cloud" | "device") => Promise<void>; retry: () => void }
 const C = createContext<Ctx | null>(null);
@@ -83,11 +84,11 @@ export function CloudProvider({ children }: { children: ReactNode }) {
   const value: Ctx = {
     email: session?.user.email ?? null, ready, sync, err, retry: () => setTick(t => t + 1),
     signIn: async (email, password) => { const { error } = await (await sb()).auth.signInWithPassword({ email, password }); return error ? authMessage(error.message) : null; },
-    signUp: async (email, password) => { const { data, error } = await (await sb()).auth.signUp({ email, password }); return error ? authMessage(error.message) : data.session ? null : "Check your email to confirm your account, then sign in."; },
+    signUp: async (email, password) => { const { data, error } = await (await sb()).auth.signUp({ email, password }); return error ? authMessage(error.message) : data.session ? null : t("amConfirmMail"); },
     // Passwordless sign-in: Supabase emails a one-time link. Works for new and existing accounts.
-    signInLink: async email => { const { error } = await (await sb()).auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } }); return error ? error.message : "Check your email: we sent you a sign-in link."; },
+    signInLink: async email => { const { error } = await (await sb()).auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } }); return error ? error.message : t("amLinkSent"); },
     // A person who only ever used the email link has no password. This sends a link that lets them choose one.
-    resetPassword: async email => { const { error } = await (await sb()).auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); return error ? authMessage(error.message) : "Check your email: we sent a link to choose a new password."; },
+    resetPassword: async email => { const { error } = await (await sb()).auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); return error ? authMessage(error.message) : t("amResetSent"); },
     setPassword: async pw => { const { error } = await (await sb()).auth.updateUser({ password: pw }); if (!error) setRecovery(false); return error ? authMessage(error.message) : null; },
     recovery,
     signOut: async () => { await (await sb()).auth.signOut(); },

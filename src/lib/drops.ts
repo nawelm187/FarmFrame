@@ -1,4 +1,5 @@
 import type { Rec, Status } from "./data";
+import { curLang, t, type Key } from "../i18n";
 type O = Record<string, unknown>;
 export interface Row { item: string; where: string; mode: string; rot: string; ch: number | null; rar: string; note: string; src: string }
 type R = Omit<Row, "src">;
@@ -16,54 +17,56 @@ const fin = (r: R[]) => (r.length ? r.filter(x => x.item) : null);
 const list = (d: unknown, k: string) => { const a = unwrap(d, k); return Array.isArray(a) ? a.filter(isO) : null; };
 
 export interface Finder { id: string; file: string; label: string; ex: (d: unknown) => R[] | null }
-const enemy = (id: string, label: string): Finder => ({ id, file: id + ".json", label, ex: d => {
+const enemy = (id: string, label: Key): Finder => ({ id, file: id + ".json", get label() { return t(label); }, ex: d => {
   const a = list(d, id); if (!a) return null; const r: R[] = [];
   for (const e of a) { if (!e.enemyName || !Array.isArray(e.items)) continue; const dc = num(e.enemyItemDropChance);
-    for (const x of e.items) if (isO(x) && x.itemName) r.push(row({ item: str(x.itemName), where: str(e.enemyName), mode: "Enemy drop", ch: eff(dc, num(x.chance)), rar: str(x.rarity), note: `${dc ?? "?"}% chance the enemy drops loot × ${num(x.chance)}% within its table` })); }
+    for (const x of e.items) if (isO(x) && x.itemName) r.push(row({ item: str(x.itemName), where: str(e.enemyName), mode: t("drModeEnemy"), ch: eff(dc, num(x.chance)), rar: str(x.rarity), note: t("drNoteEnemy", { dc: dc ?? "?", n: num(x.chance) ?? "?" }) })); }
   return fin(r); } });
-const bounty = (id: string, label: string): Finder => ({ id, file: id + ".json", label, ex: d => {
+const bounty = (id: string, label: Key): Finder => ({ id, file: id + ".json", get label() { return t(label); }, ex: d => {
   const a = list(d, id); if (!a) return null; const r: R[] = [];
-  for (const b of a) r.push(...rot(b.rewards, (k, x) => row({ item: str(x.itemName || x.item), where: `${label}: ${str(b.bountyLevel)}`, mode: "Bounty", rot: k, ch: num(x.chance), rar: str(x.rarity), note: str(x.stage) })));
+  for (const b of a) r.push(...rot(b.rewards, (k, x) => row({ item: str(x.itemName || x.item), where: `${t(label)}: ${str(b.bountyLevel)}`, mode: t("drModeBounty"), rot: k, ch: num(x.chance), rar: str(x.rarity), note: str(x.stage) })));
   return fin(r); } });
 export const FIND: Finder[] = [
-  { id: "missions", file: "missionRewards.json", label: "Mission rewards", ex: d => {
+  { id: "missions", file: "missionRewards.json", get label() { return t("drSrcMissions"); }, ex: d => {
     const mr = unwrap(d, "missionRewards"); if (!isO(mr)) return null; const r: R[] = [];
     for (const [pl, nodes] of Object.entries(mr)) { if (!isO(nodes)) continue;
       for (const [nd, i] of Object.entries(nodes)) { if (!isO(i) || !i.rewards) continue;
-        const add = (k: string, x: O) => row({ item: str(x.itemName), where: `${nd} (${pl})${i.isEvent ? " (event)" : ""}`, mode: str(i.gameMode), rot: k, ch: num(x.chance), rar: str(x.rarity) });
+        const add = (k: string, x: O) => row({ item: str(x.itemName), where: `${nd} (${pl})${i.isEvent ? ` (${t("drEvent")})` : ""}`, mode: str(i.gameMode), rot: k, ch: num(x.chance), rar: str(x.rarity) });
         if (Array.isArray(i.rewards)) i.rewards.forEach(x => isO(x) && r.push(add("", x))); else r.push(...rot(i.rewards, add)); } }
     return fin(r); } },
-  enemy("enemyBlueprintTables", "Enemy blueprint drops"), enemy("miscItems", "Enemy item drops"),
-  { id: "modLocations", file: "modLocations.json", label: "Mod drops", ex: d => {
+  enemy("enemyBlueprintTables", "drSrcEnemyBp"), enemy("miscItems", "drSrcEnemyItems"),
+  { id: "modLocations", file: "modLocations.json", get label() { return t("drSrcMods"); }, ex: d => {
     const a = list(d, "modLocations"); if (!a) return null; const r: R[] = [];
     for (const m of a) { if (!m.modName || !Array.isArray(m.enemies)) continue;
       for (const e of m.enemies) if (isO(e) && e.enemyName) { const dc = num(e.enemyModDropChance);
-        r.push(row({ item: str(m.modName), where: str(e.enemyName), mode: "Enemy drop", ch: eff(dc, num(e.chance)), rar: str(e.rarity), note: `${dc ?? "?"}% mod drop × ${num(e.chance)}% within its table` })); } }
+        r.push(row({ item: str(m.modName), where: str(e.enemyName), mode: t("drModeEnemy"), ch: eff(dc, num(e.chance)), rar: str(e.rarity), note: t("drNoteMod", { dc: dc ?? "?", n: num(e.chance) ?? "?" }) })); } }
     return fin(r); } },
-  bounty("cetusBountyRewards", "Cetus bounties"), bounty("solarisBountyRewards", "Fortuna bounties"), bounty("zarimanRewards", "Zariman bounties"),
-  { id: "sortieRewards", file: "sortieRewards.json", label: "Sortie rewards", ex: d => { const a = list(d, "sortieRewards"); return a ? fin(a.map(x => row({ item: str(x.itemName), where: "Sortie", mode: "Sortie", ch: num(x.chance), rar: str(x.rarity) }))) : null; } },
-  { id: "transientRewards", file: "transientRewards.json", label: "Objective rewards", ex: d => {
+  bounty("cetusBountyRewards", "drSrcCetus"), bounty("solarisBountyRewards", "drSrcFortuna"), bounty("zarimanRewards", "drSrcZariman"),
+  { id: "sortieRewards", file: "sortieRewards.json", get label() { return t("drSrcSortie"); }, ex: d => { const a = list(d, "sortieRewards"); return a ? fin(a.map(x => row({ item: str(x.itemName), where: "Sortie", mode: "Sortie", ch: num(x.chance), rar: str(x.rarity) }))) : null; } },
+  { id: "transientRewards", file: "transientRewards.json", get label() { return t("drSrcObjective"); }, ex: d => {
     const a = list(d, "transientRewards"); if (!a) return null; const r: R[] = [];
-    for (const o of a) if (o.objectiveName && Array.isArray(o.rewards)) for (const x of o.rewards) if (isO(x)) r.push(row({ item: str(x.itemName), where: str(o.objectiveName), mode: "Objective", ch: num(x.chance), rar: str(x.rarity) }));
+    for (const o of a) if (o.objectiveName && Array.isArray(o.rewards)) for (const x of o.rewards) if (isO(x)) r.push(row({ item: str(x.itemName), where: str(o.objectiveName), mode: t("drModeObjective"), ch: num(x.chance), rar: str(x.rarity) }));
     return fin(r); } },
-  { id: "syndicates", file: "syndicates.json", label: "Syndicate offerings", ex: d => {
+  { id: "syndicates", file: "syndicates.json", get label() { return t("drSrcSyndicate"); }, ex: d => {
     const o = unwrap(d, "syndicates"); if (!isO(o)) return null; const r: R[] = [];
-    for (const [n, a] of Object.entries(o)) if (Array.isArray(a)) for (const x of a) if (isO(x) && x.item) r.push(row({ item: str(x.item), where: `${n}: ${str(x.place)}`, mode: "Syndicate", ch: num(x.chance), rar: str(x.rarity), note: x.standing != null ? String(x.standing) + " standing" : "" }));
+    for (const [n, a] of Object.entries(o)) if (Array.isArray(a)) for (const x of a) if (isO(x) && x.item) r.push(row({ item: str(x.item), where: `${n}: ${str(x.place)}`, mode: t("drModeSyndicate"), ch: num(x.chance), rar: str(x.rarity), note: x.standing != null ? t("drNoteStanding", { n: String(x.standing) }) : "" }));
     return fin(r); } },
-  { id: "resourceByAvatar", file: "resourceByAvatar.json", label: "Resource drops (enemies)", ex: d => {
+  { id: "resourceByAvatar", file: "resourceByAvatar.json", get label() { return t("drSrcResources"); }, ex: d => {
     const a = list(d, "resourceByAvatar"); if (!a) return null; const r: R[] = [];
     for (const e of a) { const w = e.enemyName || e.source || e.avatar, l = e.items || e.resources || e.drops; if (!w || !Array.isArray(l)) continue; const dc = num(e.enemyItemDropChance ?? e.chance);
-      for (const x of l) if (isO(x)) { const n = x.itemName || x.item || x.resource, c = num(x.chance); if (n && c != null) r.push(row({ item: str(n), where: str(w), mode: "Enemy drop", ch: eff(dc, c), rar: str(x.rarity) })); } }
+      for (const x of l) if (isO(x)) { const n = x.itemName || x.item || x.resource, c = num(x.chance); if (n && c != null) r.push(row({ item: str(n), where: str(w), mode: t("drModeEnemy"), ch: eff(dc, c), rar: str(x.rarity) })); } }
     return fin(r); } },
 ];
-const cache = new WeakMap<object, R[] | null>();
+/** Rows hold translated text (modes, notes), so they are cached per language: switching language rebuilds them instead of showing the first language. */
+const caches = new Map<string, WeakMap<object, R[] | null>>();
 export function collect(items: { f: Finder; rec?: Rec; status: Status }[]) {
-  const rows: Row[] = [], gaps: string[] = []; let ok = 0;
+  const rows: Row[] = [], gaps: string[] = []; let ok = 0, cache = caches.get(curLang());
+  if (!cache) caches.set(curLang(), cache = new WeakMap());
   for (const { f, rec, status } of items) {
-    if (!rec || rec.data == null || typeof rec.data !== "object") { gaps.push(`${f.label}: ${rec && rec.data != null ? "unrecognised data shape, ignored" : status.toLowerCase()}`); continue; }
+    if (!rec || rec.data == null || typeof rec.data !== "object") { gaps.push(t("drGap", { label: f.label, reason: rec && rec.data != null ? t("drBadShape") : t(`st${status}`).toLowerCase() })); continue; }
     if (!cache.has(rec.data)) cache.set(rec.data, f.ex(rec.data));
     const r = cache.get(rec.data);
-    if (!r) { gaps.push(`${f.label}: unrecognised data shape, ignored`); continue; }
+    if (!r) { gaps.push(t("drGap", { label: f.label, reason: t("drBadShape") })); continue; }
     ok++; r.forEach(x => rows.push({ ...x, src: f.label }));
   }
   return { rows, gaps, ok };

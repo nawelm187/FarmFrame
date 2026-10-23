@@ -2,14 +2,7 @@
 // already understands ("où farmer des crédits" -> "where farm credits"), before anything else runs. Game proper nouns (Warframe, weapon and relic
 // names) are the same in every language and are not touched. Everything here only ADDS ways to match: a wrong alias just never matches.
 import { en } from "../i18n/en";
-import de from "../i18n/de";
-import es from "../i18n/es";
-import fr from "../i18n/fr";
-import it from "../i18n/it";
-import ja from "../i18n/ja";
-import pt from "../i18n/pt";
-import ru from "../i18n/ru";
-import zh from "../i18n/zh";
+import { MENU_KEYS, MENU_TERMS } from "./menuTerms";
 const CJK = /[\u3040-\u30ff\u3400-\u9fff]/;
 /** Canonical English word or phrase -> how it is written in the other languages (lower case, accents kept: "où" is not "ou"). */
 const CONCEPTS: Record<string, string[]> = {
@@ -52,8 +45,7 @@ const add = (k: string, v: string) => {
 };
 for (const [v, ks] of Object.entries(CONCEPTS)) for (const k of ks) add(k, v);
 // The interface's own words, in every language, point at the English page name: "Reliquias", "Relikte", "遗物" all mean Relics.
-const UI = ["warframes", "weapons", "mods", "companions", "archwings", "railjack", "relics", "parts", "enemies", "resources", "lore", "patchNotes", "kdrives", "starterGuides", "helminth", "farmPlan", "farmingMethods", "syndicates", "resourceFinder", "planner", "rotations", "fissures", "invasions", "alerts", "mastery", "roadmap", "builds", "tracking", "dataSources"] as const;
-for (const d of [de, es, fr, it, ja, pt, ru, zh]) for (const k of UI) add(d[k], en[k].toLowerCase());
+for (const terms of Object.values(MENU_TERMS)) for (const k of MENU_KEYS) add(terms[k], en[k].toLowerCase());
 CJKKEYS.sort((a, b) => b.length - a.length);
 const MAXN = Math.max(...[...MAP.keys()].filter(k => !CJK.test(k)).map(k => k.split(" ").length));
 /** Question endings of Chinese and Japanese ("X是什么", "Xとは") become the English prefix "what is X". */
