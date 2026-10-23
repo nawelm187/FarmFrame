@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { wikiImage } from "./lib/wikiImg";
 import PartArt, { splitPart } from "./PartArt";
 import { imgRetry, imgUrl } from "./lib/catalog";
-import { imageFor, buildImageIndex } from "./lib/images";
+import { imageExact, imageFor, buildImageIndex, isPalette } from "./lib/images";
 import { useCatalogs } from "./lib/useCatalog";
 const own = import.meta.glob("./assets/items/*.{png,webp,jpg,jpeg,svg}", { eager: true, import: "default", query: "?url" }) as Record<string, string>;
 const mine: Record<string, string> = {};
@@ -30,10 +30,11 @@ let extra: Promise<Record<string, string>> | null = null;
 const extraFile = async (name: string): Promise<string | null> => {
   extra ??= import("./lib/imgindex.json").then(m => m.default as Record<string, string>).catch(() => ({}));
   const ix = await extra, k = name.toLowerCase().replace(/^\d[\d,]*x\s*/, "").replace(/\s+/g, " ").trim();
-  return ix[k] ?? ix[k.replace(/ blueprint$/, "")] ?? null;
+  const hit = ix[k] ?? ix[k.replace(/ blueprint$/, "")] ?? null;
+  return isPalette(hit) ? null : hit; // a colour palette is not the picture of an item with the same name
 };
 /** Small picture of an item, with an empty square of the same size while it is missing so rows stay aligned.
- *  Order: bundled file, catalog file, extra index, the repository copy then the CDN copy, the Warframe wiki, and last a neutral square. */
+ *  Order: bundled file, the catalog picture with exactly this name, the extra index, the catalog picture of the owning item, the repository copy then the CDN copy, the Warframe wiki, and last a neutral square. */
 export default function ItemArt({ file, size = 28, name, fallback }: { file: string | null; size?: number; name?: string; fallback?: ReactNode }) {
   const [found, setFound] = useState<string | null>(null), [bad, setBad] = useState(false), [wiki, setWiki] = useState<string | null>(null), [wikiBad, setWikiBad] = useState(false);
   const own = file?.startsWith("bundled:") ? file.slice(8) : null, f = own ? null : file ?? found, missing = !own && (!f || bad);
@@ -41,7 +42,8 @@ export default function ItemArt({ file, size = 28, name, fallback }: { file: str
   // An exact catalog file is better than the owner's picture that useImages falls back to, so the extra index is asked whenever a name is known.
   useEffect(() => { if (own || !name) return; let dead = false; void extraFile(name).then(x => { if (!dead) setFound(x); }); return () => { dead = true; }; }, [own, name]);
   useEffect(() => { if (!missing || !name) return; let dead = false; void wikiImage(name).then(u => { if (!dead) setWiki(u); }); return () => { dead = true; }; }, [missing, name]);
-  const exact = found && !own ? found : f, src = own ?? (exact && !bad ? imgUrl(exact) : wikiBad ? null : wiki);
+  // Order: the catalog's picture under exactly this name; then the extra index; then the catalog's borrowed picture of the owning item. (The extra index used to win over everything, so "Jade" showed a palette.)
+  const catalogExact = !!(name && memo && imageExact(memo.idx, name)), exact = catalogExact ? f : found && !own ? found : f, src = own ?? (exact && !bad ? imgUrl(exact) : wikiBad ? null : wiki);
   return src ? <img className="itemart" src={src} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy={own || !exact || bad ? "no-referrer" : undefined}
     onError={ev => { if (own) return; if (exact && !bad) { if (!imgRetry(ev)) setBad(true); } else setWikiBad(true); }} /> : <span className="itemart empty" style={{ width: size, height: size }} aria-hidden="true">{fallback}</span>;
 }

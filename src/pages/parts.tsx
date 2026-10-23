@@ -4,8 +4,9 @@ import type { Rec, Status } from "../lib/data";
 import { fmt, ts } from "../lib/format";
 import { provLine } from "../lib/freshness";
 import { retry, useNow } from "../lib/data";
-import { useT, type Key } from "../i18n";
-export const ST: Record<Status | "CALCULATED", Key> = { FRESH: "stFRESH", STALE: "stSTALE", UNAVAILABLE: "stUNAVAILABLE", ERROR: "stERROR", LOADING: "stLOADING", CALCULATED: "stCALCULATED" };
+import { useT } from "../i18n";
+import { ST } from "../lib/statusKey";
+export { ST };
 /** The status word is translated; the class name keeps the English status, which is what the colours are keyed on. */
 export const Badge = ({ s }: { s: Status | "CALCULATED" }) => { const t = useT(); return <span className={"tag " + s} title={s === "CALCULATED" ? t("badgeCalc") : undefined}>{t(ST[s])}</span>; };
 export const Countdown = ({ exp, pre = "" }: { exp: string; pre?: string }) => {
