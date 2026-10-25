@@ -1,7 +1,14 @@
 import { MASTERY_GROUPS, STARCHART, type MGroup } from "../data/masteryData";
+import { t, type Key } from "../i18n";
 /** Mastery points needed to reach a rank: 2,500 x rank squared up to rank 30, then 147,500 more for each Legendary Rank. */
 export const pointsFor = (rank: number) => (rank <= 30 ? 2500 * rank * rank : 2_250_000 + 147_500 * (rank - 30));
-export const rankLabel = (r: number) => (r > 30 ? `Legendary ${r - 30} (MR ${r})` : `MR ${r}`);
+export const rankLabel = (r: number) => (r > 30 ? t("mrLegendaryFull", { n: r - 30, r }) : t("mrRankN", { n: r }));
+/** Short rank name used inside a sentence ("MR 12", "Legendary 1"). */
+export const rankShort = (r: number) => (r > 30 ? t("mrLegendaryN", { n: r - 30 }) : t("mrRankN", { n: r }));
+/** Translation key of each group name that is not a planet (the group labels in the data stay English). */
+const GROUP_KEY: Record<string, Key> = { warframe: "mgWarframe", "primary-weapon": "mgPrimary", "secondary-weapon": "mgSecondary", "melee-weapon": "mgMelee", "kitgun-chamber": "mgKitgun", "zaw-strike": "mgZaw", "amp-prism": "mgAmp", sentinel: "mgSentinel", moa: "mgMoa", hound: "mgHound", beast: "mgBeast", "robotic-weapon": "mgRobotic", archwing: "mgArchwing", archgun: "mgArchgun", archmelee: "mgArchmelee", necramech: "mgNecramech", "railjack-item": "mgRailjack", "k-drive": "mgKdrive", "tactical-intrinsic": "mgTactical", "piloting-intrinsic": "mgPiloting", "gunnery-intrinsic": "mgGunnery", "engineering-intrinsic": "mgEngineering", "command-intrinsic": "mgCommand", "combat-intrinsic": "mgCombat", "riding-intrinsic": "mgRiding", "opportunity-intrinsic": "mgOpportunity", "endurance-intrinsic": "mgEndurance", founders: "mgFounders" };
+/** Name of a checklist group in the current language. Planet names are game names and stay as they are; Steel Path groups add the translated suffix. */
+export const groupLabel = (g: MGroup) => (GROUP_KEY[g.id] ? t(GROUP_KEY[g.id]) : g.id.startsWith("sp-") ? t("mgSteelPath", { name: g.label.replace(/ \(Steel Path\)$/, "") }) : g.label);
 export interface RankInfo { rank: number; label: string; points: number; next: number; toNext: number; pct: number }
 /** Rank for a point total. The progress bar is measured inside the current rank (from its threshold to the next one). */
 export function rankFor(points: number): RankInfo {

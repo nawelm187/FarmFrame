@@ -8,6 +8,8 @@ import { ago, provLine, trustLine } from "./freshness";
 import { completionNote } from "./completion";
 import { difficulty } from "./part";
 import { FIND, collect } from "./drops";
+import { ALL_GROUPS, groupLabel, rankFor, rankShort } from "./mastery";
+import { partNote } from "./partNote";
 import type { RelicOpt } from "./exact";
 import { READY_LABEL } from "./unlock";
 import type { Relic } from "./drops";
@@ -74,4 +76,19 @@ it("drop table rows: English unchanged, labels, modes, notes and gaps follow the
   const en = run(); expect(en.rows[0]).toMatchObject({ src: "Enemy blueprint drops", mode: "Enemy drop", note: "20% chance the enemy drops loot × 5% within its table" }); expect(en.gaps[0]).toBe("Mission rewards: unavailable");
   const es = await inLang("es", run); expect(es.rows[0]).toMatchObject({ src: "Botín de planos de enemigos", mode: "Botín de enemigo" }); expect(es.gaps[0]).toBe("Recompensas de misión: no disponible");
   expect(run().rows[0].mode).toBe("Enemy drop");
+});
+
+it("mastery ranks and checklist group names follow the language, and planet names stay as the game writes them", async () => {
+  expect(rankFor(3_213_138).label).toBe("Legendary 6 (MR 36)"); expect(rankShort(12)).toBe("MR 12");
+  const g = (id: string) => ALL_GROUPS().find(x => x.id === id)!;
+  expect(groupLabel(g("warframe"))).toBe("Warframes"); expect(groupLabel(g("sp-earth"))).toBe("Earth (Steel Path)");
+  expect(await inLang("es", () => rankFor(3_213_138).label)).toBe("Legendario 6 (RM 36)");
+  expect(await inLang("es", () => groupLabel(g("combat-intrinsic")))).toBe("Drifter: Combate");
+  expect(await inLang("es", () => groupLabel(g("earth")))).toBe("Earth");
+});
+
+it("part notes and the plural category names follow the language", async () => {
+  expect(partNote([], null)).toBe("Checking relics…"); expect(partNote([], 2)).toBe("Drops from the relics listed here"); expect(partNote([], 0)).toBe("No drop source found for this part");
+  expect(partNote([{ location: "Ceres", type: "Rotation A" }], 0)).toBe("Ceres (Rotation A)");
+  expect(await inLang("es", () => partNote([], 0))).toBe("No se encontró ninguna fuente de botín para esta pieza");
 });
