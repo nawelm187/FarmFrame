@@ -7,7 +7,7 @@ const walk = d => readdirSync(d).flatMap(f => { const p = join(d, f); return sta
 /** Names and key caps shown as in the game or on the keyboard: not translated on purpose. */
 const KEEP = /^(FarmFrame|Ctrl K|Cetus \(Plains\)|Orb Vallis|Cambion Drift|Zariman|Void Fissures|Steel Path|Star Chart and Railjack|Star Chart only|Void Storms \(Railjack\)|Shield drain|Health drain|Energy drain|Steel Path Honors|Duviri|1999 Calendar|Prime Resurgence|Archimedea|Arbitration|Sanctuary|Sentient Anomaly|Kuva Siphons|Palladino|Acrithis|The Descendia|Teshin|Varzia|Darvo|Baro Ki'Teer|Cephalon Simaris|Forma Blueprint|Omni Forma Blueprint|Omni Forma|Orokin Catalyst|Orokin Reactor|WFCD warframe-items on GitHub[^|]*|Sortie|Archon Hunt|Nightwave|Nora Night)$/;
 /** Text that is really code (generics, operators) caught by the simple tag pattern. */
-const CODE = /Date\.now|application\/json|\?\? |^[:?]\s|\s[?:]\s*$|\bs\.mod\b|prefers-reduced-motion|crashed|[=;&|]|=>|useState|useRef|Record|\bnull\b|createRoot|\.length\b/;
+const CODE = /\*\.\{|\*\.webp|translate\(|var\(--|updated_at|CloudProvider missing|Companion Mod|Lower Limb|Upper Limb|the murmur|^[\d.]+(rem|px|em|%)(\s|$)|Date\.now|application\/json|\?\? |^[:?]\s|\s[?:]\s*$|\bs\.mod\b|prefers-reduced-motion|crashed|[=;&|]|=>|useState|useRef|Record|\bnull\b|createRoot|\.length\b/;
 /** Attributes and props whose string is code, a path, a picture name or a style, never text a person reads. */
 const NOT_TEXT = /(className|to|href|key|role|type|id|name|art|src|style|rel|target|aria-pressed|aria-selected|aria-current|aria-live|htmlFor|loading|inputMode|autoComplete|pattern|viewBox|fill|stroke|d|k|f|s|c|on|tier|kind|mode|status|cat|slug|from|import)\s*[=:(]\s*\{?\s*$/;
 export function findHardcoded(src) {
