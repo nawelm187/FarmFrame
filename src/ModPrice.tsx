@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import type { Entity } from "./lib/catalog";
 import { fetchStat, type Stat } from "./lib/market";
 import { Plat } from "./Money";
+import { useT } from "./i18n";
+import { rich } from "./lib/rich";
 type V = { r0: Stat | null; rm: Stat | null; at: number } | "loading" | "error";
-const line = (s: Stat) => <><Plat n={s.median} /> median (low <Plat n={s.min} />, high <Plat n={s.max} />, {s.volume} traded)</>;
+const line = (s: Stat, t: ReturnType<typeof useT>) => <>{rich(t("mkLine", { vol: s.volume }), { median: <Plat n={s.median} />, lo: <Plat n={s.min} />, hi: <Plat n={s.max} /> })}</>;
 /** Live market price of a mod, unranked and at max rank when it has ranks. */
 export default function ModPrice({ e }: { e: Entity }) {
-  const [v, setV] = useState<V>("loading");
+  const t = useT(), [v, setV] = useState<V>("loading");
   useEffect(() => {
     if (e.tradable === false) return;
     let dead = false; setV("loading");
@@ -16,14 +18,14 @@ export default function ModPrice({ e }: { e: Entity }) {
     })();
     return () => { dead = true; };
   }, [e.name, e.maxRank, e.tradable]);
-  return (<section className="panel" style={{ margin: ".5rem 0 1rem" }} aria-label="Mod market price">
-    <div className="row"><h3>Market price</h3><span className="tag UNAVAILABLE">Market, live</span></div>
-    {e.tradable === false && <p className="muted">This mod cannot be traded between players, so it has no market price.</p>}
+  return (<section className="panel" style={{ margin: ".5rem 0 1rem" }} aria-label={t("mkModAria")}>
+    <div className="row"><h3>{t("mkTitle")}</h3><span className="tag UNAVAILABLE">{t("prtMarketLive")}</span></div>
+    {e.tradable === false && <p className="muted">{t("mkModNoTrade")}</p>}
     {e.tradable !== false && v === "loading" && <div aria-hidden="true"><div className="sk" style={{ width: "50%" }} /></div>}
-    {e.tradable !== false && v === "error" && <p className="muted">Market data unavailable right now.</p>}
-    {e.tradable !== false && typeof v === "object" && !v.r0 && !v.rm && <p className="muted">This mod is not listed on the market.</p>}
+    {e.tradable !== false && v === "error" && <p className="muted">{t("relMarketDown")}</p>}
+    {e.tradable !== false && typeof v === "object" && !v.r0 && !v.rm && <p className="muted">{t("mkModNone")}</p>}
     {e.tradable !== false && typeof v === "object" && (v.r0 || v.rm) && <>
-      {v.r0 && <div><b>Rank 0:</b> {line(v.r0)}</div>}{v.rm && e.maxRank ? <div><b>Max rank ({e.maxRank}):</b> {line(v.rm)}</div> : null}
-      <div className="muted">warframe.market, fetched {new Date(v.at).toLocaleTimeString()}. Market value, not a farming recommendation.</div></>}
+      {v.r0 && <div><b>{t("mkRank0")}</b> {line(v.r0, t)}</div>}{v.rm && e.maxRank ? <div><b>{t("mkMaxRank", { n: e.maxRank })}</b> {line(v.rm, t)}</div> : null}
+      <div className="muted">{t("mkFetched", { time: new Date(v.at).toLocaleTimeString() })}</div></>}
   </section>);
 }

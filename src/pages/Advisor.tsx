@@ -17,7 +17,7 @@ import { isTracked, readTracked, writeTracked } from "../lib/track";
 import { useNeeded } from "../lib/useNeeded";
 import { READY_LABEL } from "../lib/unlock";
 import { Skeleton } from "./parts";
-import { t as tt, useT } from "../i18n";
+import { useT } from "../i18n";
 const ALL = FIND.map(f => ({ id: f.id, file: f.file }));
 /** Any single item (mod, resource, part): the best verified places to get it, why, and a way to track how many you need. */
 function ItemPlan({ name, onClose }: { name: string; onClose: () => void }) {

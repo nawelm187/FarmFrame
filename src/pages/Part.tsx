@@ -1,5 +1,6 @@
 import RarityMark from "../RarityMark";
-import { Fragment, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { rich } from "../lib/rich";
 import { useT } from "../i18n";
 import { Link, Navigate, useParams } from "react-router-dom";
 import RelicArt from "../RelicArt";
@@ -22,8 +23,6 @@ const CATLIST: Cat[] = ["warframe", "weapon", "companion", "archwing", "mod"];
 const ALL = FIND.map(f => ({ id: f.id, file: f.file }));
 type S = "loading" | "error" | "none" | { st: Stat; at: number };
 const memo = new Map<string, S>();
-/** Puts components (a price, a link) inside a translated sentence: each {name} in the text is replaced by its node, in whatever order the language needs. */
-const rich = (s: string, v: Record<string, ReactNode>) => s.split(/(\{\w+\})/).map((p, i) => { const m = /^\{(\w+)\}$/.exec(p); return m && m[1] in v ? <Fragment key={i}>{v[m[1]]}</Fragment> : p; });
 const REFS = [["Intact", "refIntact"], ["Exceptional", "refExceptional"], ["Flawless", "refFlawless"], ["Radiant", "refRadiant"]] as const;
 /** Live market price of one item. Shown automatically; says plainly when there is none. */
 function PartMarket({ names, tradable, label }: { names: string[]; tradable: boolean | null; label: string }) {

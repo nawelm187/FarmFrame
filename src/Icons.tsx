@@ -1,3 +1,4 @@
+import { useT } from "./i18n";
 const P: Record<string, string> = {
   "/": "M3 11 12 4l9 7M5 10v10h14V10",
   "/roadmap": "M4 6h16M4 12h10M4 18h6",
@@ -68,9 +69,10 @@ export const polKey = (pol: string) => { const k = pol.toLowerCase().trim(); ret
 /** Polarity icon. Uses the official image when it exists in src/assets/polarity (file name = polarity name, e.g. madurai.png).
  *  Without the file it shows a plain labeled marker instead of a made-up symbol. */
 export const PolIcon = ({ pol, size = 16 }: { pol: string | null; size?: number }) => {
-  if (!pol) return null; const k = polKey(pol), src = polArt[k], label = pol.charAt(0).toUpperCase() + pol.slice(1).toLowerCase() + " polarity";
+  const t = useT();
+  if (!pol) return null; const k = polKey(pol), src = polArt[k], label = t("icPol", { name: pol.charAt(0).toUpperCase() + pol.slice(1).toLowerCase() });
   return src ? <img className="polic" src={src} alt={label} title={label} width={size} height={size} decoding="async" />
-    : <span className="polic nopol" role="img" aria-label={label} title={label + " (icon file not added yet)"} style={{ width: size, height: size, fontSize: Math.max(7, size * 0.38) }}>{k.slice(0, 3)}</span>;
+    : <span className="polic nopol" role="img" aria-label={label} title={t("icNoFile", { label })} style={{ width: size, height: size, fontSize: Math.max(7, size * 0.38) }}>{k.slice(0, 3)}</span>;
 };
 export const Star = ({ on }: { on: boolean }) => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="miter" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>

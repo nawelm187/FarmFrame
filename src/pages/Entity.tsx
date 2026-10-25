@@ -21,16 +21,19 @@ import { goalId, readGoals, writeGoals } from "../lib/goals";
 import { readTracked, writeTracked } from "../lib/track";
 import { Badge, Prov, Unavailable } from "./parts";
 import { partNote } from "../lib/partNote";
+import { useT } from "../i18n";
+import { CAT_MANY } from "../lib/catLabel";
+import { rich } from "../lib/rich";
 /** Exact relics for one part, from the relic tables (not just the tier). Vaulted relics are marked. */
 function usePartRelics(e: Ent, k: Component) {
   const [rr, vr] = useMany([{ id: "relics", file: "relics.json" }, { id: "relicsVault", file: "", url: VAULT_URL, alt: VAULT_ALT, src: VAULT_SRC }]), relics = relicsOf(rr.rec?.data);
   return relics ? relicsForPart(relics, e.name, k, parseVault(vr.rec?.data)).sort(byValue) : null;
 }
 function PartRelics({ e, k }: { e: Ent; k: Component }) {
-  const all = usePartRelics(e, k);
+  const t = useT(), all = usePartRelics(e, k);
   if (!all) return null;
   const o = all.slice(0, 4);
-  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} />{r.vaulted === true && <span className="tag STALE">Vaulted</span>}</Link>)}{all.length > o.length && <Link className="relicchip" to={`/relics?q=${encodeURIComponent(e.name + " " + k.name)}`}>+{all.length - o.length} more</Link>}</div> : null;
+  return o.length ? <div className="chips">{o.map(r => <Link key={r.name} className="relicchip" to={`/relics?q=${encodeURIComponent(r.name)}`}><RelicArt tier={r.tier} name={r.name} size={20} /><span>{r.name}</span><RarityMark r={r.rarity} />{r.vaulted === true && <span className="tag STALE">{t("vaultVaulted")}</span>}</Link>)}{all.length > o.length && <Link className="relicchip" to={`/relics?q=${encodeURIComponent(e.name + " " + k.name)}`}>{t("enMore", { n: all.length - o.length })}</Link>}</div> : null;
 }
 function PartNote({ e, k }: { e: Ent; k: Component }) {
   const all = usePartRelics(e, k);
@@ -38,32 +41,32 @@ function PartNote({ e, k }: { e: Ent; k: Component }) {
 }
 const Sub = ({ cs }: { cs: Component[] }) => cs.length ? <ul className="sub">{cs.map(k => <li key={k.name}>{k.name}{k.count > 1 ? ` ×${k.count}` : ""}<Sub cs={k.children} /></li>)}</ul> : null;
 export default function Entity({ cat }: { cat: Cat }) {
-  const { slug } = useParams(), c = CATS[cat], [done, setDone] = useState(false), [goal, setGoal] = useState(false), [, bump] = useState(0);
+  const t = useT(), { slug } = useParams(), c = CATS[cat], [done, setDone] = useState(false), [goal, setGoal] = useState(false), [, bump] = useState(0);
   const { items: list, rec, status } = useCatalog(cat), e = list?.find(x => x.slug === slug);
-  if (!list) return <Unavailable title={c.label} status={status} why={status === "LOADING" ? "Loading catalog…" : "No verified data."} rec={rec} />;
-  if (!e) return <><h1>Not found</h1><p className="muted">"{slug}" is not in the loaded {c.label.toLowerCase()} data. <Link to={`/${c.path}`}>Browse {c.label.toLowerCase()}</Link></p></>;
+  if (!list) return <Unavailable title={t(CAT_MANY[cat])} art={c.label} status={status} why={status === "LOADING" ? t("enLoading") : t("noVerified")} rec={rec} />;
+  if (!e) return <><h1>{t("enNotFound")}</h1><p className="muted">{rich(t("enNotInData", { slug: slug ?? "", cat: t(CAT_MANY[cat]).toLowerCase() }), { link: <Link to={`/${c.path}`}>{t("enBrowse", { cat: t(CAT_MANY[cat]).toLowerCase() })}</Link> })}</p></>;
   const q = encodeURIComponent(e.name);
-  const track = () => { const a = readTracked(); if (!a.some(t => t.n === e.name)) writeTracked([...a, { n: e.name, o: 0, t: 1, from: "Item page" }]); setDone(true); };
+  const track = () => { const a = readTracked(); if (!a.some(t => t.n === e.name)) writeTracked([...a, { n: e.name, o: 0, t: 1, from: t("enFromItem") }]); setDone(true); };
   const isFav = readFavs().some(f => f.id === favId(cat, e.slug));
   const flip = () => { writeFavs(toggleFav(readFavs(), { id: favId(cat, e.slug), cat, slug: e.slug, name: e.name })); bump(n => n + 1); };
   const addGoal = () => { const a = readGoals(), id = goalId(cat, e.slug); if (!a.some(g => g.id === id)) writeGoals([...a, { id, cat, slug: e.slug, name: e.name }]); setGoal(true); };
   return (<article className="entity">
     <div className="hero">
       {cat === "mod" || cat === "railjack" ? <div className="art" style={{ background: "none", WebkitMaskImage: "none", maskImage: "none" }}><ModCard e={e} big /></div> : <div className="art"><span className="ph"><Logo /></span>{e.image && <img src={imgUrl(e.image)} alt={e.name} width={320} height={320} onError={ev => { if (!imgRetry(ev)) ev.currentTarget.style.display = "none"; }} />}</div>}
-      <div><p className="muted">{e.type || c.label}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">PRIME</span>} <Badge s={status} /></p>
+      <div><p className="muted">{e.type || t(CAT_MANY[cat])}{e.isPrime ? " · " : ""}{e.isPrime && <span className="gold">PRIME</span>} <Badge s={status} /></p>
         <h1>{e.name}</h1>{e.description && <p className="lead">{e.description}</p>}
         {e.stats.length > 0 && <dl className="stats">{e.stats.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
-        <div className="bar"><Link className="btn" to={`/relics?q=${q}`}>Relics with this</Link><Link className="btn" to={`/finder?q=${q}`}>Where it drops</Link>
-          <button className="btn" onClick={flip} aria-pressed={isFav}><Star on={isFav} /> {isFav ? "Favorite" : "Add favorite"}</button>
-          <button className="btn" onClick={track} disabled={done}>{done ? "Tracked" : "Track"}</button>
-          {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">In Roadmap</Link> : <button className="btn" onClick={addGoal}>Add to Goal</button>)}</div></div></div>
+        <div className="bar"><Link className="btn" to={`/relics?q=${q}`}>{t("enRelics")}</Link><Link className="btn" to={`/finder?q=${q}`}>{t("enDrops")}</Link>
+          <button className="btn" onClick={flip} aria-pressed={isFav}><Star on={isFav} /> {isFav ? t("enFavorite") : t("enAddFav")}</button>
+          <button className="btn" onClick={track} disabled={done}>{done ? t("prtTracked") : t("enTrack")}</button>
+          {e.components.length > 0 && (cat === "warframe" || cat === "weapon") && (goal ? <Link className="btn" to="/roadmap">{t("prtInRoadmap")}</Link> : <button className="btn" onClick={addGoal}>{t("enAddGoal")}</button>)}</div></div></div>
     {cat !== "mod" && cat !== "railjack" && <Details e={e} cat={cat} />}
     {MARKET_ENABLED && setTradable(e) && <SetPrice key={e.slug} e={e} />}
-    {e.isPrime && e.components.length > 0 && !setTradable(e) && <p className="muted">This item and its parts cannot be traded between players, so there is no player market price.</p>}
+    {e.isPrime && e.components.length > 0 && !setTradable(e) && <p className="muted">{t("enNoTrade")}</p>}
     {MARKET_ENABLED && cat === "mod" && <ModPrice key={e.slug} e={e} />}
-    {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · Vaulted: ${e.vaulted ? "yes" : "no"}` : ""}</p>}
-    {e.components.length > 0 && <><h2>Components</h2><ul className="list comp">{e.components.map(k => (
-      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? "Tradable" : "Not tradable"}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>details and price</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>Where to farm</Link></span><PartRelics e={e} k={k} /><Sub cs={k.children} /></span>
+    {e.facts.length > 0 && <p className="muted">{e.facts.map(([k, v]) => `${k}: ${v}`).join(" · ")}{e.vaulted !== null ? ` · ${t("enVaulted", { v: e.vaulted ? t("enYes") : t("enNo") })}` : ""}</p>}
+    {e.components.length > 0 && <><h2>{t("enComponents")}</h2><ul className="list comp">{e.components.map(k => (
+      <li key={k.name}><span><ItemArt file={k.image ?? e.image} size={34} /> <b>{k.name}</b>{k.count > 1 ? ` ×${k.count}` : ""}{k.ducats != null && <span className="muted"> · {k.ducats} ducats</span>}{partTradable(e, k) != null && <span className={"tag " + (partTradable(e, k) ? "FRESH" : "UNAVAILABLE")} style={{ marginLeft: ".4rem" }}>{partTradable(e, k) ? t("prtTradable") : t("prtNotTradable")}</span>}<span className="muted"> <Link to={`/item/${encodeURIComponent(k.name === "Blueprint" ? e.name + " Blueprint" : e.name + " " + k.name + " Blueprint")}`}>{t("enDetails")}</Link> · <Link to={`/farm/${encodeURIComponent(e.name + " " + k.name)}`}>{t("whereToFarm")}</Link></span><PartRelics e={e} k={k} /><Sub cs={k.children} /></span>
         <span><PartNote e={e} k={k} />{MARKET_ENABLED && partTradable(e, k) !== false && (e.isPrime || k.ducats != null) && <MarketCheck name={`${e.name} ${k.name}`} alt={k.ducats == null ? k.name : undefined} />}</span></li>))}</ul></>}
     <Prov rec={rec} /></article>);
 }
