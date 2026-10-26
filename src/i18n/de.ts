@@ -1253,5 +1253,8 @@ const d: Dict = {
   scBaseHint: "Das Basislevel jedes Gegners steht auf seiner Wiki-Seite; die Daten dieser Seite enthalten es nicht, trage es also selbst ein.",
   scNotes: "Berechnete Schätzung mit den Formeln des Wikis, nicht aus dem Spiel gelesen. Nicht enthalten: Steel Path, der Schaden deiner Waffen, Rüstungsabzug und Schild-Gating.",
   scSource: "Formeln: {link}, gelesen am {date}.",
+  bldSlotAura: "Aura",
+  bldSlotStance: "Haltung",
+  bldSlotExilus: "Exilus",
 };
 export default d;

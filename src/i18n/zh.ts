@@ -1253,5 +1253,8 @@ const d: Dict = {
   scBaseHint: "每个敌人的基础等级在其维基页面上；本站使用的数据不包含它，请自行填写。",
   scNotes: "根据维基公式计算的估计值，并非从游戏中读取。不包括：Steel Path、你的武器伤害、护甲削减和护盾门限。",
   scSource: "公式：{link}，读取于 {date}。",
+  bldSlotAura: "光环",
+  bldSlotStance: "架势",
+  bldSlotExilus: "Exilus",
 };
 export default d;

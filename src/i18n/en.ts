@@ -1252,6 +1252,9 @@ export const en = {
   scBaseHint: "The base level of each enemy is on its wiki page; the data this site uses does not include it, so set it yourself.",
   scNotes: "Calculated estimate from the wiki's formulas, not read from the game. Not included: Steel Path, the damage of your weapons, armor stripping and shield gating.",
   scSource: "Formulas: {link}, read on {date}.",
+  bldSlotAura: "Aura",
+  bldSlotStance: "Stance",
+  bldSlotExilus: "Exilus",
 };
 export type Key = keyof typeof en;
 export type Dict = Record<Key, string> & { [k: `${string}_${"zero" | "two" | "few" | "many"}`]: string };

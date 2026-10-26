@@ -1253,5 +1253,8 @@ const d: Dict = {
   scBaseHint: "O nível base de cada inimigo está na página dele no wiki; os dados que este site usa não o incluem, então defina você mesmo.",
   scNotes: "Estimativa calculada com as fórmulas do wiki, não lida do jogo. Não inclui: Steel Path, o dano das suas armas, a remoção de armadura nem o bloqueio de escudo.",
   scSource: "Fórmulas: {link}, lido em {date}.",
+  bldSlotAura: "Aura",
+  bldSlotStance: "Postura",
+  bldSlotExilus: "Exilus",
 };
 export default d;

@@ -1253,5 +1253,8 @@ const d: Dict = {
   scBaseHint: "Le niveau de base de chaque ennemi est sur sa page du wiki ; les données de ce site ne le contiennent pas, indiquez-le vous-même.",
   scNotes: "Estimation calculée avec les formules du wiki, non lue dans le jeu. Non inclus : Steel Path, les dégâts de vos armes, la réduction d'armure et le blocage de bouclier.",
   scSource: "Formules : {link}, lu le {date}.",
+  bldSlotAura: "Aura",
+  bldSlotStance: "Posture",
+  bldSlotExilus: "Exilus",
 };
 export default d;

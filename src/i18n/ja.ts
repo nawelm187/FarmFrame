@@ -1253,5 +1253,8 @@ const d: Dict = {
   scBaseHint: "各敵の基本レベルは Wiki のページにあります。このサイトのデータには含まれないため、ご自身で設定してください。",
   scNotes: "Wiki の式から計算した推定値で、ゲームから読み取った値ではありません。含まれないもの：Steel Path、あなたの武器のダメージ、アーマー削減、シールドゲート。",
   scSource: "式：{link}、{date} に読み取り。",
+  bldSlotAura: "オーラ",
+  bldSlotStance: "スタンス",
+  bldSlotExilus: "Exilus",
 };
 export default d;
