@@ -1,5 +1,5 @@
 import type { Entity } from "./catalog";
-import type { Build } from "./build";
+import { allSlots, type Build } from "./build";
 export type StatKey = "health" | "shield" | "armor" | "energy" | "strength" | "duration" | "efficiency" | "range" | "damage" | "critChance" | "critDamage" | "multishot" | "status" | "fireRate" | "magazine" | "reload";
 export const ORDER: StatKey[] = ["health", "shield", "armor", "energy", "strength", "duration", "efficiency", "range", "damage", "critChance", "critDamage", "multishot", "status", "fireRate", "magazine", "reload"];
 export const LABEL: Record<StatKey, string> = { health: "Health", shield: "Shield", armor: "Armor", energy: "Energy", strength: "Ability strength", duration: "Ability duration", efficiency: "Ability efficiency", range: "Ability range", damage: "Damage", critChance: "Critical chance", critDamage: "Critical damage", multishot: "Multishot", status: "Status chance", fireRate: "Fire rate", magazine: "Magazine capacity", reload: "Reload speed" };
@@ -13,7 +13,7 @@ export function parseEffect(line: string): { key: StatKey; pct: number } | null 
 export interface Part { mod: string; pct: number }
 export function calc(b: Build, mods: Map<string, Entity>) {
   const acc = new Map<StatKey, Part[]>(), unparsed: string[] = [];
-  for (const s of b.slots) {
+  for (const s of allSlots(b)) {
     if (!s.mod) continue; const m = mods.get(s.mod); if (!m?.levelStats?.length) continue;
     for (const line of m.levelStats[Math.min(s.rank, m.levelStats.length - 1)] ?? []) {
       const p = parseEffect(line);
