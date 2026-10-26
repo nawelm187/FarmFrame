@@ -11,6 +11,7 @@ import { useCatalogs } from "../lib/useCatalog";
 import { useMany } from "../lib/data";
 import { MARKET_ENABLED, fetchStat } from "../lib/market";
 import ModCard from "../ModCard";
+import DamageTest from "../DamageTest";
 import ModPicker from "../ModPicker";
 import BuildAI from "../BuildAI";
 import { Plat } from "../Money";
@@ -97,6 +98,7 @@ export function BuildEditor() {
     <div className="bgrid">{ev.rows.map(r => cell(String(r.i), "", tr("bldSlot", { n: r.i + 1 }), b.slots[r.i], r.m, r.d, r.pol, active === r.i, () => selMain(r.i), v => setSlot(r.i, v), tr("bldSlotRank", { n: r.i + 1 })))}</div>
     <ul className="list comp">{ev.rows.map(r => (<li key={r.i} className={active === r.i ? "slotsel" : undefined}><span><button className="btn" aria-pressed={active === r.i} onClick={() => setActive(active === r.i ? null : r.i)}>{active === r.i ? tr("bldChoosing") : tr("bldSelect")}</button> {tr("bldSlot", { n: r.i + 1 })} {r.pol ? <><PolIcon pol={r.pol} size={18} /> <span className="muted">{r.pol}</span></> : <span className="muted">{tr("bldNoPol")}</span>} · {r.m ? <><ItemArt file={r.m.image} size={30} /> <b>{r.m.name}</b></> : <span className="muted">{tr("bldEmpty")}</span>}{r.d != null && <span className="muted"> · {tr("bldDrain", { d: r.d })}</span>}</span>
       <span><span className="polpick" role="group" aria-label={tr("bldSlotPol", { n: r.i + 1 })}><button className={"relicchip" + (!b.slots[r.i].pol ? " own" : "")} title={tr("bldNoPol")} onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: undefined })}>{tr("bldPolNone")}</button>{POLS.map(x => <button key={x} className={"relicchip" + (b.slots[r.i].pol === x ? " own" : "")} title={x === "any" ? tr("bldOmni") : x} aria-pressed={b.slots[r.i].pol === x} onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: x })}><PolIcon pol={x} size={18} /></button>)}</span> {b.slots[r.i].mod && <><label className="muted"><input type="checkbox" checked={!!b.slots[r.i].owned} onChange={e => setSlot(r.i, { ...b.slots[r.i], owned: e.target.checked })} /> {tr("trkOwned")} </label><label className="muted">{tr("bldRank")} <input type="number" aria-label={tr("bldSlotRank", { n: r.i + 1 })} min={0} max={r.m?.maxRank ?? 30} value={b.slots[r.i].rank} style={{ width: "4rem" }} onChange={e => setSlot(r.i, { ...b.slots[r.i], rank: Math.max(0, +e.target.value || 0) })} /></label> <button className="btn" onClick={() => setSlot(r.i, { ...b.slots[r.i], mod: null, rank: 0, owned: false })}>{tr("remove")}</button></>}</span></li>))}</ul>
+    {(kind === "primary" || kind === "secondary" || kind === "melee") && <DamageTest b={b} weaponEnt={frameEnt} mods={bySlug} />}
     <ModPicker mods={activeSp ? fitSp : fit} onPick={pick} taken={new Set(allSlots(b).map(x => x.mod).filter((x): x is string => !!x))} target={activeSp ? slotName(activeSp).toLowerCase() : active != null ? tr("bldSlot", { n: active + 1 }).toLowerCase() : tr("mpFirstEmpty")} />
     {kind === "warframe" && <><h2>{tr("bldArcanes")}</h2>
     {!arcs ? <p className="muted">{ar.status === "LOADING" ? tr("bldArcLoading") : tr("bldArcNA")}</p> : <><datalist id="arcnames">{arcs.map(a => <option key={a.slug} value={a.name} />)}</datalist>
