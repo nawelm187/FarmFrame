@@ -158,3 +158,17 @@ Limits to remember: only menus, search box and Home are translated; the Advisor 
 - Screens done: Tracking, Fissures, Relics and its cards, Details labels, Home leftovers, Railjack weapons, Stepper, Countdown. `tp()` adds plural forms (Russian one/few/many); the parity test now allows `_few` and `_many` extras and checks they have a base key.
 - Verified: 349 tests in the stand-in runner (coverage ratchet now covers 22 files); partial strict `tsc` exit 0 on `i18n/*.ts` including the new `Dict` type. **Not verified:** the app in a browser; typecheck of the edited screens (syntax only). The damage-icon logic in `Details.tsx` was changed (explicit `dmg` count instead of comparing English titles): check a weapon page.
 - Quality: a re-read of my own Russian found one double negative; native review is still needed for all 8 languages.
+
+## 15. v0.92 (2026-10-14): wrong pictures, Rotations, Builds, logic sentences
+
+- **Reported by the owner from the live site:** a Warframe (Jade) shown with a colour palette picture. Verified cause in the code: `ItemArt` set `exact = found && !own ? found : f`, so the extra index (`imgindex.json`, "jade" -> `ColorPickerJade.png`) overrode the catalog picture. 71 entries of that index are colour palettes. Fixed with `imageExact` (catalog exact first), `isPalette` (palettes never used) and tests. Only "jade" was found among the Warframe and weapon names of the mastery list, but the priority bug affected any name present in both sources, so other wrong pictures may have had the same cause. **Not verified in a browser; check Jade and report any item that still shows another picture.**
+- **Process fix:** the helper that adds translation keys wrote the files before checking placeholders; it now validates first. A failed run had left `{tier}` where `{tierA}` was needed and two entries with edge spaces; fixed.
+- **Verified:** 357 tests in the stand-in runner (coverage ratchet covers 35 files); partial strict `tsc` exit 0 on the converted lib modules. **Not verified:** the edited screens in a browser or with the real typecheck.
+
+## 16. v0.93 (2026-10-14)
+
+Farm Plan, Roadmap, Planner and the three hub pages converted. Counter: 33 of 77 screens clean, 514 strings in 44 screens. 357 tests in the stand-in runner; partial strict `tsc` exit 0 on the pure modules; edited screens syntax-checked only. New plural keys carry Russian one/few/many forms (a test requires them).
+
+## 17. v0.94 (2026-10-14)
+
+Account page, `authMsg.ts` and the three account messages in `CloudProvider.tsx` converted. 358 tests in the stand-in runner; partial strict `tsc` exit 0 on the pure modules; `Profile.tsx` and `CloudProvider.tsx` syntax-checked only. **Sync code was only touched in its message strings** (`t("amConfirmMail")` etc.); the guarded write, the account-switch guard and the conflict screen were not changed, but everything in section 8 still has to be tried by hand.
