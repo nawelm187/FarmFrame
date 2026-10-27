@@ -7,15 +7,17 @@ import { ALL_SYNDICATES, FACTION, NOTES, RANKS, SYNDICATE_SOURCE, dailyCap, grou
 import { useMany } from "../lib/data";
 import { affordable, clampStanding, effects, parseSyndicates, readStanding, toRank, writeStanding, type Stand, type Syndicate } from "../lib/syndicates";
 import { Prov } from "./parts";
+import { tp, useT } from "../i18n";
+import { rich } from "../lib/rich";
 import { NightwaveSeries, RankCards, WIKI_NOTE, WikiOffers, wikiFor } from "../SyndicateWiki";
 const FILE = [{ id: "syndicates", file: "syndicates.json" }];
-const ORDER = { faction: 0, "open-world": 1, neutral: 2, event: 3 } as const, TITLE = { faction: "Faction syndicates", "open-world": "Open-world syndicates", neutral: "Neutral syndicates", event: "Event syndicates" } as const;
-const KIND = { ally: "Ally · +50%", opposed: "Opposed · −50%", enemy: "Enemy · −100%" } as const;
+const ORDER = { faction: 0, "open-world": 1, neutral: 2, event: 3 } as const, TITLE = { faction: "synFaction", "open-world": "synOpen", neutral: "synNeutral", event: "synEvent" } as const, SUB = { faction: "synKFaction", "open-world": "synKOpen", neutral: "synKNeutral", event: "synKEvent" } as const;
+const KIND = { ally: "synAlly", opposed: "synOpposed", enemy: "synEnemy" } as const;
 const sign = (n: number) => (n > 0 ? "+" : "") + n.toLocaleString();
 const Initial = ({ name, size }: { name: string; size: number }) => <span className="blank" style={{ width: size, height: size }} aria-hidden="true">{name[0]}</span>;
 /** Syndicates: every syndicate with its emblem, rank ladder, who likes or hates whom, what each rank sells, and your own standing and target, kept in this browser. */
 export default function Syndicates() {
-  const [r] = useMany(FILE), data = parseSyndicates(r.rec?.data), [params] = useSearchParams(), [sel, setSel] = useState(ALL_SYNDICATES.find(n => keyOf(n) === keyOf(params.get("s") ?? "")) ?? ALL_SYNDICATES[0]), [st, setSt] = useState(readStanding), [amt, setAmt] = useState(10000), [rel, setRel] = useState(true), [mr, setMr] = useState(0);
+  const tr = useT(), [r] = useMany(FILE), data = parseSyndicates(r.rec?.data), [params] = useSearchParams(), [sel, setSel] = useState(ALL_SYNDICATES.find(n => keyOf(n) === keyOf(params.get("s") ?? "")) ?? ALL_SYNDICATES[0]), [st, setSt] = useState(readStanding), [amt, setAmt] = useState(10000), [rel, setRel] = useState(true), [mr, setMr] = useState(0);
   const sorted = useMemo<Syndicate[]>(() => {
     const byKey = new Map((data ?? []).map(s => [keyOf(s.name), s])), known = new Set(ALL_SYNDICATES.map(keyOf));
     const list = [...ALL_SYNDICATES.map(n => byKey.get(keyOf(n)) ?? { name: n, ranks: [], count: 0 }), ...(data ?? []).filter(s => !known.has(keyOf(s.name)))];
@@ -32,43 +34,43 @@ export default function Syndicates() {
   const need = faction ? toRank(rank, me.have, tRank) : 0, days = Math.ceil(need / dailyCap(mr)), grp = groupOfSyndicate(cur.name);
   const groups = (Object.keys(ORDER) as (keyof typeof ORDER)[]).map(g => ({ g, items: sorted.filter(s => groupOfSyndicate(s.name) === g) })).filter(x => x.items.length);
   const ladder = [...RANKS].sort((a, b) => a.rank - b.rank);
-  return (<><PageHead title="Syndicates" art={<SyndicateArt name={cur.name} size={60} />}>Pick a syndicate to see its rank ladder, which others it helps or hurts, and what each rank sells. Enter your own standing and a target rank. Offers come from the official drop tables; ranks and relations come from the Warframe Wiki.</PageHead>
-    {groups.map(({ g, items }) => <div key={g}><h2 style={{ margin: ".6rem 0 .4rem" }}>{TITLE[g]}</h2>
-      <div className="emb" role="group" aria-label={TITLE[g]}>{items.map(s => { const k = keyOf(s.name), mine = st[s.name];
+  return (<><PageHead title={tr("syndicates")} art={<SyndicateArt name={cur.name} size={60} />}>{tr("synLead")}</PageHead>
+    {groups.map(({ g, items }) => <div key={g}><h2 style={{ margin: ".6rem 0 .4rem" }}>{tr(TITLE[g])}</h2>
+      <div className="emb" role="group" aria-label={tr(TITLE[g])}>{items.map(s => { const k = keyOf(s.name), mine = st[s.name];
         return (<button key={s.name} className="embtn" aria-pressed={k === key} onClick={() => setSel(s.name)}>{SyndicateArt({ name: s.name, size: 48 }) ?? <Initial name={s.name} size={48} />}<b>{s.name}</b>
-          <small>{FACTION[k] && mine?.rank != null ? `Rank ${mine.rank}` : mine?.have ? `${mine.have.toLocaleString()} standing` : (wikiFor(k)?.offers.length || s.count) ? `${wikiFor(k)?.offers.length || s.count} offers` : "ranks only"}</small></button>); })}</div></div>)}
+          <small>{FACTION[k] && mine?.rank != null ? tr("synRank", { n: mine.rank }) : mine?.have ? tr("drNoteStanding", { n: mine.have.toLocaleString() }) : (wikiFor(k)?.offers.length || s.count) ? tr("synOffersN", { n: wikiFor(k)?.offers.length || s.count }) : tr("synRanksOnly")}</small></button>); })}</div></div>)}
     <section className="gcard sec" aria-label={cur.name} style={{ marginTop: "1rem" }}>
-      <header className="sechead"><span style={{ display: "flex", alignItems: "center", gap: ".8rem" }}>{SyndicateArt({ name: cur.name, size: 64 }) ?? <Initial name={cur.name} size={64} />}<span><h2>{cur.name}</h2><span className="muted">{TITLE[grp].replace(" syndicates", "")} syndicate</span></span></span></header>
+      <header className="sechead"><span style={{ display: "flex", alignItems: "center", gap: ".8rem" }}>{SyndicateArt({ name: cur.name, size: 64 }) ?? <Initial name={cur.name} size={64} />}<span><h2>{cur.name}</h2><span className="muted">{tr(SUB[grp])}</span></span></span></header>
       {faction ? <>
         <div className="cols">
-          <article className="minicard"><h3>Your standing and rank</h3>
-            <div className="bar"><label>Rank <select value={rank} onChange={e => { const v = +e.target.value; set({ rank: v, have: clampStanding(v, me.have), targetRank: Math.max(v, tRank) }); }}>{ladder.map(x => <option key={x.rank} value={x.rank}>{rt(x.rank)}</option>)}</select></label>
-              <label>Standing <input type="number" value={me.have} onChange={e => set({ have: clampStanding(rank, +e.target.value || 0) })} style={{ width: "7.5rem" }} /></label>
-              <label>Target rank <select value={tRank} onChange={e => set({ targetRank: +e.target.value })}>{ladder.map(x => <option key={x.rank} value={x.rank}>{rt(x.rank)}</option>)}</select></label></div>
-            <p style={{ margin: 0 }}>{tRank <= rank ? <span className="tag FRESH">Already at or above rank {tRank}</span> : <>To reach rank {tRank} you need about <b>{need.toLocaleString()}</b> more standing{need > 0 ? ` (about ${days} day${days === 1 ? "" : "s"} at the daily cap)` : ""}.</>}</p></article>
-          <article className="minicard"><h3>Earn or lose standing</h3>
-            <div className="bar"><label>Amount <input type="number" min={0} value={amt} onChange={e => setAmt(Math.max(0, +e.target.value || 0))} style={{ width: "7.5rem" }} /></label>
-              <button className="btn sm" onClick={() => add(1)}>Add</button><button className="btn sm danger" onClick={() => add(-1)}>Remove</button></div>
-            <div className="bar"><label><input type="checkbox" checked={rel} onChange={e => setRel(e.target.checked)} /> Apply to related syndicates</label>
-              <label>Mastery Rank <input type="number" min={0} max={40} value={mr} onChange={e => setMr(Math.max(0, +e.target.value || 0))} style={{ width: "4.5rem" }} /></label></div>
-            <p className="muted" style={{ margin: 0 }}>Daily cap at your Mastery Rank: {dailyCap(mr).toLocaleString()} standing (resets at 0:00 UTC).</p></article></div>
-        <h3>Who it helps and who it hurts</h3>
-        <div className="cgrid wide">{fx.map(e => <button key={e.kind} className="rel" style={{ textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }} onClick={() => setSel(find(e.name))}>{SyndicateArt({ name: e.name, size: 36 }) ?? <Initial name={e.name} size={36} />}<span className="tn"><b>{e.name}</b><small className={e.delta > 0 ? "pos" : "neg"}>{KIND[e.kind]} · {sign(e.delta)} for {amt.toLocaleString()} earned</small></span></button>)}</div>
-        <h3>Rank ladder</h3>
-        <div className="rungs">{ladder.map(x => <div key={x.rank} className={"rung" + (x.rank < 0 ? " neg" : "") + (x.rank === rank ? " here" : x.rank === tRank && tRank > rank ? " goal" : "")}><span>Rank</span><b>{x.rank}</b><span>{x.min.toLocaleString()} to {x.max.toLocaleString()}</span>{x.rank === rank ? <span className="tag FRESH">You are here</span> : x.rank === tRank && tRank > rank ? <span className="tag">Target</span> : x.rank === 0 ? <span>neutral</span> : null}</div>)}</div>
+          <article className="minicard"><h3>{tr("synYour")}</h3>
+            <div className="bar"><label>{tr("synLblRank")} <select value={rank} onChange={e => { const v = +e.target.value; set({ rank: v, have: clampStanding(v, me.have), targetRank: Math.max(v, tRank) }); }}>{ladder.map(x => <option key={x.rank} value={x.rank}>{rt(x.rank)}</option>)}</select></label>
+              <label>{tr("synLblStanding")} <input type="number" value={me.have} onChange={e => set({ have: clampStanding(rank, +e.target.value || 0) })} style={{ width: "7.5rem" }} /></label>
+              <label>{tr("synTargetRank")} <select value={tRank} onChange={e => set({ targetRank: +e.target.value })}>{ladder.map(x => <option key={x.rank} value={x.rank}>{rt(x.rank)}</option>)}</select></label></div>
+            <p style={{ margin: 0 }}>{tRank <= rank ? <span className="tag FRESH">{tr("synAlready", { n: tRank })}</span> : need > 0 ? rich(tp("synNeedB", days, { t: tRank, s: "{s}" }), { s: <b>{need.toLocaleString()}</b> }) : rich(tr("synNeedA", { t: tRank, n: "{n}" }), { n: <b>{need.toLocaleString()}</b> })}</p></article>
+          <article className="minicard"><h3>{tr("synEarn")}</h3>
+            <div className="bar"><label>{tr("synAmount")} <input type="number" min={0} value={amt} onChange={e => setAmt(Math.max(0, +e.target.value || 0))} style={{ width: "7.5rem" }} /></label>
+              <button className="btn sm" onClick={() => add(1)}>{tr("synAdd")}</button><button className="btn sm danger" onClick={() => add(-1)}>{tr("remove")}</button></div>
+            <div className="bar"><label><input type="checkbox" checked={rel} onChange={e => setRel(e.target.checked)} /> {tr("synApply")}</label>
+              <label>{tr("mastery")} <input type="number" min={0} max={40} value={mr} onChange={e => setMr(Math.max(0, +e.target.value || 0))} style={{ width: "4.5rem" }} /></label></div>
+            <p className="muted" style={{ margin: 0 }}>{tr("synDaily", { n: dailyCap(mr).toLocaleString() })}</p></article></div>
+        <h3>{tr("synWho")}</h3>
+        <div className="cgrid wide">{fx.map(e => <button key={e.kind} className="rel" style={{ textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }} onClick={() => setSel(find(e.name))}>{SyndicateArt({ name: e.name, size: 36 }) ?? <Initial name={e.name} size={36} />}<span className="tn"><b>{e.name}</b><small className={e.delta > 0 ? "pos" : "neg"}>{tr(KIND[e.kind])} · {tr("synFor", { delta: sign(e.delta), amt: amt.toLocaleString() })}</small></span></button>)}</div>
+        <h3>{tr("synLadder")}</h3>
+        <div className="rungs">{ladder.map(x => <div key={x.rank} className={"rung" + (x.rank < 0 ? " neg" : "") + (x.rank === rank ? " here" : x.rank === tRank && tRank > rank ? " goal" : "")}><span>{tr("synLblRank")}</span><b>{x.rank}</b><span>{tr("synRange", { min: x.min.toLocaleString(), max: x.max.toLocaleString() })}</span>{x.rank === rank ? <span className="tag FRESH">{tr("synHere")}</span> : x.rank === tRank && tRank > rank ? <span className="tag">{tr("synTarget")}</span> : x.rank === 0 ? <span>{tr("synNeutralRank")}</span> : null}</div>)}</div>
         <p className="muted">{NOTES.join(" ")}</p></>
-        : <article className="minicard" style={{ maxWidth: "30rem" }}><h3>Standing you can spend</h3><div className="bar"><input type="number" min={0} aria-label="Standing available" value={me.have} onChange={e => set({ have: Math.max(0, +e.target.value || 0) })} style={{ width: "8rem" }} />
+        : <article className="minicard" style={{ maxWidth: "30rem" }}><h3>{tr("synSpend")}</h3><div className="bar"><input type="number" min={0} aria-label={tr("synAvail")} value={me.have} onChange={e => set({ have: Math.max(0, +e.target.value || 0) })} style={{ width: "8rem" }} />
           <button className="btn sm" onClick={() => set({ have: me.have + 1000 })}>+1,000</button><button className="btn sm" onClick={() => set({ have: Math.max(0, me.have - 1000) })}>−1,000</button></div>
-          <p className="muted" style={{ margin: 0 }}>This syndicate has no rank table or opposing syndicates in the sources used here, so only the standing you can spend is tracked.</p></article>}
+          <p className="muted" style={{ margin: 0 }}>{tr("synNoRanks")}</p></article>}
       {wiki && <RankCards w={wiki} here={faction ? rank : undefined} goal={faction ? tRank : undefined} />}
-      <p className="muted" style={{ marginTop: ".8rem" }}>Your standing and targets are stored only in this browser.</p></section>
-    <section className="gcard sec" aria-label={cur.name + " offers"}><header className="sechead"><h2>What {cur.name} sells</h2><span className="muted">{wiki?.offers.length ? `${wiki.offers.length} offers` : cur.count ? `${cur.count} offers` : ""}</span></header>
+      <p className="muted" style={{ marginTop: ".8rem" }}>{tr("synStored")}</p></section>
+    <section className="gcard sec" aria-label={tr("synOffersAria", { name: cur.name })}><header className="sechead"><h2>{tr("synSells", { name: cur.name })}</h2><span className="muted">{wiki?.offers.length ? tr("synOffersN", { n: wiki.offers.length }) : cur.count ? tr("synOffersN", { n: cur.count }) : ""}</span></header>
       {key === "nightwave" && <NightwaveSeries />}
       {wiki?.notes?.map(n => <p key={n} className="note">{n}</p>)}
-      {wiki?.offers.length ? <WikiOffers w={wiki} have={me.have} /> : cur.ranks.length ? <div className="cols" style={{ alignItems: "start" }}>{cur.ranks.map(rk => <div key={rk.rank} className="seccard"><h3>{rk.rank}</h3><span className="muted">{rk.offers.length} offers</span>
+      {wiki?.offers.length ? <WikiOffers w={wiki} have={me.have} /> : cur.ranks.length ? <div className="cols" style={{ alignItems: "start" }}>{cur.ranks.map(rk => <div key={rk.rank} className="seccard"><h3>{rk.rank}</h3><span className="muted">{tr("synOffersN", { n: rk.offers.length })}</span>
         <div className="scrollbox" style={{ maxHeight: "22rem" }}><div style={{ display: "grid", gap: ".35rem" }}>{affordable(rk.offers, me.have).map(o => <div key={o.item} className={"offer" + (me.have > 0 && o.standing > 0 && o.canBuy ? " can" : "")}><Pic name={o.item} size={30} /><span className="tn"><b title={o.item}>{o.item}</b>
-          <small>{o.standing ? `${o.standing.toLocaleString()} standing` : "no standing"}{o.cost != null ? ` · ${o.cost.toLocaleString()} credits` : ""}</small></span>
-          {me.have > 0 && o.standing > 0 && <span className={"tag" + (o.canBuy ? " FRESH" : "")}>{o.canBuy ? "Affordable" : `${o.missing.toLocaleString()} more`}</span>}</div>)}</div></div></div>)}</div>
-        : <p className="muted">The drop data used here has no list of offers for this syndicate{data ? "" : " (the data could not be loaded)"}. Nothing is invented: check the in-game vendor or the wiki.</p>}</section>
-    <p className="srclist">Ranks, relations and daily cap: <a href={SYNDICATE_SOURCE.url} target="_blank" rel="noreferrer">{SYNDICATE_SOURCE.label}</a>, entered by hand on {SYNDICATE_SOURCE.verified}. {WIKI_NOTE}{wiki ? <> This page: <a href={wiki.url} target="_blank" rel="noreferrer">{wiki.name} on the wiki</a>.</> : null}</p><Prov rec={r.rec} /></>);
+          <small>{o.standing ? tr("drNoteStanding", { n: o.standing.toLocaleString() }) : tr("synNoStanding")}{o.cost != null ? ` · ${tr("alCredits", { n: o.cost.toLocaleString() })}` : ""}</small></span>
+          {me.have > 0 && o.standing > 0 && <span className={"tag" + (o.canBuy ? " FRESH" : "")}>{o.canBuy ? tr("synAffordable") : tr("pchMoreN", { n: o.missing.toLocaleString() })}</span>}</div>)}</div></div></div>)}</div>
+        : <p className="muted">{data ? tr("synNoOffers") : tr("synNoOffersLoad")}</p>}</section>
+    <p className="srclist">{rich(tr("synSources", { date: SYNDICATE_SOURCE.verified }), { link: <a href={SYNDICATE_SOURCE.url} target="_blank" rel="noreferrer">{SYNDICATE_SOURCE.label}</a> })} {WIKI_NOTE}{wiki ? <> {rich(tr("synPage"), { link: <a href={wiki.url} target="_blank" rel="noreferrer">{tr("synOnWiki", { name: wiki.name })}</a> })}</> : null}</p><Prov rec={r.rec} /></>);
 }
