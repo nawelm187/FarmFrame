@@ -29,6 +29,9 @@ it("average critical multiplier is linear in the chance, also above 100%", () =>
   const t = totals(W({ impact: 1 }, { critChance: .2, critMult: 2, multishot: 1, fireRate: 10 }), { ...emptyBonus(), critChance: 1.5, critDamage: 1.2, multishot: .9, fireRate: .5 });
   expect(t.critChance).toBeCloseTo(.5, 8); expect(t.critMult).toBeCloseTo(4.4, 8); expect(t.multishot).toBeCloseTo(1.9, 8); expect(t.fireRate).toBeCloseTo(15, 8);
 });
+it("critical chance bonuses are relative to the base chance (the wiki's Braton example: 12% x (1 + 150% + 135%) = 46.2%)", () => {
+  expect(totals(W({ impact: 1 }, { critChance: .12, critMult: 2 }), { ...emptyBonus(), critChance: 1.5 + 1.35 }).critChance).toBeCloseTo(.462, 8);
+});
 it("enemy modifiers: armor class changes the effective armor, armor 0 loses it, shields ignore armor", () => {
   expect(healthMultiplier("slash", T({ armor: 300 }))).toBeCloseTo(.5, 8);
   expect(healthMultiplier("corrosive", T({ armor: 300, armorMod: { corrosive: .75 } }))).toBeCloseTo(1.4, 8);   // 300 / (300 + 300 x 0.25) x 1.75
