@@ -9,7 +9,8 @@ import { affordable, clampStanding, effects, parseSyndicates, readStanding, toRa
 import { Prov } from "./parts";
 import { tp, useT } from "../i18n";
 import { rich } from "../lib/rich";
-import { NightwaveSeries, RankCards, WIKI_NOTE, WikiOffers, wikiFor } from "../SyndicateWiki";
+import { NightwaveSeries, RankCards, WikiOffers, wikiFor } from "../SyndicateWiki";
+import { WIKI_VERIFIED } from "../data/syndicateWiki";
 const FILE = [{ id: "syndicates", file: "syndicates.json" }];
 const ORDER = { faction: 0, "open-world": 1, neutral: 2, event: 3 } as const, TITLE = { faction: "synFaction", "open-world": "synOpen", neutral: "synNeutral", event: "synEvent" } as const, SUB = { faction: "synKFaction", "open-world": "synKOpen", neutral: "synKNeutral", event: "synKEvent" } as const;
 const KIND = { ally: "synAlly", opposed: "synOpposed", enemy: "synEnemy" } as const;
@@ -72,5 +73,5 @@ export default function Syndicates() {
           <small>{o.standing ? tr("drNoteStanding", { n: o.standing.toLocaleString() }) : tr("synNoStanding")}{o.cost != null ? ` · ${tr("alCredits", { n: o.cost.toLocaleString() })}` : ""}</small></span>
           {me.have > 0 && o.standing > 0 && <span className={"tag" + (o.canBuy ? " FRESH" : "")}>{o.canBuy ? tr("synAffordable") : tr("pchMoreN", { n: o.missing.toLocaleString() })}</span>}</div>)}</div></div></div>)}</div>
         : <p className="muted">{data ? tr("synNoOffers") : tr("synNoOffersLoad")}</p>}</section>
-    <p className="srclist">{rich(tr("synSources", { date: SYNDICATE_SOURCE.verified }), { link: <a href={SYNDICATE_SOURCE.url} target="_blank" rel="noreferrer">{SYNDICATE_SOURCE.label}</a> })} {WIKI_NOTE}{wiki ? <> {rich(tr("synPage"), { link: <a href={wiki.url} target="_blank" rel="noreferrer">{tr("synOnWiki", { name: wiki.name })}</a> })}</> : null}</p><Prov rec={r.rec} /></>);
+    <p className="srclist">{rich(tr("synSources", { date: SYNDICATE_SOURCE.verified }), { link: <a href={SYNDICATE_SOURCE.url} target="_blank" rel="noreferrer">{SYNDICATE_SOURCE.label}</a> })} {tr("swWikiNote", { date: WIKI_VERIFIED })}{wiki ? <> {rich(tr("synPage"), { link: <a href={wiki.url} target="_blank" rel="noreferrer">{tr("synOnWiki", { name: wiki.name })}</a> })}</> : null}</p><Prov rec={r.rec} /></>);
 }
