@@ -21,5 +21,7 @@ Project reference: `ibhhtmbgdksriyaecclg` (the one in `src/lib/config.ts`).
 The `market` function is deployed the same way (its code is in `supabase/functions/market/index.ts`).
 
 ## build-analysis (AI) and allowed origins
+Since v0.109 the web app sends the person's language to `build-analysis` and the function asks the AI to answer in it (only the 9 languages of the app are accepted; anything else is English). Redeploy this function to get replies in the person's language; an older deployed version keeps answering in English and nothing breaks.
+
 `build-analysis` only answers browsers on `https://nawelm187.github.io` and local dev (`localhost:5173`, `localhost:4173`). When you move to your own domain, add it as a secret before switching:
 `supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com` (comma separated for several). It keeps JWT verification **on** and also needs `ANTHROPIC_API_KEY`.
