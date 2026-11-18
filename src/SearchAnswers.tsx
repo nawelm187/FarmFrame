@@ -14,7 +14,7 @@ import { vendorSources } from "./lib/vendorSources";
 import type { Method } from "./data/methods";
 import { methodsFor } from "./lib/methods";
 import { tp, useT } from "./i18n";
-const Card = ({ title, children }: { title: string; children: ReactNode }) => <section className="answer" aria-live="polite" aria-label={title}><h3>{title}</h3>{children}</section>;
+export const Card = ({ title, children }: { title: string; children: ReactNode }) => <section className="answer" aria-live="polite" aria-label={title}><h3>{title}</h3>{children}</section>;
 /** "What should I farm?": the best activity running now for the person's own goals, where it is, why it is first, and what else is running. */
 export function NowAnswer({ go }: { go: () => void }) {
   const tr = useT();

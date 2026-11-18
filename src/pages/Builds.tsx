@@ -2,7 +2,7 @@ import ItemArt from "../ItemArt";
 import { PolIcon } from "../Icons";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { allSlots, evaluate, KIND_LABEL, modFits, newBuild, readBuilds, requirements, specialFits, specialSlot, SPECIALS, writeBuilds, type ArcSlot, type Build, type Kind, type Slot, type SpecialKey } from "../lib/build";
+import { allSlots, evaluate, KIND_LABEL, modFits, newBuild, readBuilds, requirements, specialFits, specialSlot, SPECIALS, writeBuilds, type ArcSlot, type Build, type Issue, type Kind, type Slot, type SpecialKey } from "../lib/build";
 import { readTracked, writeTracked } from "../lib/track";
 import { calc, LABEL } from "../lib/calc";
 import { parseCatalog, type Cat, type Entity } from "../lib/catalog";
@@ -14,15 +14,23 @@ import ModCard from "../ModCard";
 import DamageTest from "../DamageTest";
 import ModPicker from "../ModPicker";
 import BuildAI from "../BuildAI";
+import { decodeBuild, encodeBuild } from "../lib/buildShare";
 import { Plat } from "../Money";
 import SetPrice from "../SetPrice";
 import { Unavailable } from "./parts";
 import { KIND_KEY } from "../lib/catLabel";
-import { t as tt, useT } from "../i18n";
+import { t as tt, useT, type Key } from "../i18n";
 const ARC_URL = "https://raw.githubusercontent.com/WFCD/warframe-items/master/data/json/Arcanes.json";
 const ARC_ALT = "https://cdn.jsdelivr.net/gh/WFCD/warframe-items@master/data/json/Arcanes.json";
 const ARC_SRC = "WFCD warframe-items on GitHub (community, unofficial)";
 const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "umbra", "any"];
+/** Full-height sheet on phones, centered dialog on wide screens: holds the mod picker so the slot grid stays on screen. */
+function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  const tr = useT(), box = useRef<HTMLDivElement>(null);
+  useEffect(() => { box.current?.focus(); const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; document.addEventListener("keydown", k); const o = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.removeEventListener("keydown", k); document.body.style.overflow = o; }; }, [onClose]);
+  return (<div className="sheet" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}><div className="sheetin" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={box}>
+    <div className="sheethd"><b>{title}</b><button className="btn" onClick={onClose}>{tr("close")}</button></div><div className="sheetbd">{children}</div></div></div>);
+}
 export function BuildList() {
   const [bs, setBs] = useState(readBuilds), nav = useNavigate(), [sp] = useSearchParams(), made = useRef(false), tr = useT();
   // Deep link from search ("build Rhino" -> /builds?new=warframe:rhino): create the build once and open it.
@@ -31,12 +39,17 @@ export function BuildList() {
     const b = { ...newBuild(), kind: kind as Kind, frame: slug, name: sp.get("n") ? tt("bldFromName", { n: sp.get("n") ?? "" }) : tt("bldNew") }; const a = [...readBuilds(), b]; writeBuilds(a); nav(`/build/${b.id}`, { replace: true }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const commit = (a: Build[]) => { setBs(a); writeBuilds(a); };
   const add = () => { const b = newBuild(); commit([...bs, b]); nav(`/build/${b.id}`); };
+  const [codeIn, setCodeIn] = useState(""), [codeBad, setCodeBad] = useState(false);
+  const importCode = () => { const b = decodeBuild(codeIn); if (!b) { setCodeBad(true); return; } commit([...bs, b]); setCodeIn(""); nav(`/build/${b.id}`); };
   return (<><h1>{tr("builds")}</h1><p className="lead">{tr("bldLead")}</p>
     <div className="bar"><button className="btn" onClick={add}>{tr("bldNew")}</button></div>
+    <details className="minicard" style={{ maxWidth: "44rem", margin: ".6rem 0" }}><summary>{tr("bldImportCode")}</summary>
+      <textarea aria-label={tr("bldImportCode")} placeholder={tr("bldImportPh")} value={codeIn} onChange={e => { setCodeIn(e.target.value); setCodeBad(false); }} rows={3} style={{ width: "100%", boxSizing: "border-box", margin: ".5rem 0" }} />
+      <div className="bar"><button className="btn" disabled={!codeIn.trim()} onClick={importCode}>{tr("bldImportBtn")}</button>{codeBad && <span className="ERROR" role="alert">{tr("bldCodeBad")}</span>}</div></details>
     {!bs.length ? <p className="muted">{tr("bldNoneYet")}</p> : <ul className="list comp">{bs.map(b => (<li key={b.id}><span><Link to={`/build/${b.id}`}>{b.name}</Link> <span className="muted">{tr(KIND_KEY[b.kind ?? "warframe"])}</span></span><button className="btn" onClick={() => commit(bs.filter(x => x.id !== b.id))}>{tr("del")}</button></li>))}</ul>}</>);
 }
 export function BuildEditor() {
-  const { id } = useParams(), tr = useT(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [active, setActive] = useState<number | null>(null), [activeSp, setActiveSp] = useState<SpecialKey | null>(null), [sent, setSent] = useState(false), [road, setRoad] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
+  const { id } = useParams(), tr = useT(), [bs, setBs] = useState(readBuilds), [q, setQ] = useState(""), [active, setActive] = useState<number | null>(null), [activeSp, setActiveSp] = useState<SpecialKey | null>(null), [sheet, setSheet] = useState(false), [codeTxt, setCodeTxt] = useState(""), [copied, setCopied] = useState(false), [sent, setSent] = useState(false), [road, setRoad] = useState(false), [aq, setAq] = useState(["", ""]), [prices, setPrices] = useState<Record<string, number | null> | "loading" | "error" | null>(null);
   const b = bs.find(x => x.id === id), kind: Kind = b?.kind ?? "warframe";
   const catKey: Cat = kind === "warframe" ? "warframe" : kind === "companion" ? "companion" : kind === "archwing" ? "archwing" : "weapon";
   const both = useCatalogs([catKey, "mod"]), itemsC = both[catKey]!, modC = both.mod!;
@@ -54,7 +67,7 @@ export function BuildEditor() {
   const setSpecial = (k: SpecialKey, s: Slot) => save({ ...b, special: { ...b.special, [k]: s } });
   const slotName = (k: SpecialKey) => tr(k === "aura" ? "bldSlotAura" : k === "stance" ? "bldSlotStance" : "bldSlotExilus");
   const fitSp = activeSp ? mods.filter(m => specialFits(activeSp, kind, m) !== "no") : [];
-  const selMain = (i: number) => { setActive(active === i ? null : i); setActiveSp(null); };
+  const selMain = (i: number) => { const open = active !== i; setActive(open ? i : null); setActiveSp(null); if (open && !b.slots[i].mod) setSheet(true); };
   const arcs = parseCatalog(ar.rec?.data, "mod"), arcBy = new Map((arcs ?? []).map(a => [a.slug, a])), arcByName = new Map((arcs ?? []).map(a => [a.name.toLowerCase(), a]));
   const arcSlot = (i: number): ArcSlot => b.arcanes?.[i] ?? { mod: null };
   const setArc = (i: number, v: ArcSlot) => { const a = [arcSlot(0), arcSlot(1)]; a[i] = v; save({ ...b, arcanes: a }); };
@@ -76,36 +89,62 @@ export function BuildEditor() {
     totals: st.stats.map(s => ({ stat: s.label, bonusPercent: +s.pct.toFixed(1), from: s.parts })), notCalculated: st.unparsed, validation: ev.issues,
     forma: rq.forma, omniForma: rq.omni, arcanes: rq.arcanes.map(a => a.name), missingMods: rq.missingMods.map(m => m.name),
   };
-  const pick = (m: Entity) => { if (activeSp) { setSpecial(activeSp, { ...specialSlot(b, activeSp), mod: m.slug, rank: m.maxRank ?? 0 }); setActiveSp(null); return; } const i = active != null && !b.slots[active].mod ? active : active != null ? active : b.slots.findIndex(s => !s.mod); if (i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setActive(null); } };
+  const pick = (m: Entity) => { if (activeSp) { setSpecial(activeSp, { ...specialSlot(b, activeSp), mod: m.slug, rank: m.maxRank ?? 0 }); setSheet(false); return; } const i = active != null && !b.slots[active].mod ? active : active != null ? active : b.slots.findIndex(s => !s.mod); if (i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setActive(i); setSheet(false); } };
   const onAdd = (v: string) => { setQ(v); const m = byName.get(v.trim().toLowerCase()), i = b.slots.findIndex(s => !s.mod); if (m && i >= 0) { setSlot(i, { mod: m.slug, rank: m.maxRank ?? 0 }); setQ(""); } };
   const cell = (id: string, cls: string, label: string, s: Slot, m: Entity | undefined, d: number | string | null, pol: string | null, sel: boolean, onSel: () => void, onSet: (v: Slot) => void, rankLabel: string, extra?: ReactNode) => (<div key={id} className={"bslot " + cls + (sel ? " sel" : "")}>
     {cls && <span className="bkind">{label}</span>}
-    <div className="bwrap"><button className="bcard" aria-pressed={sel} aria-label={m ? m.name : label} onClick={onSel}>
+    <div className="bwrap">{pol && <span className="bsp" title={pol}><PolIcon pol={pol} size={14} /></span>}<button className="bcard" aria-pressed={sel} aria-label={m ? m.name : label} onClick={onSel}>
       {m ? <ModCard e={m} rank={s.rank} drain={d} mini /> : <span className="bempty">{pol ? <PolIcon pol={pol} size={30} /> : <b>+</b>}<small>{label}</small></span>}
     </button></div>
-    {m && <div className="brank"><button aria-label={rankLabel + " −"} disabled={s.rank <= 0} onClick={() => onSet({ ...s, rank: Math.max(0, s.rank - 1) })}>−</button><span>{tr("bldRankN", { r: s.rank })}</span><button aria-label={rankLabel + " +"} disabled={s.rank >= (m.maxRank ?? 30)} onClick={() => onSet({ ...s, rank: Math.min(m.maxRank ?? 30, s.rank + 1) })}>+</button></div>}
+    {m && <div className="brank"><button aria-label={rankLabel + " −"} disabled={s.rank <= 0} onClick={() => onSet({ ...s, rank: Math.max(0, s.rank - 1) })}>−</button><span title={tr("bldRankN", { r: s.rank })}>{s.rank}/{m.maxRank ?? 30}</span><button aria-label={rankLabel + " +"} disabled={s.rank >= (m.maxRank ?? 30)} onClick={() => onSet({ ...s, rank: Math.min(m.maxRank ?? 30, s.rank + 1) })}>+</button></div>}
     {extra}
   </div>);
+  const shareCode = () => { const c = encodeBuild(b); setCodeTxt(c); setCopied(false); try { void navigator.clipboard.writeText(c).then(() => setCopied(true), () => setCopied(false)); } catch { /* clipboard unavailable: the code stays visible to copy by hand */ } };
+  const issueText = (x: Issue) => { if (!x.key) return x.text; const a: Record<string, string | number> = {}; for (const [k, v] of Object.entries(x.args ?? {})) a[k] = k === "kind" ? tr(KIND_KEY[v as Kind]) : k === "slot" ? slotName(v as SpecialKey) : v == null ? "" : v; return tr(x.key as Key, a); };
+  const over = ev.total > ev.capacity;
+  const autoPol = () => save({ ...b, slots: b.slots.map(sl => { const m = sl.mod ? bySlug.get(sl.mod) : undefined; return m?.polarity && m.polarity !== sl.pol ? { ...sl, pol: m.polarity } : sl; }),
+    special: Object.fromEntries(SPECIALS[kind].map(k => { const sl = specialSlot(b, k), m = sl.mod ? bySlug.get(sl.mod) : undefined; return [k, m?.polarity && m.polarity !== sl.pol ? { ...sl, pol: m.polarity } : sl]; })) });
+  const resetPol = () => save({ ...b, slots: b.slots.map(({ pol: _p, ...sl }) => sl), special: Object.fromEntries(SPECIALS[kind].map(k => { const { pol: _p, ...sl } = specialSlot(b, k); return [k, sl]; })) });
+  const panel = (() => {
+    const spR = activeSp ? ev.special.find(x => x.key === activeSp) : undefined, mainR = !activeSp && active != null ? ev.rows[active] : undefined;
+    if (!spR && !mainR) return <p className="muted bhint">{tr("bldPickSlot")}</p>;
+    const label = spR ? slotName(spR.key) : tr("bldSlot", { n: mainR!.i + 1 }), s = spR ? specialSlot(b, spR.key) : b.slots[mainR!.i], m = spR ? spR.m : mainR!.m, d = spR ? (spR.bonus != null ? "+" + spR.bonus : spR.d) : mainR!.d;
+    const set = (v: Slot) => (spR ? setSpecial(spR.key, v) : setSlot(mainR!.i, v));
+    return (<section className="bpanel" aria-label={label}>
+      <div className="bphead"><b>{label}</b>{m ? <span>{m.name}</span> : <span className="muted">{tr("bldEmpty")}</span>}{d != null && <span className="muted">{tr("bldDrain", { d })}</span>}</div>
+      <div className="bpbody"><button className="btn" onClick={() => setSheet(true)}>{m ? tr("bldChangeMod") : tr("bldChooseMod")}</button><div className="polpick" role="group" aria-label={tr("bldPolLabel")}><span className="muted">{tr("bldPolLabel")}</span>
+        <button className={"relicchip" + (!s.pol ? " own" : "")} aria-pressed={!s.pol} title={tr("bldNoPol")} onClick={() => set({ ...s, pol: undefined })}>{tr("bldPolNone")}</button>
+        {POLS.map(x => <button key={x} className={"relicchip" + (s.pol === x ? " own" : "")} title={x === "any" ? tr("bldOmni") : x} aria-pressed={s.pol === x} onClick={() => set({ ...s, pol: s.pol === x ? undefined : x })}><PolIcon pol={x} size={18} /></button>)}</div>
+        {m && <div className="bpact"><label className="muted"><input type="checkbox" checked={!!s.owned} onChange={e => set({ ...s, owned: e.target.checked })} /> {tr("trkOwned")}</label>
+          <label className="muted">{tr("bldRank")} <input type="number" aria-label={tr("bldRank")} min={0} max={m.maxRank ?? 30} value={s.rank} style={{ width: "4rem" }} onChange={e => set({ ...s, rank: Math.min(m.maxRank ?? 30, Math.max(0, +e.target.value || 0)) })} /></label>
+          <button className="btn" onClick={() => set({ ...s, mod: null, rank: 0, owned: false })}>{tr("remove")}</button></div>}</div>
+    </section>);
+  })();
   return (<><h1><input aria-label={tr("bldNameLabel")} value={b.name} onChange={e => save({ ...b, name: e.target.value })} style={{ fontSize: "1.2rem" }} /></h1>
     <div className="bar"><select aria-label={tr("bldTypeLabel")} value={kind} onChange={e => save({ ...b, kind: e.target.value as Kind, frame: "", haveFrame: false, slots: newBuild().slots, arcanes: undefined, special: undefined })}>{(Object.keys(KIND_LABEL) as Kind[]).map(k => <option key={k} value={k}>{tr(KIND_KEY[k])}</option>)}</select><select aria-label={tr("bldItemLabel")} value={b.frame} onChange={e => save({ ...b, frame: e.target.value })}><option value="">{tr("bldChoose", { kind: tr(KIND_KEY[kind]).toLowerCase() })}</option>{frames.map(f => <option key={f.slug} value={f.slug}>{f.name}</option>)}</select>
       <label className="muted"><input type="checkbox" checked={b.reactor} onChange={e => save({ ...b, reactor: e.target.checked })} /> {tr("bldReactor", { item: kind === "primary" || kind === "secondary" || kind === "melee" ? "Orokin Catalyst" : "Orokin Reactor" })}</label></div>
     {MARKET_ENABLED && frameEnt?.isPrime && <SetPrice key={frameEnt.slug} e={frameEnt} />}
-    {frameEnt && <p className="muted">{tr("bldNative", { name: frameEnt.name })} {frameEnt.slots?.filter(Boolean).length ? frameEnt.slots.filter(Boolean).map((p, i) => <span key={i} className="polnat"><PolIcon pol={p} size={20} /> {p} </span>) : tr("bldNoneListed")}{typeof frameEnt.raw.aura === "string" && <> · {tr("bldAuraSlot")} <PolIcon pol={frameEnt.raw.aura} size={20} /> {frameEnt.raw.aura}</>}. {tr("bldNativeNote")}</p>}
-    <label className="chk muted">{tr("bldCapacity")} <b>{ev.total} / {ev.capacity}</b><progress max={ev.capacity} value={Math.min(ev.total, ev.capacity)} /></label>
+    {frameEnt && (() => { const nat = frameEnt.slots?.filter(Boolean) ?? [], au = (Array.isArray(frameEnt.raw.aura) ? frameEnt.raw.aura : [frameEnt.raw.aura]).filter((x): x is string => typeof x === "string");
+      return (<div className="natbox"><b>{tr("bldNative", { name: frameEnt.name })}</b>
+        <div className="natrow">{nat.length ? nat.map((p, i) => <span key={i} className="polnat"><PolIcon pol={p} size={18} /> {p}</span>) : <span className="muted">{tr("bldNoneListed")}</span>}{au.map(x => <span key={"a" + x} className="polnat"><span className="muted">{tr("bldAuraSlot")}</span> <PolIcon pol={x} size={18} /> {x}</span>)}</div>
+        <p className="muted">{tr("bldNativeNote")}</p></div>); })()}
+    <div className="bar"><button className="btn" onClick={shareCode}>{tr("bldCopyCode")}</button>{copied && <span className="muted" role="status">{tr("bldCodeCopied")}</span>}</div>
+    {codeTxt && <textarea readOnly aria-label={tr("bldCopyCode")} value={codeTxt} rows={3} onFocus={e => e.currentTarget.select()} style={{ width: "100%", maxWidth: "44rem", boxSizing: "border-box", margin: ".3rem 0 .6rem" }} />}
+    <header className="bhdr"><div className="bcap"><span className="muted">{tr("bldCapacity")}</span> <b className={over ? "ERROR" : ""}>{ev.total} / {ev.capacity}</b><progress className={over ? "over" : ""} max={ev.capacity} value={Math.min(ev.total, ev.capacity)} aria-label={tr("bldCapacity")} /></div>
+      <div className="bforma"><span className="muted">{tr("bldFormaCount")}</span> <b>{rq.forma}</b>{rq.omni > 0 && <span className="muted"> + {rq.omni} Omni</span>}</div>
+      <div className="bhact"><button className="btn" onClick={autoPol}>{tr("bldAutoPol")}</button><button className="btn" onClick={resetPol}>{tr("bldResetPol")}</button></div></header>
     <div className="bar"><input aria-label={tr("bldAddMod")} list="modnames" placeholder={tr("bldAddModPh")} value={q} onChange={e => onAdd(e.target.value)} /><datalist id="modnames">{fit.map(m => <option key={m.slug} value={m.name} />)}</datalist></div>
-    {SPECIALS[kind].length > 0 && <div className="bgrid">{ev.special.map(r => { const s = specialSlot(b, r.key), nm = slotName(r.key); return cell(r.key, "k-" + r.key, nm, s, r.m, r.bonus != null ? "+" + r.bonus : r.d, r.pol, activeSp === r.key, () => { setActiveSp(activeSp === r.key ? null : r.key); setActive(null); }, v => setSpecial(r.key, v), nm,
-      <><span className="polpick" role="group" aria-label={nm}>{POLS.map(x => <button key={x} className={"relicchip" + (s.pol === x ? " own" : "")} title={x === "any" ? tr("bldOmni") : x} aria-pressed={s.pol === x} onClick={() => setSpecial(r.key, { ...s, pol: s.pol === x ? undefined : x })}><PolIcon pol={x} size={16} /></button>)}</span>{r.m && <button className="btn" onClick={() => setSpecial(r.key, { mod: null, rank: 0, pol: s.pol })}>{tr("remove")}</button>}</>); })}</div>}
+    {SPECIALS[kind].length > 0 && <div className="bgrid">{ev.special.map(r => { const s = specialSlot(b, r.key), nm = slotName(r.key); return cell(r.key, "k-" + r.key, nm, s, r.m, r.bonus != null ? "+" + r.bonus : r.d, r.pol, activeSp === r.key, () => { const open = activeSp !== r.key; setActiveSp(open ? r.key : null); setActive(null); if (open && !r.m) setSheet(true); }, v => setSpecial(r.key, v), nm); })}</div>}
     <div className="bgrid">{ev.rows.map(r => cell(String(r.i), "", tr("bldSlot", { n: r.i + 1 }), b.slots[r.i], r.m, r.d, r.pol, active === r.i, () => selMain(r.i), v => setSlot(r.i, v), tr("bldSlotRank", { n: r.i + 1 })))}</div>
-    <ul className="list comp">{ev.rows.map(r => (<li key={r.i} className={active === r.i ? "slotsel" : undefined}><span><button className="btn" aria-pressed={active === r.i} onClick={() => setActive(active === r.i ? null : r.i)}>{active === r.i ? tr("bldChoosing") : tr("bldSelect")}</button> {tr("bldSlot", { n: r.i + 1 })} {r.pol ? <><PolIcon pol={r.pol} size={18} /> <span className="muted">{r.pol}</span></> : <span className="muted">{tr("bldNoPol")}</span>} · {r.m ? <><ItemArt file={r.m.image} size={30} /> <b>{r.m.name}</b></> : <span className="muted">{tr("bldEmpty")}</span>}{r.d != null && <span className="muted"> · {tr("bldDrain", { d: r.d })}</span>}</span>
-      <span><span className="polpick" role="group" aria-label={tr("bldSlotPol", { n: r.i + 1 })}><button className={"relicchip" + (!b.slots[r.i].pol ? " own" : "")} title={tr("bldNoPol")} onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: undefined })}>{tr("bldPolNone")}</button>{POLS.map(x => <button key={x} className={"relicchip" + (b.slots[r.i].pol === x ? " own" : "")} title={x === "any" ? tr("bldOmni") : x} aria-pressed={b.slots[r.i].pol === x} onClick={() => setSlot(r.i, { ...b.slots[r.i], pol: x })}><PolIcon pol={x} size={18} /></button>)}</span> {b.slots[r.i].mod && <><label className="muted"><input type="checkbox" checked={!!b.slots[r.i].owned} onChange={e => setSlot(r.i, { ...b.slots[r.i], owned: e.target.checked })} /> {tr("trkOwned")} </label><label className="muted">{tr("bldRank")} <input type="number" aria-label={tr("bldSlotRank", { n: r.i + 1 })} min={0} max={r.m?.maxRank ?? 30} value={b.slots[r.i].rank} style={{ width: "4rem" }} onChange={e => setSlot(r.i, { ...b.slots[r.i], rank: Math.max(0, +e.target.value || 0) })} /></label> <button className="btn" onClick={() => setSlot(r.i, { ...b.slots[r.i], mod: null, rank: 0, owned: false })}>{tr("remove")}</button></>}</span></li>))}</ul>
+    {panel}
     {(kind === "primary" || kind === "secondary" || kind === "melee") && <DamageTest b={b} weaponEnt={frameEnt} mods={bySlug} />}
-    <ModPicker mods={activeSp ? fitSp : fit} onPick={pick} taken={new Set(allSlots(b).map(x => x.mod).filter((x): x is string => !!x))} target={activeSp ? slotName(activeSp).toLowerCase() : active != null ? tr("bldSlot", { n: active + 1 }).toLowerCase() : tr("mpFirstEmpty")} />
+    {sheet && <Sheet title={activeSp ? slotName(activeSp) : active != null ? tr("bldSlot", { n: active + 1 }) : tr("mods")} onClose={() => setSheet(false)}><ModPicker mods={activeSp ? fitSp : fit} onPick={pick} taken={new Set(allSlots(b).map(x => x.mod).filter((x): x is string => !!x))} target={activeSp ? slotName(activeSp).toLowerCase() : active != null ? tr("bldSlot", { n: active + 1 }).toLowerCase() : tr("mpFirstEmpty")} /></Sheet>}
     {kind === "warframe" && <><h2>{tr("bldArcanes")}</h2>
     {!arcs ? <p className="muted">{ar.status === "LOADING" ? tr("bldArcLoading") : tr("bldArcNA")}</p> : <><datalist id="arcnames">{arcs.map(a => <option key={a.slug} value={a.name} />)}</datalist>
       <ul className="list comp">{[0, 1].map(i => { const s = arcSlot(i), a = s.mod ? arcBy.get(s.mod) : undefined; return (<li key={i}><span>{tr("bldArcSlot", { n: i + 1 })} · {a ? <b>{a.name}</b> : s.mod ? <span className="muted">{tr("bldNotLoaded")}</span> : <span className="muted">{tr("bldEmpty")}</span>}</span>
         <span>{s.mod ? <><label className="muted"><input type="checkbox" checked={!!s.owned} onChange={e => setArc(i, { ...s, owned: e.target.checked })} /> {tr("trkOwned")} </label><button className="btn" onClick={() => setArc(i, { mod: null })}>{tr("remove")}</button></> : <input aria-label={tr("bldArcSlot", { n: i + 1 })} list="arcnames" placeholder={tr("bldAddArc")} value={aq[i]} onChange={e => onArc(i, e.target.value)} />}</span></li>); })}</ul>
       {rq.arcDup && <p className="ERROR">{tr("bldArcDup")}</p>}</>}</>}
-    {ev.issues.length > 0 ? <ul>{ev.issues.map((x, i) => <li key={i} className={x.level === "error" ? "ERROR" : "STALE"} style={{ border: 0 }}>{x.level === "error" ? tr("bldErr") : tr("bldNote")} {x.text}</li>)}</ul> : <p className="gold">{tr("bldNoIssues")}</p>}
+    {ev.issues.length > 0 ? <ul>{ev.issues.map((x, i) => <li key={i} className={x.level === "error" ? "ERROR" : "STALE"} style={{ border: 0 }}>{x.level === "error" ? tr("bldErr") : tr("bldNote")} {issueText(x)}</li>)}</ul> : <p className="gold">{tr("bldNoIssues")}</p>}
     {rq.frame && <><h2>{tr("bldReq")}</h2>
       <ul className="list comp"><li><span>{rq.frame.name}</span><label className="muted"><input type="checkbox" checked={!!b.haveFrame} onChange={e => save({ ...b, haveFrame: e.target.checked })} /> {tr("bldHaveIt")} {!rq.frame.have && (kind === "warframe" || kind === "primary" || kind === "secondary" || kind === "melee") && <Link to={`/${kind === "warframe" ? "warframe" : "weapon"}/${rq.frame.slug}`}>{tr("bldOpenPlan")}</Link>}</label></li>
         {rq.forma > 0 && <li><span>Forma <b>×{rq.forma}</b> <span className="muted">{tr("bldFormaFrom")}</span></span><Link to="/farm/Forma%20Blueprint">{tr("whereToFarm")}</Link></li>}

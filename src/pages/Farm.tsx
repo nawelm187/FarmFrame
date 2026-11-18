@@ -1,5 +1,5 @@
 import { Pic } from "../ItemArt";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useT } from "../i18n";
 import { useMany } from "../lib/data";
 import { FIND, collect, query } from "../lib/drops";
@@ -8,7 +8,8 @@ import { useNeeded } from "../lib/useNeeded";
 import { useCatalogs } from "../lib/useCatalog";
 import type { Cat, Entity } from "../lib/catalog";
 import SetFarm from "./SetFarm";
-import { Unavailable } from "./parts";
+import { Skeleton, Unavailable } from "./parts";
+import { resolvePart } from "../lib/part";
 import VendorList from "../VendorList";
 import { vendorSources } from "../lib/vendorSources";
 const BUILT: Cat[] = ["warframe", "weapon", "companion", "archwing"];
@@ -18,9 +19,13 @@ export default function Farm() {
   const res = useMany(items), needed = useNeeded(), cats = useCatalogs(BUILT);
   const built = BUILT.flatMap(c => (cats[c]?.items ?? []).filter(x => x.components.length > 0 && x.name.toLowerCase() === item.trim().toLowerCase()).map(x => ({ c, x: x as Entity })))[0];
   const { rows, gaps, ok } = collect(FIND.map((f, i) => ({ f, rec: res[i].rec, status: res[i].status })));
+  // A part ("Ash Prime Blueprint", "Soma Prime Barrel") is not in the mission drop tables: it comes from relics, which the part page lists with their chances.
+  const ents = BUILT.flatMap(c => (cats[c]?.items ?? []).map(x => ({ e: x as Entity, cat: c }))), pending = BUILT.some(c => !cats[c]?.items && cats[c]?.status === "LOADING"), part = resolvePart(item, ents);
+  if (part) return <Navigate to={`/item/${encodeURIComponent(part.title)}`} replace />;
   if (built) return <><h1><Pic name={item} size={44} /> {t("fmTitle", { item })}</h1><SetFarm e={built.x} cat={built.c} /></>;
   if (!ok) return <><h1>{item}</h1><VendorList hits={vendorSources(item)} max={20} /><Unavailable title={t("fmDropTables")} art="Drop tables" status={res[0].status} why={t("fmNoData")} /></>;
   const list = rank(query(rows, item), stackIndex(rows, needed), item), sold = vendorSources(item);
+  if (!list.length && !sold.length) return pending ? <><h1>{item}</h1><Skeleton /></> : <Navigate to={`/item/${encodeURIComponent(item)}`} replace />;
   return (<><h1><Pic name={item} size={44} /> {t("fmTitle", { item })}</h1>
     <p className="lead">{t("fmLead")}</p>
     <p className="muted"><b>{t("fmFactLabel")}</b> {t("fmFactText")} <b>{t("fmEstLabel")}</b> {t("fmEstText")}</p>

@@ -521,3 +521,96 @@ main:focus{outline:none}
 .bslot[class*="k-"] .bempty{border-color:transparent}
 .bslot .polpick{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
 .bslot .polpick .relicchip{padding:.12rem .28rem;min-width:0}.bslot .btn{padding:.25rem .5rem;font-size:.78rem}
+
+/* v0.111: rows made of one text block plus one button no longer fall into the 3-column thumbnail grid */
+.list li:has(>:nth-child(2):last-child):has(>.btn:last-child,>button:last-child){grid-template-columns:minmax(0,1fr) auto}
+.list li>.btn:last-child:nth-child(2),.list li>button:last-child:nth-child(2){justify-self:end;align-self:center;white-space:nowrap}
+.list li>span:first-child{min-width:0}
+
+/* v0.111: build editor, one panel for the selected slot instead of a long row per slot */
+.bwrap{position:relative}
+.bsp{position:absolute;top:-7px;left:-7px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#0d1013;border:1px solid var(--b4)}
+.bsp.mismatch{border-color:#d9a441}
+.bhint{margin:.2rem 0 1rem;padding:.7rem .9rem;border:1px dashed var(--b4);border-radius:.8rem;text-align:center}
+.bpanel{margin:.4rem 0 1.1rem;padding:.8rem .9rem;background:var(--b2);border:1px solid var(--acc);border-radius:.9rem;display:grid;gap:.7rem}
+.bphead{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem .8rem}.bphead>b{font-family:Orbitron,Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--acc)}
+.bpbody{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;align-items:center}
+.bpbody .polpick{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}.bpbody .polpick .relicchip{min-height:2.2rem;padding:.2rem .5rem}
+.bpact{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}.bpact label{display:inline-flex;gap:.4rem;align-items:center}
+.bgrid{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:1rem .8rem}
+@media(max-width:700px){.bgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.bpbody{flex-direction:column;align-items:stretch}}
+/* v0.111: a <button> shrinks to its content even with display:block, which made empty slots a thin strip */
+.bcard{width:100%;box-sizing:border-box}.bempty{width:100%;box-sizing:border-box}
+
+/* v0.112: mobile-first mod editor. Four equal columns at every width; each tile scales with its own width (container queries), so nothing overflows or distorts. */
+.bhdr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem .9rem;align-items:center;margin:.6rem 0;padding:.7rem .8rem;background:var(--b2);border:1px solid var(--b4);border-radius:.9rem;max-width:44rem}
+.bcap{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .6rem}.bcap b{font-size:1.15rem;font-variant-numeric:tabular-nums}.bcap progress{flex:1 1 100%;width:100%;height:.55rem}
+.bcap progress.over{accent-color:#e5484d}
+.bforma{min-width:0}.bforma b{font-size:1.05rem}
+.bhact{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:flex-end}.bhact .btn{min-height:2.5rem;padding:.35rem .7rem;font-size:.85rem}
+@media(max-width:420px){.bhdr{grid-template-columns:1fr}.bhact{justify-content:stretch}.bhact .btn{flex:1 1 0}}
+.bgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem .45rem;margin:.7rem 0;max-width:44rem}
+@media(min-width:560px){.bgrid{gap:1.1rem .8rem}}
+.bslot{min-width:0;container-type:inline-size}
+.bwrap{padding:2px}
+.bslot .bcard{width:100%}
+.bslot .bempty{height:auto;aspect-ratio:4/5;min-height:0;gap:.15rem;margin:.25rem 0}.bslot .bempty small{font-size:clamp(.5rem,11cqw,.68rem);letter-spacing:.04em;text-align:center;overflow-wrap:anywhere}
+.bslot .modcard.mini{--cut:9px;padding:.2rem 0}.bslot .modcard.mini .mframe{padding:3px}.bslot .modcard.mini .mface{min-height:0;aspect-ratio:4/5}
+.bslot .modcard.mini::before,.bslot .modcard.mini::after{width:40%;margin-left:-20%;height:.4rem}
+.bslot .modcard.mini h4{font-size:clamp(.5rem,11.5cqw,.72rem);letter-spacing:.02em;padding:.2rem .15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;hyphens:auto}
+.bslot .modcard.mini .mtag{font-size:clamp(.55rem,12cqw,.72rem);top:.2rem;right:.2rem;padding:.05rem .1rem .05rem .3rem;gap:.15rem}
+.bslot .modcard.mini .mpol{width:clamp(.85rem,18cqw,1.2rem);height:clamp(.85rem,18cqw,1.2rem)}.bslot .modcard.mini .mpol .polic{width:100%;height:100%}
+.bslot .modcard.mini .pips{top:.25rem;left:.25rem;max-width:55%;flex-wrap:wrap;gap:2px}.bslot .modcard.mini .pips i{width:clamp(.25rem,6cqw,.45rem);height:clamp(.25rem,6cqw,.45rem)}
+.bsp{top:-5px;left:-5px;width:clamp(1rem,20cqw,1.4rem);height:clamp(1rem,20cqw,1.4rem)}.bsp .polic{width:70%;height:70%}
+.brank{display:grid;grid-template-columns:minmax(1.4rem,1fr) auto minmax(1.4rem,1fr);gap:.2rem;align-items:center}
+.brank button{min-width:0;width:100%;height:2.1rem;padding:0}.brank span{font-size:clamp(.62rem,13cqw,.8rem);white-space:nowrap;text-align:center;font-variant-numeric:tabular-nums}
+.bkind{font-size:clamp(.55rem,12cqw,.7rem);letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bpanel{max-width:44rem}.bpbody>.btn{min-height:2.5rem}.bpbody .polpick .relicchip{min-width:2.4rem;justify-content:center}
+.bpact input[type=number]{min-height:2.3rem}
+.sheet{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;justify-content:flex-end;background:#000b;overscroll-behavior:contain}
+.sheetin{display:flex;flex-direction:column;height:92vh;height:92dvh;background:var(--b1);border:1px solid var(--b4);border-radius:1rem 1rem 0 0;padding-bottom:env(safe-area-inset-bottom);outline:0;min-width:0}
+.sheethd{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.7rem .9rem;border-bottom:1px solid var(--b4)}.sheethd b{font-family:Orbitron,Inter,sans-serif;letter-spacing:.05em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheetbd{flex:1;overflow:auto;padding:.4rem .9rem 1rem;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.sheet .picker>h2{display:none}.sheet .picker .bar input{flex:1 1 12rem}
+.sheet .cards{grid-template-columns:repeat(auto-fill,minmax(min(100%,10.5rem),1fr))}
+@media(min-width:900px){.sheet{justify-content:center;align-items:center}.sheetin{width:min(64rem,94vw);height:86vh;border-radius:1rem}}
+.bslot .modcard.mini h4{font-size:clamp(.42rem,9.2cqw,.72rem);overflow-wrap:break-word;hyphens:manual;word-break:normal}
+@container (max-width:9rem){.bslot .modcard.mini .pips{display:none}}
+
+/* v0.117: mod list, two columns on phones instead of one giant card; filter rows wrap instead of overflowing */
+.cards.mods{grid-template-columns:repeat(auto-fill,minmax(min(100%,9.5rem),1fr));gap:.7rem .5rem}
+@media(min-width:700px){.cards.mods{grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr));gap:.8rem}}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+
+/* v0.118: mod comparison */
+.cmpcell{display:flex;flex-direction:column;gap:.35rem;min-width:0}.cmpcell .relicchip{width:100%;justify-content:center;min-height:2.2rem}
+.cmpbox{margin:.6rem 0 1rem;padding:.7rem .8rem;background:var(--b2);border:1px solid var(--acc);border-radius:.9rem;min-width:0}
+.cmphd{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}.cmphd h2{margin:0}
+.cmpscroll{overflow-x:auto;margin-top:.5rem;-webkit-overflow-scrolling:touch}
+.cmp{border-collapse:collapse;width:100%;min-width:max-content;font-size:.85rem}
+.cmp th,.cmp td{padding:.45rem .55rem;border-bottom:1px solid var(--b4);vertical-align:top;text-align:left}
+.cmp tbody th{position:sticky;left:0;background:var(--b2);color:var(--muted,#9aa5ad);font-weight:500;white-space:nowrap}
+.cmp thead th{min-width:9.5rem;max-width:14rem}.cmp thead th a{display:block;margin-bottom:.3rem;overflow-wrap:anywhere}
+.cmp td ul{margin:0;padding-left:1rem}.cmppol{display:inline-flex;align-items:center;gap:.3rem;text-transform:capitalize}
+@media(max-width:700px){.cmp{font-size:.8rem}.cmp tbody th{white-space:normal;max-width:5rem;font-size:.74rem}.cmp thead th{min-width:8rem}}
+/* v0.120: nine language buttons stay on one row on narrow phones (they wrapped, leaving one flag alone) */
+@media(max-width:420px){.langbar{flex-wrap:nowrap;gap:.2rem}.flag{width:auto;flex:1 1 0;height:2rem}.flag svg{width:70%;height:auto}}
+
+/* v0.120: native polarities as a tidy row of chips instead of a run-on sentence */
+.natbox{max-width:44rem;margin:.6rem 0}.natrow{display:flex;flex-wrap:wrap;gap:.3rem .5rem;margin:.35rem 0}
+.polnat{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .55rem;border:1px solid var(--b4);border-radius:999px;background:var(--b2);font-size:.85rem;text-transform:capitalize}
+
+/* v0.124: assistant page */
+.astform{display:flex;gap:.5rem;margin:.6rem 0;max-width:44rem}.astform input{flex:1 1 auto;min-width:0}
+.astturn{margin:1rem 0;padding:.8rem .9rem;border:1px solid var(--b4);border-radius:.9rem;background:var(--b2);max-width:44rem;min-width:0}.astq{margin:.1rem 0 .6rem;font-weight:600;overflow-wrap:anywhere}
+.astturn .list{margin-top:.6rem}
+
+/* v0.127: optional image frames from src/assets/modframes/. Without images none of this applies. */
+.modcard.has-frame,.modcard.mini.has-frame,.bslot .modcard.mini.has-frame{padding:0;--fwe:var(--fw)}
+.modcard.mini.has-frame{--fwe:calc(var(--fw) * .55)}
+.modcard.has-frame::before,.modcard.has-frame::after{display:none}
+.modcard.has-frame .mframe,.modcard.mini.has-frame .mframe,.bslot .modcard.mini.has-frame .mframe{background:none;clip-path:none;padding:var(--fwe)}
+.modcard.has-frame .mface{clip-path:none;box-shadow:none}
+.modcard .mfimg{position:absolute;inset:0;z-index:3;pointer-events:none}
+.modcard.fm-overlay .mfimg{background:var(--frame) center/100% 100% no-repeat}
+.modcard.fm-slice .mfimg{border:var(--fwe) solid transparent;border-image:var(--frame) var(--fs) / var(--fwe) stretch}

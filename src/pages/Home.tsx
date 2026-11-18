@@ -83,7 +83,7 @@ function HeroArt({ fallback }: { fallback: ReactNode }) {
     {list.length > 1 && <div className="herodots">{list.map((f, k) => <button key={f.name} className={"dot" + (k === at ? " on" : "")} aria-label={`Show ${f.name}`} aria-current={k === at} onClick={() => setI(k)} />)}</div>}
   </div>);
 }
-const TILES: [string, Key, Key][] = [["/builds", "builds", "tileBuilds"], ["/farm-plan", "farmPlan", "tileFarmPlan"], ["/relics", "relics", "tileRelics"], ["/finder", "resources", "tileResources"], ["/rotations", "rotations", "tileRotations"]];
+const TILES: [string, Key, Key][] = [["/builds", "builds", "tileBuilds"], ["/farm-plan", "farmPlan", "tileFarmPlan"], ["/relics", "relics", "tileRelics"], ["/finder", "resources", "tileResources"], ["/rotations", "rotations", "tileRotations"], ["/assistant", "assistant", "tileAssistant"]];
 const openSearch = () => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
 export default function Home() {
   const b = readBuilds().length, f = useFarmNow(), first = readGoals()[0], t = useT();

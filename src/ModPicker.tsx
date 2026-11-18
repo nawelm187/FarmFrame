@@ -3,9 +3,9 @@ import { PolIcon } from "./Icons";
 import ModCard from "./ModCard";
 import { tp, useT, type Key } from "./i18n";
 import type { Entity } from "./lib/catalog";
-const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "umbra", "any"];
-const RAR = ["common", "uncommon", "rare", "legendary"] as const;
-const RAR_KEY: Record<(typeof RAR)[number], Key> = { common: "rarCommon", uncommon: "rarUncommon", rare: "rarRare", legendary: "rarLegendary" };
+export const POLS = ["madurai", "vazarin", "naramon", "zenurik", "unairu", "penjaga", "umbra", "any"];
+export const RAR = ["common", "uncommon", "rare", "legendary"] as const;
+export const RAR_KEY: Record<(typeof RAR)[number], Key> = { common: "rarCommon", uncommon: "rarUncommon", rare: "rarRare", legendary: "rarLegendary" };
 const blob = (m: Entity) => [m.name, m.description, ...(m.levelStats?.[m.levelStats.length - 1] ?? [])].join(" ").toLowerCase();
 /** Visual mod browser for builds: search by name or by what the mod does ("fire rate", "armor"), filter by polarity and rarity, sort by drain, click a card to equip it. */
 export default function ModPicker({ mods, onPick, taken, target }: { mods: Entity[]; onPick: (m: Entity) => void; taken: Set<string>; target: string }) {

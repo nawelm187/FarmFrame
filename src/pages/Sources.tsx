@@ -21,6 +21,7 @@ export default function Sources() {
       <p className="lead">{tr("srcLead")}</p>
       <h2>{tr("srcRegistry")}</h2>
       <div className="bar"><button className="btn" onClick={check}>{tr("srcCheck")}</button></div>
+      {(() => { const p = probes.get("supabase"); return p && !p.ok && p.http == null ? <p className="muted" role="status">{tr("srcSbHint")}</p> : null; })()}
       <div className="wrap"><table><thead><tr><th>{tr("srcThSource")}</th><th>{tr("srcThTrust")}</th><th>{tr("srcThStatus")}</th><th>{tr("srcThHealth")}</th><th>{tr("srcThProvides")}</th></tr></thead><tbody>
         {SOURCES.map(s => <tr key={s.id}><td><b>{s.name}</b><div className="muted">{s.fallback ? tr("srcFallback", { name: sourceById(s.fallback)?.name ?? s.fallback }) : tr("srcNoFallback")}{s.checked ? ` · ${tr("srcOpened", { date: s.checked })}` : ""}</div></td>
           <td title={tr(`srcConf${s.confidence}`)}>{s.confidence} <span className="muted">{tr(`srcConf${s.confidence}`)}</span></td>

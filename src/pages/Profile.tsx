@@ -13,6 +13,10 @@ export default function Profile() {
   const go = async (up: boolean) => { setBusy(true); setNote(null); const e = await (up ? c.signUp : c.signIn)(email.trim(), pw); setBusy(false); setNote(e); };
   const reset = async () => { if (!email.trim()) { setNote(tx("prEmailFirst")); return; } setBusy(true); setNote(null); setNote(await c.resetPassword(email.trim())); setBusy(false); };
   const [np, setNp] = useState(""), [pnote, setPnote] = useState<string | null>(null);
+  const [delEmail, setDelEmail] = useState(""), [delNote, setDelNote] = useState<string | null>(null);
+  const delOk = delEmail.trim().toLowerCase() === (c.email ?? "").toLowerCase() && delEmail.trim() !== "";
+  const removeAccount = async (now: boolean) => { setBusy(true); setDelNote(null); const e = await (now ? c.eraseNow(delEmail.trim()) : c.requestDeletion(delEmail.trim())); setBusy(false); if (e) setDelNote(e); };
+  const restore = async () => { setBusy(true); setDelNote(null); const e = await c.restoreAccount(); setBusy(false); if (e) setDelNote(e); };
   const savePw = async () => { setBusy(true); const e = await c.setPassword(np); setBusy(false); setPnote(e ?? tx("prPwSaved")); if (!e) setNp(""); };
   const link = async () => { setBusy(true); setNote(null); setNote(await c.signInLink(email.trim())); setBusy(false); };
   const b = readBuilds().length, g = readGoals().length, tr = readTracked(), t = tr.length, tc = trackCounts(tr), file = useRef<HTMLInputElement>(null), [msg, setMsg] = useState<string | null>(null);
@@ -30,9 +34,9 @@ export default function Profile() {
         <h3>{tx("prSignIn")}</h3>
         <ul className="benefits"><li>{tx("prBen1")}</li><li>{tx("prBen2")}</li><li>{tx("prBen3")}</li></ul>
         <div className="bar"><input aria-label={tx("prEmail")} type="email" autoComplete="email" placeholder={tx("prEmail")} value={email} onChange={e => setEmail(e.target.value)} required style={{ width: "100%" }} /></div>
-        {usePw && <div className="bar"><input aria-label={tx("prPassword")} type="password" autoComplete="current-password" placeholder={tx("prPwPh")} value={pw} onChange={e => setPw(e.target.value)} required minLength={6} style={{ width: "100%" }} /></div>}
+        {usePw && <div className="bar"><input aria-label={tx("prPassword")} type="password" autoComplete="current-password" placeholder={tx("prPwPh")} value={pw} onChange={e => setPw(e.target.value)} required minLength={10} style={{ width: "100%" }} /></div>}
         <div className="bar">{usePw
-          ? <><button className="btn" type="submit" disabled={busy}>{tx("prSignInBtn")}</button><button className="btn" type="button" disabled={busy || pw.length < 6 || !email.trim()} onClick={() => void go(true)}>{tx("prCreate")}</button></>
+          ? <><button className="btn" type="submit" disabled={busy}>{tx("prSignInBtn")}</button><button className="btn" type="button" disabled={busy || pw.length < 10 || !email.trim()} onClick={() => void go(true)}>{tx("prCreate")}</button></>
           : <button className="btn primary" type="submit" disabled={busy}>{tx("prLink")}</button>}</div>
         <p className="muted"><button type="button" className="linkbtn" onClick={() => { setUsePw(!usePw); setNote(null); }}>{usePw ? tx("prUseLink") : tx("prHavePw")}</button>{" "}<button type="button" className="linkbtn" disabled={busy} onClick={() => void reset()}>{tx("prReset")}</button></p>
         {note && <p className="muted" role="status">{note}</p>}</form>
@@ -45,9 +49,15 @@ export default function Profile() {
       {c.sync === "synced" && <p className="muted">{tx("prAuto")}</p>}
       <p className="muted">{tx("prRls")}</p>
       <h3>{tx("prPassword")}</h3><p className="muted">{tx("prPwHelp")}</p>
-      <div className="bar"><input aria-label={tx("prNewPw")} type="password" autoComplete="new-password" placeholder={tx("prNewPwPh")} value={np} onChange={e => setNp(e.target.value)} minLength={6} /><button className="btn" disabled={busy || np.length < 6} onClick={() => void savePw()}>{tx("prSavePw")}</button></div>
+      <div className="bar"><input aria-label={tx("prNewPw")} type="password" autoComplete="new-password" placeholder={tx("prNewPwPh")} value={np} onChange={e => setNp(e.target.value)} minLength={10} /><button className="btn" disabled={busy || np.length < 10} onClick={() => void savePw()}>{tx("prSavePw")}</button></div>
       {pnote && <p className="muted" role="status">{pnote}</p>}
-      <button className="btn" onClick={() => void c.signOut()}>{tx("prSignOut")}</button></section>)}
+      <button className="btn" onClick={() => void c.signOut()}>{tx("prSignOut")}</button>
+      {c.pending && <div className="gold" role="status"><p>{tx("prPendingMsg", { date: new Date(c.pending).toLocaleDateString() })}</p><button className="btn" disabled={busy} onClick={() => void restore()}>{tx("prRestoreBtn")}</button></div>}
+      <details className="minicard" style={{ marginTop: "1rem" }}><summary>{tx("prDeleteTitle")}</summary><p className="muted">{tx("prDeleteHelp")}</p>
+        <div className="bar"><input aria-label={tx("prDeletePh")} type="email" autoComplete="off" placeholder={tx("prDeletePh")} value={delEmail} onChange={e => setDelEmail(e.target.value)} /></div>
+        <div className="bar"><button className="btn" disabled={busy || !delOk} onClick={() => void removeAccount(false)}>{tx("prDeleteBtn")}</button>
+          <button className="btn" disabled={busy || !delOk} onClick={() => void removeAccount(true)}>{tx("prDeleteNowBtn")}</button></div>
+        {delNote && <p className="ERROR" role="alert">{delNote}</p>}</details></section>)}
     <section className="gcard acctcard"><h3>{tx("prYourData")}</h3><p className="muted">{tx("prDataHelp")}</p>
       <div className="bar"><button className="btn" onClick={exportData}>{tx("prExport")}</button><button className="btn" onClick={() => file.current?.click()}>{tx("prImport")}</button>
         <input ref={file} type="file" accept="application/json,.json" hidden aria-label={tx("prImportAria")} onChange={e => { void importData(e.target.files?.[0]); e.target.value = ""; }} /></div>
