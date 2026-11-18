@@ -1,0 +1,17 @@
+# HTTP headers for hosts that read this file (Cloudflare Pages, Netlify). GitHub Pages ignores it and just serves it as a plain file, which is harmless.
+# What they add that a <meta> tag cannot: frame-ancestors (nobody can embed the site in another page), Permissions-Policy, HSTS.
+# The main Content Security Policy stays in the page itself (scripts/csp.mjs); a header policy and a meta policy are both enforced, so this one only adds frame-ancestors.
+/*
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+
+# The built files have a hash in their name, so they can be cached for a year. The page itself must always be checked again.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: no-cache
