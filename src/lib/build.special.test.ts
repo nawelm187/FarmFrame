@@ -35,3 +35,25 @@ it("special-slot mods are counted as used once and listed in the requirements", 
   expect(evaluate(b, undefined, new Map([["steel charge", a]])).issues.map(i => i.text).join()).toContain("used more than once");
   const r = requirements({ ...b, slots: newBuild().slots }, undefined, new Map([["steel charge", a]])); expect(r.mods.map(m => m.slug)).toEqual(["steel charge"]);
 });
+
+it("polarity set on a special slot costs a Forma unless it is that slot's native one; omni is counted apart", () => {
+  const f = { ...mod("Frame", 0, null), slots: [] as string[], raw: { aura: "madurai" } };
+  const b = { ...newBuild(), kind: "warframe" as const, special: { aura: { mod: null, rank: 0, pol: "madurai" }, exilus: { mod: null, rank: 0, pol: "naramon" } } };
+  expect(requirements(b, f, new Map()).forma).toBe(1);
+  const o = { ...b, special: { aura: { mod: null, rank: 0, pol: "any" }, exilus: { mod: null, rank: 0 } } };
+  const r = requirements(o, f, new Map()); expect(r.forma).toBe(0); expect(r.omni).toBe(1);
+});
+
+it("the native polarity of a special slot may come as a list", () => {
+  const f = { ...mod("Frame", 0, null), slots: [] as string[], raw: { aura: ["Madurai", "naramon"] } };
+  const b = { ...newBuild(), kind: "warframe" as const, special: { aura: { mod: null, rank: 0, pol: "naramon" } } };
+  expect(requirements(b, f, new Map()).forma).toBe(0);
+  expect(requirements({ ...b, special: { aura: { mod: null, rank: 0, pol: "zenurik" } } }, f, new Map()).forma).toBe(1);
+});
+
+it("a stance that is natively universal needs no Omni Forma, but a specific polarity there still costs a Forma (real data: 'universal' on melee)", () => {
+  const f = { ...mod("Weapon", 0, null), slots: [] as string[], raw: { stancePolarity: "universal" } };
+  const any = { ...newBuild(), kind: "melee" as const, special: { stance: { mod: null, rank: 0, pol: "any" } } }, r = requirements(any, f, new Map());
+  expect(r.omni).toBe(0); expect(r.forma).toBe(0);
+  expect(requirements({ ...any, special: { stance: { mod: null, rank: 0, pol: "madurai" } } }, f, new Map()).forma).toBe(1);
+});
