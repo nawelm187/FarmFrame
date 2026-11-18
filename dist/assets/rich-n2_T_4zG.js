@@ -1,0 +1,1 @@
+import{j as m}from"./index-BtMDNLUP.js";import{r as i}from"./react-gPj3QJXm.js";const c=(o,t)=>o.split(/(\{\w+\})/).map((s,e)=>{const r=/^\{(\w+)\}$/.exec(s);return r&&r[1]in t?m.jsx(i.Fragment,{children:t[r[1]]},e):s});export{c as r};
