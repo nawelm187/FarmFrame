@@ -83,7 +83,7 @@ export function suggest(ix: Index, query: string): string | null {
   return changed ? out.join(" ") : null;
 }
 /** What the person is asking for, read from the words and not from a fixed sentence. */
-export type Intent = { kind: "now" } | { kind: "changed" } | { kind: "method"; subject: string } | { kind: "where"; subject: string } | { kind: "what"; subject: string } | { kind: "lore"; subject: string } | null;
+export type Intent = { kind: "now" } | { kind: "changed" } | { kind: "method"; subject: string } | { kind: "where"; subject: string } | { kind: "what"; subject: string } | { kind: "lore"; subject: string } | { kind: "mods"; subject: string } | null;
 const FARMW = new Set("farm farming farmear farmeo farmeas farmea grind grindear conseguir conseguirlo obtener obtain buy comprar compro compras compra find encontrar drop drops cae caen sells sell sold vende venden unlock desbloquear desbloqueo desbloqueas desbloquea cuesta cuestan precio price cost costs".split(" "));
 const NOWW = new Set("now today tonight currently current right ahora hoy actualmente next best worth priority priorities conviene mejor primero first".split(" "));
 const DOW = new Set("do play run hacer jugar".split(" "));
@@ -97,12 +97,20 @@ const GETW = new Set("get got obtain find consigo conseguir consigue conseguirlo
 /** Nouns that only point at the thing ("this material"), not at which thing it is. */
 const NOUNW = new Set("material materials recurso recursos resource resources item items objeto objetos este esta esto ese esa aquel".split(" "));
 const WHATRE = /^(?:what is|what are|what s|whats|que es|que son|para que sirve|para que sirven|what does (.+) do|tell me about|info about|info on|info sobre|informacion de|informacion sobre|explain|explica|explicame)\b/;
+/** Words that join "mods" to the item: "mods for X", "mods de X", "what mods should I use on X". */
+const MODPREP = new Set("for para de en on in to".split(" "));
 export const isFiller = (t: string) => isIntentWord(t);
 const isIntentWord = (t: string) => GETW.has(t) || NOUNW.has(t) || FASTW.has(t) || STOP.has(t) || FARMW.has(t) || NOWW.has(t) || WHEREW.has(t) || DOW.has(t);
 export function detectIntent(q: string): Intent {
   const n = normalize(q), ts = n ? n.split(" ") : []; if (ts.length < 2) return null;
   if (CHANGEDRE.test(n) && ts.length <= 7) return { kind: "changed" };
   if (ts.some(t => LOREW.has(t))) { const subject = ts.filter(t => !isIntentWord(t) && !LOREW.has(t)).join(" "); if (subject.length >= 2 && subject.split(" ").length <= 5) return { kind: "lore", subject }; }
+  // "mods for rhino", "best mods for rhino prime", "que mods uso en rhino": not about where to get mods, so any farming or getting word means another question.
+  const mi = ts.findIndex(t => t === "mod" || t === "mods");
+  if (mi >= 0 && !ts.some(t => FARMW.has(t) || GETW.has(t))) {
+    let pi = -1; for (let i = ts.length - 2; i > mi; i--) if (MODPREP.has(ts[i])) { pi = i; break; }
+    if (pi > 0) { const subject = ts.slice(pi + 1).filter(t => !STOP.has(t)).join(" "); if (subject.length >= 2 && subject.split(" ").length <= 3) return { kind: "mods", subject }; }
+  }
   const hasGet = ts.some(t => GETW.has(t)) && ts.some(t => t === "how" || t === "como" || t === "where" || t === "donde"), hasFarm = ts.some(t => FARMW.has(t)), hasNow = ts.some(t => NOWW.has(t)), hasDo = ts.some(t => DOW.has(t));
   const rest = ts.filter(t => !isIntentWord(t));
   // "forma" is also an item, so it only means "way" in "mejor forma de ...".
